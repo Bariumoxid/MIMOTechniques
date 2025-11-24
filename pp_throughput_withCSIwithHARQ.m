@@ -1,20 +1,54 @@
-% p = gcp('nocreate');    % get current pool (or empty if none)
-% if ~isempty(p)
-%     delete(p);
-% end
-%parpool('Processes', 21);
+% V1 25.11.24 (Single CW)
 close all force
 clearvars
 clc
-timestampstart = datestr(now, 'yymmdd_HHMM');
+Version="1";
+simParameters = struct();  
 %set(0, 'DefaultFigureVisible', 'off'); % use this line of code if want to use no GUI simulation (ts-access)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Parameters:
+PMI_Setting = "Random"; % (Random, Best, Off) %TODO
+HARQ_Setting = true; % (ture, false)
+Channel_Model = 'CDL-C'; %% 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E' %TODO
+Target_Code_Rate= 490/1024;
+Modulation = "16QAM";
+Max_Doppler_Shift=10;
+%Antennas need to be configured inside
 
-simParameters = struct();       % Clear simParameters variable to contain all key simulation parameters 
-simParameters.NFrames = 5;      % Number of 10 ms frames
-simParameters.SNRIn = -5:1:35; % SNR range (dB)
-%simParameters.SNRIn = 30; % SNR range (dB)
-simParameters.PerfectChannelEstimator = false;
-simParameters.DisplaySimulationInformation = false;
+%Simulation Settings
+SNR=-5:6:35; % Range or Single Value
+NFrames= 1; 
+Save_to_File=true; %true,false 
+PerfectChannelEstimator=false; %true,false
+DisplaySimulationInformation=false; %true,false
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TODO
+%1. Fix HARQ block size mismatch issue
+%2. TDL channel support
+%3. Layer Change issue
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+pool = gcp('nocreate');    % get current pool (or empty if none)
+
+if isempty(pool)
+    maxWorkers = feature('numcores');  % 或者 parcluster('local').NumWorkers
+    
+    % 你希望的 worker 数
+    numWorkers = max(1, maxWorkers - 2);
+
+    % 打开自己的 pool
+    pool = parpool('local', numWorkers);
+else
+    fprintf("Reusing existing pool with %d workers\n", pool.NumWorkers);
+end
+
+timestampstart = datestr(now, 'yyyy-mm-dd_HHMM');
+    % Clear simParameters variable to contain all key simulation parameters 
+simParameters.NFrames = NFrames;      % Number of 10 ms frames
+simParameters.SNRIn = SNR; % SNR range (dB)
+simParameters.PerfectChannelEstimator = PerfectChannelEstimator;
+simParameters.DisplaySimulationInformation = DisplaySimulationInformation;
 simParameters.DisplayDiagnostics = false;
 
 % SCS carrier parameters
@@ -51,7 +85,7 @@ simParameters.PDSCHExtension.PRGBundleSize = 2; % 2, 4, or [] to signify "wideba
 simParameters.PDSCHExtension.MCSTable      = 'Table1'; % 'Table1',...,'Table4'
 simParameters.PDSCHExtension.XOverhead     = [ ]; % 0, 6, 12, 18, or [] for automatic selection.
 simParameters.PDSCHExtension.NHARQProcesses   = 4;       % e.g. 8 parallel HARQ processes
-simParameters.PDSCHExtension.EnableHARQ       = true;    % enable retransmissions
+simParameters.PDSCHExtension.EnableHARQ       = HARQ_Setting;    % enable retransmissions
 simParameters.PDSCHExtension.EnableCBGTransmission = true; % Enable CBG-based transmission, otherwise TB-based transmission
 simParameters.PDSCHExtension.MaxNumCBG = 4;          % Maximum number of CBGs per transport block for each HARQ process in CBG-based transmission
 simParameters.PDSCHExtension.RVSequence       = [0 2 3 1]; % standard 4-RV cycle
@@ -61,7 +95,7 @@ if simParameters.PDSCHExtension.EnableHARQ == false
     simParameters.PDSCHExtension.EnableCBGTransmission =false;
 end
         
-simParameters.PDSCHExtension.TargetCodeRate = 490/1024;
+simParameters.PDSCHExtension.TargetCodeRate = Target_Code_Rate;
 
 % Available algorithms: 'Belief propagation', 'Layered belief propagation', 'Normalized min-sum', 'Offset min-sum'
 simParameters.PDSCHExtension.LDPCDecodingAlgorithm = "Layered belief propagation";
@@ -132,9 +166,6 @@ if simParameters.CSIReportMode == "RI-PMI-CQI"
     simParameters.CSIReportConfig.PMIModeOverride = 'best';  % 'best','random','fixed'
     simParameters.CSIReportConfig.FixedPMI       = 3;       % zero‐based PMI if you choose 'fixed'
 
-    simParameters.CSIReportConfig.RIModeOverride = 'fixed'; %fixed
-    simParameters.CSIReportConfig.FixedRI = 4;   % or any rank you want
-
     % Configure the CSI report with the antenna panel dimensions specified
     simParameters.CSIReportConfig.PanelDimensions = getCSIReportPanelDimensions(simParameters.TransmitAntennaArray,simParameters.CSIReportConfig.CodebookType);
     
@@ -153,9 +184,9 @@ end
 simParameters.UEProcessingDelay = 7;
 simParameters.BSProcessingDelay = 1;
 
-simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
+simParameters.DelayProfile = Channel_Model;   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
 simParameters.DelaySpread = 300e-9;     % s
-simParameters.MaximumDopplerShift = 10;  % Hz
+simParameters.MaximumDopplerShift = Max_Doppler_Shift;  % Hz
 
 simParameters.Channel = createChannel(simParameters);
 
@@ -176,7 +207,6 @@ simThroughputPar = zeros(numel(simParameters.SNRIn),1);
 maxThroughputPar = zeros(numel(simParameters.SNRIn),1);
 CSIReportPar = cell(numel(simParameters.SNRIn),1);
 blerPar = zeros(numel(simParameters.SNRIn),1);
-
 
 %for snrIdx = 1:numel(simParameters.SNRIn)
 parfor snrIdx = 1:numel(simParameters.SNRIn)
@@ -248,27 +278,18 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % there is a new report available.
         [isNewReport,repIdx] = ismember(nslot,csiAvailableSlots);
         if isNewReport
-            if simParameters.CSIReportConfig.RIModeOverride == "fixed"
-                fixedRI = simParameters.CSIReportConfig.FixedRI; % e.g. 4
-                pdsch.NumLayers = fixedRI;
-                [~,info] = hDLPMISelect(carrier, csirs, simParamLocal.CSIReportConfig, nLayers, Hest);
-                csiReports(repIdx).W = info.W;    % rank-4 precoder
-                wtx = info.W;                     % 覆盖掉 hCSIDecode 给的 W
-            else
-                [~,~,wtx] = hCSIDecode(carrier,pdsch,pdschextra,csiReports(repIdx),csiFeedbackOpts);
-                pdsch.NumLayers = size(wtx,1);
-            end
-
-
-            %pdsch.NumLayers = size(wtx,1); %Optimum Case
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %
+            [~,~,wtx] = hCSIDecode(carrier,pdsch,pdschextra,csiReports(repIdx),csiFeedbackOpts);
+            pdsch.NumLayers = size(wtx,1); %Optimum Case
             %pdsch.NumLayers = simParameters.PDSCH.NumLayers; %Forced
             %disp(size(wtx))
-            pdsch.Modulation = '16QAM';
+            pdsch.Modulation = Modulation;
 
             if pdsch.NumCodewords > 1
-                pdschextra.TargetCodeRate = [490/1024, 490/1024];
+                pdschextra.TargetCodeRate = [Target_Code_Rate, Target_Code_Rate];
             else 
-                pdschextra.TargetCodeRate = 490/1024;
+                pdschextra.TargetCodeRate = Target_Code_Rate;
             end
             encodeDLSCH.TargetCodeRate = pdschextra.TargetCodeRate;
         end
@@ -489,10 +510,12 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     if (simParamLocal.DisplaySimulationInformation)
         fprintf('\n');
     end
-    fprintf('\nThroughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughputPar(snrIdx)/(simParamLocal.NFrames*10e-3));
+
+    fprintf('\nSNR (dB) = %.1f\n', simParameters.SNRIn(snrIdx));
+    fprintf('Throughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughputPar(snrIdx)/(simParamLocal.NFrames*10e-3));
     fprintf('Throughput(%%) for %d frame(s) = %.4f\n',simParamLocal.NFrames,simThroughputPar(snrIdx)*100/maxThroughputPar(snrIdx));
     fprintf('BLER for %d frame(s) = %.4f\n', simParameters.NFrames, blerPar(snrIdx));
-    fprintf('SNR = %.4f\n', snrIdx);
+   
 
 end
 
@@ -522,24 +545,31 @@ simResults.simThroughput = simThroughput;
 simResults.maxThroughput = maxThroughput;
 simResults.bler         = bler;
 
-resultsFolder = './results/';
+if Save_to_File
+    resultsFolder = './results/';
+    
+    harqFlag = simParameters.PDSCHExtension.EnableHARQ;
+    pmiMode = simParameters.CSIReportConfig.PMIModeOverride;
+    
+    timestampend = datestr(now, 'yyyy-mm-dd_HHMM');
+    filename = sprintf( ...
+    '%s__%s_%s_%dx%d_L%d_%dHz_HARQ-%d_PMI-%s_ver%s.mat', ...
+    timestampstart, timestampend, ...
+    simParameters.DelayProfile, ...
+    simParameters.NTxAnts, simParameters.NRxAnts, ...
+    simParameters.PDSCH.NumLayers, ...
+    simParameters.MaximumDopplerShift, ...
+    harqFlag, pmiMode, Version);
 
-harqFlag = simParameters.PDSCHExtension.EnableHARQ;
-pmiMode = simParameters.CSIReportConfig.PMIModeOverride;
-
-timestampend = datestr(now, 'yymmdd_HHMM');
-filename = sprintf('simResult_%s_%s_%s_%dTx_%dRx_%dLayer_%dHz_HARQ_%d_%s.mat', ...
-    timestampstart,timestampend,simParameters.DelayProfile, simParameters.NTxAnts,...
-    simParameters.NRxAnts, simParameters.PDSCH.NumLayers, simParameters.MaximumDopplerShift,...
-    harqFlag, pmiMode);
-fullPath = fullfile(resultsFolder, filename);
-
-if ~exist(resultsFolder, 'dir')
-    mkdir(resultsFolder);
-end
-
-save(fullPath, 'simResults', '-v7.3');
-
+    fullPath = fullfile(resultsFolder, filename);
+    
+    if ~exist(resultsFolder, 'dir')
+        mkdir(resultsFolder);
+    end
+    disp("File Saved successfully")
+    save(fullPath, 'simResults', '-v7.3');
+end   
+    
 disp("end of the simulation");
 %exit
 function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParameters)
