@@ -1,23 +1,23 @@
-% V1 25.11.24 (Single CW)
+% V2 25.11.25 (Single CW)
 close all force
 clearvars
 clc
-Version="1";
+Version="2";
 simParameters = struct();  
 %set(0, 'DefaultFigureVisible', 'off'); % use this line of code if want to use no GUI simulation (ts-access)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Parameters:
 PMI_Setting = "Random"; % (Random, Best, Off) %TODO
 HARQ_Setting = true; % (ture, false)
-Channel_Model = 'CDL-C'; %% 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E' %TODO
+Channel_Model = 'TDL-C'; %% 'CDL-A',...,'CDL-E', custom, 'TDL-A',...,'TDL-E', custom
 Target_Code_Rate= 490/1024;
 Modulation = "16QAM";
 Max_Doppler_Shift=10;
 %Antennas need to be configured inside
 
 %Simulation Settings
-SNR=-5:6:35; % Range or Single Value
-NFrames= 1; 
+SNR=45; % Range or Single Value
+NFrames= 50; 
 Save_to_File=true; %true,false 
 PerfectChannelEstimator=false; %true,false
 DisplaySimulationInformation=false; %true,false
@@ -25,8 +25,7 @@ DisplaySimulationInformation=false; %true,false
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO
 %1. Fix HARQ block size mismatch issue
-%2. TDL channel support
-%3. Layer Change issue
+%2. Layer Change issue
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pool = gcp('nocreate');    % get current pool (or empty if none)
@@ -677,7 +676,9 @@ function channel = createChannel(simParameters)
     channel.DelayProfile = simParameters.DelayProfile;
     channel.DelaySpread = simParameters.DelaySpread;
     channel.MaximumDopplerShift = simParameters.MaximumDopplerShift;
-    channel.CarrierFrequency=3.5e9;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if contains(simParameters.DelayProfile, "CDL") 
+        channel.CarrierFrequency=3.5e9;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    end
     % Get information about the baseband waveform after OFDM modulation step
     waveInfo = nrOFDMInfo(simParameters.Carrier);
 
