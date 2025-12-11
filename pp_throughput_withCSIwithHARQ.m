@@ -1,31 +1,45 @@
-% V2 25.11.25 (Single CW)
+% V3 10.12.25 (Single CW, 4 layers)
 close all force
 clearvars
 clc
-Version="2";
+Version="3";
 simParameters = struct();  
 %set(0, 'DefaultFigureVisible', 'off'); % use this line of code if want to use no GUI simulation (ts-access)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Parameters:
-PMI_Setting = "Random"; % (Random, Best, Off) %TODO
-HARQ_Setting = true; % (ture, false)
+%CSI-related parameters:
+PO=[10 0];  % Peridocity and offset of the CSI report in slots
+CQIMode = 'Subband'; % 'Wideband','Subband'
+PMIMode = 'Subband'; % 'Wideband','Subband'
+CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
+    %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
+    %for 8 Tx case.
+    %'Type2' max. rank is 2
+SubbandSize = 16; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
+CodebookMode = 2; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
+RIRestriction=[0 0 0 1 0 0 0 0]; % must be length 8, [] means no restriction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Simulation Parameters:
+PMI_Setting = "random"; % (random, best, fixed) %off mode TODO
+HARQ_Setting = false; % (ture, false)
 Channel_Model = 'TDL-C'; %% 'CDL-A',...,'CDL-E', custom, 'TDL-A',...,'TDL-E', custom
 Target_Code_Rate= 490/1024;
 Modulation = "16QAM";
-Max_Doppler_Shift=10;
-%Antennas need to be configured inside
+Max_Doppler_Shift=10; 
 
 %Simulation Settings
-SNR=45; % Range or Single Value
+SNR=-5:1:30; % Range or Single Value
 NFrames= 50; 
-Save_to_File=true; %true,false 
+Save_to_File=false; %true,false 
 PerfectChannelEstimator=false; %true,false
 DisplaySimulationInformation=false; %true,false
-
+MaxThroughputDefinition = "a"; %TODO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO
 %1. Fix HARQ block size mismatch issue
 %2. Layer Change issue
+%3. Output ABS optimal throughput as the base (make this as an option)
+%4. systemetic csi configuration change
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pool = gcp('nocreate');    % get current pool (or empty if none)
@@ -142,7 +156,7 @@ validateCSIRSConfig(simParameters.Carrier,simParameters.CSIRS,simParameters.NTxA
 simParameters.CSIReportMode = 'RI-PMI-CQI'; % 'RI-PMI-CQI','AI CSI compression','Perfect CSI'
 
 simParameters.CSIReportConfig = struct();
-simParameters.CSIReportConfig.Period = [5 0];  % Peridocity and offset of the CSI report in slots
+simParameters.CSIReportConfig.Period = PO;  % Peridocity and offset of the CSI report in slots
 
 if simParameters.CSIReportMode == "RI-PMI-CQI"  
     
@@ -150,19 +164,21 @@ if simParameters.CSIReportMode == "RI-PMI-CQI"
     riRestrict(simParameters.PDSCH.NumLayers) = 1;
 
     simParameters.CSIReportConfig.CQITable          = "Table3"; % 'Table1','Table2','Table3'
-    simParameters.CSIReportConfig.CQIMode           = 'Wideband'; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.PMIMode           = 'Wideband'; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.CodebookType      = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2'
-    simParameters.CSIReportConfig.SubbandSize       = 8; % Subband size in RB (4,8,16,32)
-    simParameters.CSIReportConfig.CodebookMode      = 1; % 1,2
-    simParameters.CSIReportConfig.RIRestriction     = [];                   % Empty for no rank restriction
-    simParameters.CSIReportConfig.NumberOfBeams     = 2; % 2,3,4. Only for Type II codebooks
-    simParameters.CSIReportConfig.PhaseAlphabetSize = 8; % 4,8. Only for Type II codebooks
+    simParameters.CSIReportConfig.CQIMode           = CQIMode; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.PMIMode           = PMIMode; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.CodebookType      = CodebookType; % 'Type1SinglePanel','Type1MultiPanel','Type2'
+    simParameters.CSIReportConfig.SubbandSize       = SubbandSize; % Subband size in RB (4,8,16,32)
+    simParameters.CSIReportConfig.CodebookMode      = CodebookMode ; % 1,2
+    simParameters.CSIReportConfig.RIRestriction     = RIRestriction;                   % Empty for no rank restriction
     simParameters.CSIReportConfig.SubbandAmplitude  = true;                  % true/false. Only for Type II codebooks
     simParameters.CSIReportConfig.NStartBWP         = [];                   % Empty to signal the entire carrier
     simParameters.CSIReportConfig.NSizeBWP          = [];                   % Empty to signal the entire carrier
-    
-    simParameters.CSIReportConfig.PMIModeOverride = 'best';  % 'best','random','fixed'
+    simParameters.CSIReportConfig.NumberOfBeams = 2;                    % Applicable only when CodebookType is 'Type2' 2,3,4.
+    simParameters.CSIReportConfig.SubbandAmplitude = false;             % Applicable only when CodebookType is 'Type2'
+    simParameters.CSIReportConfig.PhaseAlphabetSize = 4;                % Applicable only when CodebookType is 'Type2' 4,8
+    simParameters.CSIReportConfig.ParameterCombination = 2;             % Applicable only when CodebookType is 'eType2'
+    simParameters.CSIReportConfig.NumberOfPMISubbandsPerCQISubband = 2; % Applicable only when CodebookType is 'eType2'
+    simParameters.CSIReportConfig.PMIModeOverride = PMI_Setting;  % 'best','random','fixed'
     simParameters.CSIReportConfig.FixedPMI       = 3;       % zero‐based PMI if you choose 'fixed'
 
     % Configure the CSI report with the antenna panel dimensions specified
