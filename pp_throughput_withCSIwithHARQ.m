@@ -8,38 +8,42 @@ simParameters = struct();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %CSI-related parameters:
-PO=[10 0];  % Peridocity and offset of the CSI report in slots
-CQIMode = 'Subband'; % 'Wideband','Subband'
-PMIMode = 'Subband'; % 'Wideband','Subband'
+PO=[10 1];  % Peridocity and offset of the CSI report in slots
+CQIMode = 'Wideband'; % 'Wideband','Subband'
+PMIMode = 'Wideband'; % 'Wideband','Subband'
 CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
     %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
     %for 8 Tx case.
     %'Type2' max. rank is 2
-SubbandSize = 16; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
-CodebookMode = 2; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
+SubbandSize = 8; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
+CodebookMode = 1; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
 RIRestriction=[0 0 0 1 0 0 0 0]; % must be length 8, [] means no restriction
+%RIRestriction=[];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Simulation Parameters:
 PMI_Setting = "random"; % (random, best, fixed) %off mode TODO
-HARQ_Setting = false; % (ture, false)
-Channel_Model = 'TDL-C'; %% 'CDL-A',...,'CDL-E', custom, 'TDL-A',...,'TDL-E', custom
+HARQ_Setting = true; % (ture, false)
+Channel_Model = 'CDL-C'; %% 'CDL-A',...,'CDL-E', custom, 'TDL-A',...,'TDL-E', custom
 Target_Code_Rate= 490/1024;
 Modulation = "16QAM";
 Max_Doppler_Shift=10; 
 
 %Simulation Settings
-SNR=-5:1:30; % Range or Single Value
-NFrames= 50; 
+SNR=21:1:23; % Range or Single Value
+NFrames= 500; 
 Save_to_File=false; %true,false 
 PerfectChannelEstimator=false; %true,false
 DisplaySimulationInformation=false; %true,false
-MaxThroughputDefinition = "a"; %TODO
+MaxThroughputDefinition = "relative layer"; %'absolute layer' (fixed to max layer), 'relative layer'(vary based on the current selection), TODO
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO
-%1. Fix HARQ block size mismatch issue
-%2. Layer Change issue
-%3. Output ABS optimal throughput as the base (make this as an option)
-%4. systemetic csi configuration change
+%1. Fix HARQ block size mismatch issue -> no layer change during
+%retransmission
+%2. Output ABS optimal throughput as the base (make this as an option)
+%3. systemetic csi configuration change
+%4. check 1Y vs. 3
+%5. Add additional labelling to the simulation, also update the python file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pool = gcp('nocreate');    % get current pool (or empty if none)
@@ -48,7 +52,7 @@ if isempty(pool)
     maxWorkers = feature('numcores');  % 或者 parcluster('local').NumWorkers
     
     % 你希望的 worker 数
-    numWorkers = max(1, maxWorkers - 2);
+    numWorkers = max(1, maxWorkers - 3);
 
     % 打开自己的 pool
     pool = parpool('local', numWorkers);
@@ -114,13 +118,13 @@ simParameters.PDSCHExtension.TargetCodeRate = Target_Code_Rate;
 simParameters.PDSCHExtension.LDPCDecodingAlgorithm = "Layered belief propagation";
 simParameters.PDSCHExtension.MaximumLDPCIterationCount = 6;
 
-simParameters.TransmitAntennaArray = struct('Size',[8 2 2 8 1], ... % [8 2 2 8 1] for 4Tx, [8 4 2 8 1] for 8Tx
+simParameters.TransmitAntennaArray = struct('Size',[8 2 2 8 1], ... % [8 2 2 8 1] for 4Tx, [8 4 2 8 1] for 8Tx AAV(8,1) config.1; [1 2 2 1 1], [1 4 2 1 1] for config.2 
         'ElementSpacing',[0.5 0.5 4 1], ...
         'PolarizationAngles', [-45 45], ...
         'Orientation', [0; 13.1; 0], ...
         'Element', '38.901', ...
         'PolarizationModel', 'Model-2'); 
-simParameters.ReceiveAntennaArray = struct('Size',[2 1 2 1 1], ... % [2 1 2 1 1] for 4Rx, [2 2 2 1 1] for 8Rx
+simParameters.ReceiveAntennaArray = struct('Size',[2 1 2 1 1], ... % [2 1 2 1 1] for 4Rx, [1 4 2 1 1] for 8Rx for both configurations
         'ElementSpacing',[0.5 0.5 1 1], ...
         'PolarizationAngles', [-45 45], ...
         'Orientation', [180; 13.1; 0], ...
@@ -220,6 +224,8 @@ errorBlocksPar = zeros(numel(simParameters.SNRIn),1);
 totalBlocksPar = zeros(numel(simParameters.SNRIn),1);
 simThroughputPar = zeros(numel(simParameters.SNRIn),1);
 maxThroughputPar = zeros(numel(simParameters.SNRIn),1);
+slotDuration = 1e-3 / (simParameters.Carrier.SubcarrierSpacing / 15); % seconds per slot, 30kHz scs in this case
+totalTimePar   = zeros(size(simThroughputPar));
 CSIReportPar = cell(numel(simParameters.SNRIn),1);
 blerPar = zeros(numel(simParameters.SNRIn),1);
 
@@ -230,7 +236,7 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
 % statement and uncomment the 'parfor' statement.
     
     % Reset the random number generator for repeatability
-    rng(snrIdx + 1000, "twister")
+    %rng(snrIdx + 1000, "twister")
 
     % Display simulation information at this SNR point
     displaySNRPointProgress(simParameters,snrIdx);
@@ -260,9 +266,9 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         switch lower(mode)
           case 'best'
             % do nothing, keep the UE‐chosen W in csiReports.W
-            [~,info] = hDLPMISelect(carrier, csirs, simParamLocal.CSIReportConfig, ...
-                           nLayers, Hest);
-            csiReports.W   = info.W;
+            %[~,info] = hDLPMISelect(carrier, csirs, simParamLocal.CSIReportConfig, ...
+                           %nLayers, Hest);
+            %csiReports.W   = info.W;
 
           case 'random'
             % replace with truly random PMI
@@ -325,7 +331,10 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % Calculate the transport block sizes for the transmission in the slot
         [pdschIndices,pdschIndicesInfo] = nrPDSCHIndices(carrier,pdsch);
         trBlkSizes = nrTBS(pdsch.Modulation,pdsch.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
-        TBSref = nrTBS(pdsch.Modulation,simParameters.PDSCH.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
+
+        if MaxThroughputDefinition=="absolute layer"
+            TBSref = nrTBS(pdsch.Modulation,simParameters.PDSCH.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
+        end
 
         % ─── HARQ-controlled TB generation & encoding ───
         for cwIdx = 1:pdsch.NumCodewords
@@ -369,9 +378,18 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         txWaveform = [txWaveform; zeros(maxChDelay,size(txWaveform,2))]; %#ok<AGROW>
         [rxWaveform,pathGains,sampleTimes] = channel(txWaveform);
         
+        tx = rxWaveform;
+
         % Add AWGN to the received time-domain waveform
         noise = N0*complex(randn(size(rxWaveform)),randn(size(rxWaveform)));
         rxWaveform = rxWaveform + noise;
+        
+        Ps = mean(abs(tx).^2);     % 信号功率
+        Pn = mean(abs(noise).^2);  % 噪声功率
+        SNR_meas = Ps / Pn;
+        SNRdB_meas = 10*log10(SNR_meas);
+
+
         %waveInfo = nrOFDMInfo(simParameters.Carrier);
         %Nfft = double(waveInfo.Nfft); %%%%%%
         %Ncp  = mean(waveInfo.CyclicPrefixLengths);
@@ -480,8 +498,19 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         totalBlocksPar(snrIdx) = totalBlocksPar(snrIdx) + 1;
 
         % Store values to calculate throughput
-        simThroughputPar(snrIdx) = simThroughputPar(snrIdx) + sum(~blkerr .* TBSref);
-        maxThroughputPar(snrIdx) = maxThroughputPar(snrIdx) + sum(TBSref);
+        simThroughputPar(snrIdx) = simThroughputPar(snrIdx) + sum(~blkerr .* trBlkSizes);
+
+        if MaxThroughputDefinition=="absolute layer"
+            maxThroughputPar(snrIdx) = maxThroughputPar(snrIdx) + sum(TBSref);
+        else
+            maxThroughputPar(snrIdx) = maxThroughputPar(snrIdx) + sum(trBlkSizes);
+
+        end
+   
+        
+        
+        totalTimePar(snrIdx) = totalTimePar(snrIdx) + slotDuration;
+        
 
         % CSI measurements and encoding 
         if csirsTransmission
@@ -530,10 +559,12 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     fprintf('Throughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughputPar(snrIdx)/(simParamLocal.NFrames*10e-3));
     fprintf('Throughput(%%) for %d frame(s) = %.4f\n',simParamLocal.NFrames,simThroughputPar(snrIdx)*100/maxThroughputPar(snrIdx));
     fprintf('BLER for %d frame(s) = %.4f\n', simParameters.NFrames, blerPar(snrIdx));
+    fprintf('Transmission Rate (Mbps) = %.4f\n', simThroughputPar(snrIdx)./totalTimePar(snrIdx)/1e6)
    
 
 end
 
+goodputMbpsPar = simThroughputPar ./ totalTimePar / 1e6; %1e-6 to Mbps unit
 bler = blerPar;
 maxThroughput = maxThroughputPar;
 simThroughput = simThroughputPar;
@@ -542,8 +573,15 @@ CSIReport = CSIReportPar;
 %%%%%%%%%%%%%%
 figure;
 plot(simParameters.SNRIn,simThroughput*100./maxThroughput,'o-.')
-
 xlabel('SNR (dB)'); ylabel('Throughput (%)'); grid on;
+
+figure;
+plot(simParameters.SNRIn, goodputMbpsPar, '-s', 'LineWidth', 1.5);
+xlabel('SNR (dB)');
+ylabel('Goodput (Mbps)');
+grid on;
+
+
 title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
@@ -559,7 +597,7 @@ simResults.simParameters = simParameters;
 simResults.simThroughput = simThroughput;
 simResults.maxThroughput = maxThroughput;
 simResults.bler         = bler;
-
+simResults.goodput=goodputMbpsPar;
 if Save_to_File
     resultsFolder = './results/';
     
@@ -722,12 +760,12 @@ function [channel,maxChannelDelay,N0] = setupChannel(simParameters,snrIdx)
     SNR = 10^(SNRdB/10);
     waveInfo = nrOFDMInfo(simParameters.Carrier);
      
-    Nfft = double(waveInfo.Nfft);
-    Ncp  = mean(waveInfo.CyclicPrefixLengths);
+    %Nfft = double(waveInfo.Nfft);
+    %Ncp  = mean(waveInfo.CyclicPrefixLengths);
 
     % CP energy correction
-    cpCorrection = Nfft / (Nfft + Ncp);
-    N0 = sqrt(cpCorrection) / sqrt(Nfft * SNR);
+    %cpCorrection = Nfft / (Nfft + Ncp);
+   %N0 = sqrt(cpCorrection) / sqrt(Nfft * SNR);
 
     %N0=N0/sqrt(simParameters.PDSCH.NumLayers);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Also normalize by the number of receive antennas if the channel
@@ -735,7 +773,15 @@ function [channel,maxChannelDelay,N0] = setupChannel(simParameters,snrIdx)
     %if channel.NormalizeChannelOutputs
         %N0 = N0/sqrt(chInfo.NumOutputSignals);
     %end
-    N0 = N0 / sqrt(2);%%%%%%%
+   % N0 = N0 / sqrt(2);%%%%%%%
+    
+    Nfft = double(waveInfo.Nfft);
+    N0 = 1 / sqrt(2 * Nfft * SNR);
+    
+    if channel.NormalizeChannelOutputs
+       N0 = N0/sqrt(chInfo.NumOutputSignals/2); %%%%%%%%%%%%%%%%%%%%% change according to the number of receiving antennas
+    end
+
 end
 
 function [csiReport, Hest] = initialCSIReport(simParameters,snrIdx,carrier,csirs,channel,csiFeedbackOpts)
