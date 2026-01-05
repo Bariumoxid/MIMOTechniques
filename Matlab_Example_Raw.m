@@ -1,12 +1,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%V1
+%Version 1
+
+%Can either flex layer + modulation + TCR or flex modulation + TCR
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Frames = 50;
+Range = -5:3:40;
+
+RIRestriction = [1 1 1 1 0 0 0 0];
+PO=[4 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
+CQIMode = 'Subband'; % 'Wideband','Subband'
+PMIMode = 'Subband'; % 'Wideband','Subband'
+CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
+    %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
+    %for 8 Tx case.
+    %'Type2' max. rank is 2
+SubbandSize = 8; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
+CodebookMode = 1; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 simParameters = struct();       % Clear simParameters variable to contain all key simulation parameters 
-simParameters.NFrames = 4;      % Number of 10 ms frames
-simParameters.SNRIn = -5:2:35; % SNR range (dB)
+simParameters.NFrames = Frames;      % Number of 10 ms frames
+simParameters.SNRIn = Range; % SNR range (dB)
 
 simParameters.PerfectChannelEstimator = false;
 simParameters.DisplaySimulationInformation = false;
@@ -60,7 +76,7 @@ simParameters.CSIRS = nrCSIRSConfig;
 simParameters.CSIRS.CSIRSType = 'nzp'; % 'nzp','zp'
 simParameters.CSIRS.RowNumber = 4; % 1...18
 simParameters.CSIRS.NumRB = simParameters.Carrier.NSizeGrid - simParameters.CSIRS.RBOffset;
-simParameters.CSIRS.CSIRSPeriod = [80 0];
+simParameters.CSIRS.CSIRSPeriod = PO;
 simParameters.CSIRS.SymbolLocations = 4;
 simParameters.CSIRS.SubcarrierLocations = 0;
 simParameters.CSIRS.Density = 'one';
@@ -76,17 +92,17 @@ validateCSIRSConfig(simParameters.Carrier,simParameters.CSIRS,simParameters.NTxA
 simParameters.CSIReportMode = 'RI-PMI-CQI'; % 'RI-PMI-CQI','AI CSI compression','Perfect CSI'
 
 simParameters.CSIReportConfig = struct();
-simParameters.CSIReportConfig.Period = [80 0];  % Peridocity and offset of the CSI report in slots
+simParameters.CSIReportConfig.Period = PO;  % Peridocity and offset of the CSI report in slots
 
 if simParameters.CSIReportMode == "RI-PMI-CQI"  
     
     simParameters.CSIReportConfig.CQITable          = "Table1"; % 'Table1','Table2','Table3'
-    simParameters.CSIReportConfig.CQIMode           = 'Wideband'; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.PMIMode           = 'Wideband'; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.CodebookType      = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2','eType2'
-    simParameters.CSIReportConfig.SubbandSize       = 4; % Subband size in RB (4,8,16,32)
-    simParameters.CSIReportConfig.CodebookMode      = 1; % 1,2
-    simParameters.CSIReportConfig.RIRestriction     = [0 0 0 1 0 0 0 0];                   % Empty for no rank restriction
+    simParameters.CSIReportConfig.CQIMode           = CQIMode; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.PMIMode           = CQIMode; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.CodebookType      = CodebookType; % 'Type1SinglePanel','Type1MultiPanel','Type2','eType2'
+    simParameters.CSIReportConfig.SubbandSize       = SubbandSize; % Subband size in RB (4,8,16,32)
+    simParameters.CSIReportConfig.CodebookMode      = CodebookMode; % 1,2
+    simParameters.CSIReportConfig.RIRestriction     = RIRestriction;                   % Empty for no rank restriction
     simParameters.CSIReportConfig.NumberOfBeams     = 2; % 2,3,4. Only for Type II codebooks
     simParameters.CSIReportConfig.PhaseAlphabetSize = 8; % 4,8. Only for Type II codebooks  
     simParameters.CSIReportConfig.SubbandAmplitude  = true;                  % true/false. Only for Type II codebooks
@@ -113,7 +129,7 @@ simParameters.BSProcessingDelay = 1;
 
 simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
 simParameters.DelaySpread = 300e-9;     % s
-simParameters.MaximumDopplerShift = 10;  % Hz
+simParameters.MaximumDopplerShift = 300;  % Hz
 
 simParameters.Channel = createChannel(simParameters);
 
@@ -121,6 +137,11 @@ simParameters.Channel = createChannel(simParameters);
 maxThroughput = zeros(length(simParameters.SNRIn),1); 
 % Array to store the simulation throughput for all SNR points
 simThroughput = zeros(length(simParameters.SNRIn),1);
+log_snr  = cell(numel(simParameters.SNRIn),1);
+log_slot = cell(numel(simParameters.SNRIn),1);
+log_layer = cell(numel(simParameters.SNRIn),1);
+log_mod   = cell(numel(simParameters.SNRIn),1);
+log_tcr  = cell(numel(simParameters.SNRIn),1);
 
 % Cell array to store CSI reports per SNR point
 CSIReport = {};
@@ -130,7 +151,11 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
 % To reduce the total simulation time, you can execute this loop in
 % parallel by using the Parallel Computing Toolbox. Comment out the 'for'
 % statement and uncomment the 'parfor' statement.
-    
+    lsnr   = [];
+    lslot  = [];
+    llayer = [];
+    lmod   = {};
+    ltcr   = [];
     % Reset the random number generator for repeatability
     rng(0,"twister");
 
@@ -167,6 +192,11 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             pdsch.NumLayers = size(wtx,1);
             encodeDLSCH.TargetCodeRate = pdschextra.TargetCodeRate;
         end
+        lsnr(end+1)   = simParameters.SNRIn(snrIdx);
+        lslot(end+1)  = nslot;
+        lmod{end+1} = char(pdsch.Modulation);
+        llayer(end+1) = double(pdsch.NumLayers);
+        ltcr(end+1)   = pdschextra.TargetCodeRate;
 
         % Create an OFDM resource grid for a slot
         dlGrid = nrResourceGrid(carrier,csirs.NumCSIRSPorts);
@@ -311,7 +341,11 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         simThroughput(snrIdx) = simThroughput(snrIdx) + sum(~blkerr .* trBlkSizes);
         maxThroughput(snrIdx) = maxThroughput(snrIdx) + sum(trBlkSizes);
 
-
+        log_snr{snrIdx}   = lsnr;
+        log_slot{snrIdx}  = lslot;
+        log_layer{snrIdx} = llayer;
+        log_mod{snrIdx}   = lmod;
+        log_tcr{snrIdx}   = ltcr;
         %fprintf("  trBlkSizes: [%d %d]\n", trBlkSizes(1), trBlkSizes(2));
         %fprintf("  blkerr:     [%d %d]\n", blkerr(1), blkerr(2));
         %fprintf("  Mod:        {'%s','%s'}\n", pdsch.Modulation{1}, pdsch.Modulation{2});
@@ -358,26 +392,116 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     fprintf('\nThroughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughput(snrIdx)/(simParamLocal.NFrames*10e-3));
 
 end
-figure;
+
+snrVals = simParameters.SNRIn;
+nSNR = numel(snrVals);
+
+mods = {'QPSK','16QAM','64QAM','256QAM'};
+nMod = numel(mods);
+
+modFrac = zeros(nSNR, nMod);  % 每行一个 SNR
+
+for i = 1:nSNR
+    m = log_mod{i};      % cell array of char
+    N = numel(m);
+    for k = 1:nMod
+        modFrac(i,k) = sum(strcmp(m, mods{k})) / N;
+    end
+end
+
+tcrFrac = zeros(nSNR,3); % low / mid / high
+
+for i = 1:nSNR
+    tcr = log_tcr{i};
+    N = numel(tcr);
+
+    tcrFrac(i,1) = sum(tcr < 0.4) / N;
+    tcrFrac(i,2) = sum(tcr >= 0.4 & tcr < 0.6) / N;
+    tcrFrac(i,3) = sum(tcr >= 0.6) / N;
+end
+
+figure('Name','Throughput % vs SNR', 'NumberTitle','off');
 plot(simParameters.SNRIn, 100* simThroughput./maxThroughput, '-s', 'LineWidth', 1.5);
 xlabel('SNR (dB)');
 ylabel('Throughput (%)');
 grid on;
-
-
 title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
 
-figure;
+figure('Name','MBps vs SNR', 'NumberTitle','off');
 plot(simParameters.SNRIn,1e-6*simThroughput/(simParameters.NFrames*10e-3),'o-.')
-
 xlabel('SNR (dB)'); ylabel('Throughput (Mbps)'); grid on;
 title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
+
+figure('Name','Modulation selection vs SNR', 'NumberTitle','off');
+bar(snrVals, modFrac, 'stacked');
+xlabel('SNR (dB)');
+ylabel('Probability');
+legend(mods, 'Location','northwest');
+title('Modulation distribution per SNR');
+
+figure('Name','Target code rate distribution vs SNR', 'NumberTitle','off');
+bar(snrVals, tcrFrac, 'stacked');
+xlabel('SNR (dB)');
+ylabel('Probability');
+legend({'Low TCR','Mid TCR','High TCR'}, 'Location','northwest');
+title('Target code rate distribution per SNR');
+
+figure('Name','Layer selection behaviour vs SNR', ...
+       'NumberTitle','off');
+hold on;
+
+snrVals = simParameters.SNRIn;
+nSNR = numel(snrVals);
+
+meanLayer = zeros(nSNR,1);
+
+baseColor = [0.1 0.3 0.6];   % 单一颜色（深蓝，论文友好）
+
+for i = 1:nSNR
+    L = log_layer{i};
+
+    % mean layer
+    meanLayer(i) = mean(L);
+
+    % unique layers at this SNR
+    layers = unique(L);
+
+    for k = 1:numel(layers)
+        lv = layers(k);
+        p  = mean(L == lv);   % probability
+
+        % bubble size (area scaling)
+        bubbleSize = 900 * p + 20;  % 可微调 900 / 20
+
+        scatter(snrVals(i), lv, bubbleSize, ...
+            'MarkerFaceColor', baseColor, ...
+            'MarkerEdgeColor', 'none', ...
+            'MarkerFaceAlpha', 0.5);
+    end
+end
+
+% mean curve
+plot(snrVals, meanLayer, '-k', ...
+    'LineWidth', 2);
+
+xlabel('SNR (dB)');
+ylabel('Number of layers');
+title('Layer selection behaviour (bubble size = probability)');
+grid on;
+
+% 强制 y 轴整数
+yticks(1:max(cellfun(@max,log_layer)));
+
+legend({'Layer selection probability','Mean number of layers'}, ...
+       'Location','northwest');
+
+
 
 %%%
 %if simParameters.CSIReportMode == "RI-PMI-CQI"
@@ -390,6 +514,16 @@ simResults.simParameters = simParameters;
 simResults.simThroughput = simThroughput;
 simResults.maxThroughput = maxThroughput;
 simResults.CSIReport = CSIReport;
+simResults.log_tcr=log_tcr;
+simResults.log_layer=log_layer;
+simResults.log_slot=log_slot;
+simResults.log_mod=log_mod;
+
+%flattended version
+simResults.log_tcr_f=vertcat(log_tcr{:});
+simResults.log_layer_f=vertcat(log_layer{:});
+simResults.log_slot_f=vertcat(log_slot{:});
+simResults.log_mod_f=vertcat(log_mod{:});
 
 function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParameters)
 % Extract channel and signal-level parameters, create DL-SCH encoder, and
