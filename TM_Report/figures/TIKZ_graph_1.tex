@@ -84,6 +84,16 @@
 	
 	\draw[arrow] (dmrs) -- (pdschdec);
 	\draw[arrow] (pdschdec) -- (dlschdec);
+
+	
+	\node (harq) [block, below=2.5cm of channel] {HARQ\\decision};
+	
+		
+	\draw[arrow]
+	(dlschdec.south) |- 
+	node[pos=0.75, below]{ACK / NACK}
+	(harq.east);
+	\draw[arrow] (harq.west) -| node[pos=0.25, below]{retransmission} (dlsch.south);
 	
 	% CSI feedback
 % === CSI encoding / decoding ===

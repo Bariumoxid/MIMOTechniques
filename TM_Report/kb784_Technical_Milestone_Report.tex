@@ -19,6 +19,20 @@
 \usepackage{subcaption}
 \usepackage{titling}
 \bibliographystyle{IEEEtran}
+\usepackage{hyperref}
+\hypersetup{
+	hidelinks,
+	breaklinks=true
+}
+
+% Reduce space around figures and tables
+\setlength{\textfloatsep}{10pt}   % space between floats and text
+\setlength{\floatsep}{8pt}        % space between floats
+\setlength{\intextsep}{8pt}       % space for in-text floats
+
+% Reduce space between caption and figure/table
+\usepackage{caption}
+\captionsetup{skip=4pt}
 
 %%% Listings style
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -56,7 +70,7 @@
 	\maketitle
 	\vspace{-35pt}
 	\begin{abstract}
-	This report summarises the current progress of a 5G New Radio (NR) downlink simulation project with a focus on channel state information (CSI) feedback. The downlink transmission framework is first reviewed to establish the technical background. Based on the simulation framework developed using MATLAB, preliminary downlink throughput results are presented and compared against 3GPP reference results, including an evaluation of system performance with hybrid automatic repeat request (HARQ) enabled and disabled. Finally, the report outlines the planned next steps of the project and discusses potential risks and challenges in the future.
+	This report summarises the current progress of a 5G New Radio (NR) downlink simulation project with a focus on channel state information (CSI) feedback. The downlink transmission framework is first reviewed to establish the technical background. Based on the simulation framework developed using MATLAB, preliminary downlink throughput results are presented and compared against 3GPP reference results. Finally, the report outlines the planned next steps of the project and discusses potential risks and challenges in the future.
 
 
 
@@ -67,11 +81,11 @@
 	
 \section{Introduction}
 
-Mobile telecommunications have experienced rapid development over the past two decades. Starting from the deployment of third-generation (3G) systems in the early 2000s, followed by the introduction of fourth-generation Long-Term Evolution (4G LTE) in the early 2010s, each generation has delivered substantial improvements in data rate and user experience. For end users, the most noticeable change has been the transition from limited and slow web browsing to smooth video streaming and real-time online services. /// These improvements were enabled by key physical-layer innovations in 4G, including orthogonal frequency division multiple access (OFDMA), advanced channel coding schemes, and the use of multiple antennas.///
+Mobile telecommunications have experienced rapid development over the past two decades. Starting from the deployment of third-generation (3G) systems in the early 2000s, followed by the introduction of fourth-generation long-term evolution (4G LTE) in the early 2010s, each generation has delivered substantial improvements in data rate and user experience. For end users, the most noticeable change has been the transition from limited and slow web browsing to smooth video streaming and real-time online services. These improvements were enabled by key physical-layer innovations, including the use of orthogonal frequency division multiple access (OFDMA) in 4G LTE, replacing the code division multiple access (CDMA) used in earlier systems, as well as the introduction of more advanced multi-antenna techniques \cite{Manikas}.
 
-Building upon the capabilities of 4G, the fifth-generation mobile communication system (5G) has been designed to further increase data rates, reduce latency, and support a wide range of services. Three main usage scenarios are defined for 5G: enhanced mobile broadband (eMBB), massive machine-type communications (mMTC), and ultra-reliable and low-latency communications (URLLC) \cite{EricssonBook}./// Together, these scenarios impose diverse requirements on 5G, ranging from extremely high data rates to massive device connectivity, as well as stringent latency and reliability constraints. To meet these requirements, multiple-input multiple-output (MIMO) techniques play a central role by exploiting spatial degrees of freedom to improve spectral efficiency and link reliability. In particular, large-scale MIMO systems enable significant throughput gains through spatial multiplexing and beamforming.///
+Building upon the capabilities of 4G, the fifth-generation mobile communication system (5G) has been designed to further increase data rates, reduce latency, and support a wide range of services. Three main usage scenarios are defined for 5G: enhanced mobile broadband (eMBB), massive machine-type communications (mMTC), and ultra-reliable and low-latency communications (URLLC) \cite{EricssonBook}. Together, these scenarios impose diverse requirements on 5G, ranging from extremely high data rates to massive device connectivity, as well as stringent latency and reliability constraints. To meet these requirements, multiple-input multiple-output (MIMO) techniques play a central role. In particular, massive MIMO systems enable significant throughput gains through spatial multiplexing, null forming and beamforming \cite{Ericsson_MIMO}.
 
-The realization of these requirements relies on globally agreed technical specifications, which are defined by the Third Generation Partnership Project (3GPP), global standardisation body established in 1998 to develop specifications for mobile communication systems. Its scope has expanded from third-generation systems to include the standardisation and continuous evolution of 4G, 5G, and emerging technologies beyond 5G. ///Today, 3GPP defines the technical specifications that ensure interoperability and global consistency across mobile communication networks, including detailed physical-layer procedures for MIMO transmission and channel state information (CSI) feedback.///
+The realization of these requirements relies on globally agreed technical specifications, which are defined by the Third Generation Partnership Project (3GPP), a global standardisation body established in 1998 for the development of specifications for 3G. Its scope has expanded from third-generation of cellular networks to the standardisation and continuous evolution of 4G, 5G, and technologies beyond. The first release of 5G NR, Release~15, was published by 3GPP in 2019, marking the point at which 5G NR became ready for practical implementation. In the release, core technical specifications for 5G NR were defined. 3GPP is currently continuing its work on 5G-Advanced and early studies towards 6G \cite{3GPP}. 
 
 This research project aims to provide insights that can support future 3GPP standardisation discussions related to MIMO techniques in 5G and beyond. Simulations are conducted in MATLAB using a framework aligned with 3GPP specifications. This alignment includes the use of standardized channel models as well as baseline system parameters commonly adopted in 3GPP testings, such as carrier frequency and bandwidth. This report introduces the relevant background concepts, presents the adopted simulation methodology, and summarises the current progress and preliminary findings of the project.
 
@@ -86,31 +100,31 @@ This research project aims to provide insights that can support future 3GPP stan
 	
 	As illustrated in Figure~\ref{fig:csi_overview}, the downlink transmission relies on channel state information (CSI) obtained through reference signal measurements at the receiver. The user equipment (UE) estimates the downlink channel based on CSI reference signals (CSI-RS). Based on the estimated channel, the CSI is encoded into three main feedback components: the Channel Quality Indicator (CQI), Precoding Matrix Indicator (PMI), and Rank Indicator (RI).
 	
-	CQI is a 4-bit indicator with values ranging from 0 to 15, representing the reported downlink channel quality. It provides an indication of the modulation scheme and coding rate that can be supported under a given target block error rate ///???????///, and is used by the base station as an input for modulation and coding scheme (MCS) selection. PMI specifies the precoding matrix applied at the transmitter, while RI indicates the recommended number of transmission layers. ///???? More + Reference//// 
+	CQI is a 4-bit indicator with values ranging from 0 to 15, representing the reported downlink channel quality. It provides an indication of the highest modulation scheme and coding rate that can be supported under a predefined target block error rate (BLER). The precoding matrix indicator (PMI) specifies the precoding matrix applied at the transmitter, while the rank indicator (RI) indicates the recommended number of transmission layers \cite{Matlab_PDSCH_CSI}.
 
-	There are various parameters that would potentially affect the quality of the CSI receives. /////////////// As the CSI feedback is reported periodically, the accuracy of the transmitted CSI may degrade over time in time-varying channels, leading to outdated channel knowledge at the transmitter.
+	There are various parameters that affect the quality of the CSI. These include the CSI reporting periodicity, which controls how frequently the feedback is updated, as well as the reporting mode, which can be configured as wideband or subband. In addition, parameters such as the codebook type and mode, and the subband size further impact the granularity of the reported CSI. In time-varying channels, infrequent or coarse CSI reporting may lead to outdated channel knowledge at the transmitter, therefore degrading the performance of the transmission.
 	
-	The reported CSI is fed back to the transmitter and used to configure key downlink transmission parameters, including the modulation and coding scheme, the number of transmission layers, and the precoding matrix applied to the data. Using these updated parameters, the transmitter processes the data through the DL-SCH and maps it to the PDSCH, followed by precoding and CP-OFDM modulation before transmission over the wireless channel. At the receiver, the received signal is synchronised, demodulated, and decoded using demodulation reference signals (DM-RS) for coherent detection.
+	The reported CSI is fed back to the transmitter and used to configure key downlink transmission parameters, including the modulation scheme, target code rate, number of transmission layers, and the precoding matrix. Using these updated parameters, the transmitter processes the data through the DL-SCH and maps it to the PDSCH, followed by precoding and CP-OFDM modulation before transmission over the wireless channel. At the receiver, the received signal is synchronised, demodulated, and decoded using demodulation reference signals (DM-RS) for coherent detection.
 
 	
-	There are two widely used channel models in 5G NR link-level evaluations, namely the tapped delay line (TDL) model and the clustered delay line (CDL) model. Each model has several variants designed to represent different propagation environments such as urban, suburban, and rural scenarios. The TDL model provides a simplified representation of the multipath channel and is commonly used for baseline evaluations or scenarios where spatial characteristics and multi-antenna effects are not explicitly considered.
+	There are two widely used channel models in 5G NR link-level evaluations, namely the tapped delay line (TDL) model and the clustered delay line (CDL) model. Each model has several variants designed to represent different propagation environments such as urban, suburban, and rural scenarios. The TDL model provides a simplified representation of the multipath channel and is commonly used for baseline evaluations or scenarios where spatial characteristics and multi-antenna effects are not modelled.
 
 	In the TDL model, the channel is represented as a superposition of multiple discrete propagation paths (taps), each characterised by a specific delay $\tau_l$ and a path gain $h_l(t)$:
 	\begin{equation}
 		h(t, \tau)=\sum_{l=0}^{L-1}h_l(t)\delta(\tau-\tau_l).
 	\end{equation}
-	The TDL model does not explicitly model angular information or spatial correlation. In contrast, the CDL channel model provides a more detailed and realistic description by incorporating spatial features. The CDL model defines a set of multipath clusters, where each cluster is characterised by a fixed relative delay and average power, similar to the TDL model, but additionally includes angular parameters such as the azimuth and zenith angles of departure and arrival (AoD, AoA, ZoD, and ZoA). Each cluster is further decomposed into multiple sub-rays with random initial phases and Doppler components. These sub-rays are combined with the transmit and receive antenna array responses to generate a time-varying, spatially correlated MIMO channel ///check correctness //// \cite{ETSI_TDL_CDL}.
+	The TDL model does not represent angular or spatial features of the propagation channel. In contrast, the clustered delay line (CDL) model incorporates spatial information and therefore provides a more realistic channel description. Similar to the TDL model, the CDL model defines a set of multipath clusters characterised by relative delays and average powers. In addition, each cluster is associated with angular parameters, including the azimuth and zenith angles of departure and arrival (AoD, AoA, ZoD, and ZoA). Each cluster is further decomposed into multiple sub-rays with random initial phases and Doppler components. By modelling these spatial characteristics, the CDL channel model enables a more accurate representation of the spatial characteristics of MIMO channels, at the cost of increased complexity and higher computational cost \cite{ETSI_TDL_CDL}.
 	
-	In addition to CSI, 5G NR also employs hybrid automatic repeat request (HARQ) to improve the robustness of the transmission through re-transmissions. After DLSCH decoding at the receiver, an Acknowledge/Negative Acknowledge (ACK/NACK) is fed back to the transmitter, which indicates whether a re-transmission is required. In the case of a decoding failure, the transport block is re-transmitted using a different redundancy version (RV) and combined at the receiver, thus increasing the probability of successful decoding \cite{EricssonBook} \cite{MathWorks2026}. UPDATE FIG/////////////
+	In addition to CSI, 5G NR also employs hybrid automatic repeat request (HARQ) to improve the robustness of the transmission through re-transmissions. After DL-SCH decoding at the receiver, an acknowledge/negative acknowledge (ACK/NACK) signal is fed back to the transmitter, which indicates whether a re-transmission is required. In the case of a decoding failure, the transport block is re-transmitted using a different redundancy version (RV) and combined at the receiver, thus increasing the probability of successful decoding \cite{EricssonBook} \cite{MathWorks2026}.
 	
 	\section{Simulation Framework}
 
-	Table~\ref{tab:system_config} summarises the baseline system and channel configuration adopted in this study, which is aligned with the assumptions commonly used in 3GPP evaluation studies, including TR~38.753~\cite{3GPPSimulationSpec}. Low- and high-mobility scenarios are considered. The low-mobility case assumes a maximum Dippler shift of 10Hz, corresponding to a UE speed of 3 km/h, a common setting for 3GPP testings. For high-mobility cases, a speed of 120 km/h is used, corresponding to a maximum Doppler shift of approximately 390 Hz for a 3.5 GHz carrier frequency.
+	Table~\ref{tab:system_config} below summarises the baseline system and channel configuration adopted in this study, which is aligned with the assumptions commonly used in 3GPP evaluation studies, including TR~38.753~\cite{3GPPSimulationSpec}. Low- and high-mobility scenarios are considered. The low-mobility case assumes a maximum Dippler shift of 10~Hz, corresponding to a UE speed of 3 km/h, a common setting for 3GPP testing. For high-mobility cases, a speed of 120 km/h is used, corresponding to a maximum Doppler shift of approximately 390 Hz for a 3.5 GHz carrier frequency.
  
 	
 	\begin{table}[h]
 		\centering
-		\caption{System and channel configuration used in the simulations }
+		\caption{System and channel configuration used in the simulation}
 		\label{tab:system_config}
 		\begin{tabular}{ll}
 			\hline
@@ -128,10 +142,10 @@ This research project aims to provide insights that can support future 3GPP stan
 		\end{tabular}
 	\end{table}
 	
-	The CDL-C channel model is selected as it represents a typical non-line-of-sight (NLOS) urban macro environment and is widely used in 3GPP evaluation studies. A 4$\times$4 MIMO configuration with up to four transmission layers is considered, reflecting a representative FR1 deployment while maintaining a manageable simulation complexity. This configuration allows multi-layer transmission as well as rank adaptation to be studies within a single-codeword framework, avoiding additional variability introduced by having an additional codeword, and thus enabling a clearer assessment of the effect of the CSI feedback parameters.
+	The CDL-C channel model is selected as it represents a typical non-line-of-sight (NLOS) urban macro environment and is widely used in 3GPP evaluation studies, while modelling spatial characteristics are essential for the study of CSI feedback. A 4$\times$4 MIMO configuration with up to four transmission layers is considered, reflecting a representative frequency range 1 (FR1) deployment while maintaining a manageable simulation complexity. This configuration allows multi-layer transmission as well as rank adaptation to be studied within a single-codeword framework, avoiding additional variability introduced by using an additional codeword, and thus enabling a clearer assessment of the effect of the CSI feedback parameters.
 	
 	
-	This study focuses on investigating the impact of CSI feedback parameters on downlink transmission performance. The baseline CSI configuration follows the reporting principles and parameter ranges specified in relevant 3GPP specifications, including TS~38.101-4~\cite{3gpp_ts_38101_4}. Both the baseline configuration and the investigated parameter ranges are summarised in Table~\ref{tab:csi_config}. The investigated ranges represent the set of valid discrete configurations specified by 3GPP.
+	This study focuses on investigating the impact of CSI feedback parameters on downlink transmission performance. The baseline CSI configuration follows the settings specified in relevant 3GPP specifications, including TS~38.101-4~\cite{3gpp_ts_38101_4}. Both the baseline configuration and the investigated parameter ranges are summarised in Table~\ref{tab:csi_config}. The investigated ranges represent the set of valid discrete configurations specified by 3GPP.
 	
 	Unless otherwise stated, all simulations use the baseline CSI configuration listed in Table~\ref{tab:csi_config}. In each experiment, only a subset of the parameters under investigation is varied, while the remaining parameters are kept fixed at their baseline values to ensure a controlled comparison.
 	
@@ -156,7 +170,7 @@ This research project aims to provide insights that can support future 3GPP stan
 	\vspace{-0.8cm}
 	\section{Model Validation and Simulation Observations}
 	
-	To validate the accuracy of the developed simulation framework, a comparison is conducted against results reported by other firms in R4-2509413 \cite{3gpp_ran4_results} under the baseline parameter settings from the previous section.  ///AAV 3 vs 1Y///
+	To validate the accuracy of the developed simulation framework, a comparison is conducted against results reported by other firms in R4-2509413 \cite{3gpp_ran4_results} under the baseline parameter settings described in the previous section. The comparison is performed using a fixed four-layer transmission configuration and a fixed MCS setting corresponding to MCS~13 (16-QAM modulation with a target code rate of 490/1024).
 	
 	\begin{figure}[h]
 		\centering
@@ -179,7 +193,7 @@ Before investigating the CSI feedback parameters, it is useful to examine the im
 		\caption{Throughput and BLER performance comparison with HARQ enabled and disabled}
 		\label{fig:harqonoff}
 	\end{figure}
-With HARQ enabled, a significant reduction in BLER and improvement in the throughput are observed, particularly in the low- to medium-SNR region less than 15dB. When the SNR is beyond 20dB, whether HARQ is on or off has no impact on the overall performance. All of the transmission success in one go, and thus no re-transmission is required. 
+With HARQ enabled, a significant reduction in BLER and improvement in the throughput are observed, particularly in the low- to medium-SNR region below 15~dB. When the SNR is beyond 20~dB, whether HARQ is on or off has no impact on the overall performance. All transmissions are successful in a single attempt, and thus no re-transmission is required. 
 
 While HARQ provides robustness against decoding errors, its retransmission mechanism can partially mask the direct impact of CSI feedback on link performance. Thus, in the subsequent analysis, HARQ is selectively disabled to better assess the effect of CSI feedback parameters on downlink transmission.
 
@@ -191,10 +205,12 @@ Based on the constructed simulation framework, the simulations are conducted usi
 Since this project is entirely simulation-based, no physical laboratory experiments are involved, and therefore no safety-related or hardware-related risks are present. However, few practical risks remain that may impact the depth of the results. The most significant risk is the limited time available for the project relative to the computational cost of the simulations. The simulations are computationally intensive and require substantial runtime on personal computers, as the overall simulation time scales approximately linearly with the number of 10\,ms radio frames simulated. While preliminary testing and proof-of-concept experiments can be performed using fewer than 50 frames, obtaining statistically reliable and representative performance results typically requires at least 200 frames.
 
 To mitigate this risk, multiple approaches have been applied and evaluated. These include the use of the MATLAB Parallel Computing Toolbox to fully utilise multi-core CPU resources, as well as running simulations on the CUED central computing system (ts-access) in addition to the personal computer. Furthermore, to reduce the overall computational burden, selected experiments may focus on a limited number of representative SNR operating points rather than sweeping the full SNR range with uniform resolution. This allows high-fidelity analysis at key operating regions while significantly reducing total simulation time, without compromising the validity of the observed performance trends.
+
+	\vspace*{-0.5cm}
 	\section{References} \let\refname\relax
 	\vspace*{-1cm}
 	\begingroup
-	\footnotesize
+	\scriptsize
 	\bibliography{TM_Report}
 \endgroup
 	
