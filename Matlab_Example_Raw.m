@@ -1,17 +1,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Version 1
+%Version 2
+Version="2.0";
+close all force
+clearvars
+clc
 
 %Can either flex layer + modulation + TCR or flex modulation + TCR
+%Save function added
+%CDL
 
-
+Save_to_File=true; %true, false will save plotted figures too as a reference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Frames = 50;
-Range = -5:3:40;
+Frames = 2;
+Range = -5:5:40;
 
 RIRestriction = [1 1 1 1 0 0 0 0];
-PO=[4 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
-CQIMode = 'Subband'; % 'Wideband','Subband'
-PMIMode = 'Subband'; % 'Wideband','Subband'
+
+PO=[40 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
+CQIMode = 'Wideband'; % 'Wideband','Subband'
+PMIMode = 'Wideband'; % 'Wideband','Subband'
 CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
     %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
     %for 8 Tx case.
@@ -129,7 +136,7 @@ simParameters.BSProcessingDelay = 1;
 
 simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
 simParameters.DelaySpread = 300e-9;     % s
-simParameters.MaximumDopplerShift = 300;  % Hz
+simParameters.MaximumDopplerShift = 10;  % Hz
 
 simParameters.Channel = createChannel(simParameters);
 
@@ -393,6 +400,31 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
 
 end
 
+log_tcr_f=vertcat(log_tcr{:});
+log_layer_f=vertcat(log_layer{:});
+log_slot_f=vertcat(log_slot{:});
+log_mod_f=vertcat(log_mod{:});
+
+log_tcr_mean = mean(log_tcr_f, 2);
+log_layer_mean = mean(log_layer_f, 2);
+
+if Save_to_File
+    timestamp = datestr(datetime('now'), 'yyyy-mm-dd_HHMM');
+    filename = sprintf( ...
+    '%s_%s_L%s_%dHz', ...
+    timestamp, ...
+    simParameters.DelayProfile, ...
+    rankrestrictionfromRI(RIRestriction), ...
+    simParameters.MaximumDopplerShift);
+    resultsFolder = './results_updated/';
+    fullResultsPath = fullfile(resultsFolder, filename);
+
+    if ~exist(fullResultsPath, 'dir')
+        mkdir(fullResultsPath);
+    end
+end
+    
+
 snrVals = simParameters.SNRIn;
 nSNR = numel(snrVals);
 
@@ -429,14 +461,17 @@ title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
+saveas(gcf, fullfile(fullResultsPath,  'Throughput% vs SNR.png'));
 
-figure('Name','MBps vs SNR', 'NumberTitle','off');
+
+figure('Name','Throughput Mbps vs SNR', 'NumberTitle','off');
 plot(simParameters.SNRIn,1e-6*simThroughput/(simParameters.NFrames*10e-3),'o-.')
 xlabel('SNR (dB)'); ylabel('Throughput (Mbps)'); grid on;
 title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
+saveas(gcf, fullfile(fullResultsPath, 'Mbps vs SNR.png'));
 
 figure('Name','Modulation selection vs SNR', 'NumberTitle','off');
 bar(snrVals, modFrac, 'stacked');
@@ -444,17 +479,29 @@ xlabel('SNR (dB)');
 ylabel('Probability');
 legend(mods, 'Location','northwest');
 title('Modulation distribution per SNR');
+saveas(gcf, fullfile(fullResultsPath, 'Modulation_Selection_vs_SNR.png')); % Save as image
 
 figure('Name','Target code rate distribution vs SNR', 'NumberTitle','off');
+subplot(1,2,1)
 bar(snrVals, tcrFrac, 'stacked');
 xlabel('SNR (dB)');
 ylabel('Probability');
 legend({'Low TCR','Mid TCR','High TCR'}, 'Location','northwest');
 title('Target code rate distribution per SNR');
 
+subplot(1,2,2);  % 当前是第二个子图
+plot(snrVals, log_tcr_mean, '-o', 'LineWidth', 2);
+xlabel('SNR (dB)');
+ylabel('Average TCR');
+title('Average TCR per SNR');
+grid on;
+
+saveas(gcf, fullfile(fullResultsPath,'Target_Code_Rate_vs_SNR.png')); % Save as image
+
 figure('Name','Layer selection behaviour vs SNR', ...
        'NumberTitle','off');
 hold on;
+
 
 snrVals = simParameters.SNRIn;
 nSNR = numel(snrVals);
@@ -494,13 +541,12 @@ xlabel('SNR (dB)');
 ylabel('Number of layers');
 title('Layer selection behaviour (bubble size = probability)');
 grid on;
-
 % 强制 y 轴整数
 yticks(1:max(cellfun(@max,log_layer)));
 
 legend({'Layer selection probability','Mean number of layers'}, ...
        'Location','northwest');
-
+saveas(gcf, fullfile(fullResultsPath, 'Layer_Selection_vs_SNR.png'));
 
 
 %%%
@@ -509,21 +555,32 @@ legend({'Layer selection probability','Mean number of layers'}, ...
   %  plotCQI(simParameters,CSIReport,perc)    
 %end
 
+
+
+
 % Bundle key parameters and results into a combined structure for recording
 simResults.simParameters = simParameters;
 simResults.simThroughput = simThroughput;
 simResults.maxThroughput = maxThroughput;
+simResults.Throughput= 100* simThroughput./maxThroughput;
 simResults.CSIReport = CSIReport;
-simResults.log_tcr=log_tcr;
-simResults.log_layer=log_layer;
-simResults.log_slot=log_slot;
-simResults.log_mod=log_mod;
+simResults.log_tcr_mean=log_tcr_mean;
+simResults.log_layer_mean=log_layer_mean;
+simResults.Mbps=1e-6*simThroughput/(simParameters.NFrames*10e-3);
 
 %flattended version
-simResults.log_tcr_f=vertcat(log_tcr{:});
-simResults.log_layer_f=vertcat(log_layer{:});
+simResults.log_tcr_f=log_tcr_f;
+simResults.log_layer_f=log_layer_f;
 simResults.log_slot_f=vertcat(log_slot{:});
 simResults.log_mod_f=vertcat(log_mod{:});
+
+if Save_to_File
+    save(fullfile(fullResultsPath, [filename, '.mat']), 'simResults', '-v7.3');
+    disp("File Saved successfully")
+end   
+    
+disp("End of the simulation");
+%exit
 
 function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParameters)
 % Extract channel and signal-level parameters, create DL-SCH encoder, and
@@ -993,4 +1050,13 @@ function plotCQI(simParameters,CSIReport,perc)
     title('CQI not in set \{median CQI -1, median CQI, median CQI +1\}');
     grid   
 
+end
+
+function ranklimit=rankrestrictionfromRI(RI)
+    if all(RI == 1)
+        ranklimit = 0;
+    else
+        onesPositions = find(RI == 1);  
+        ranklimit = strjoin(arrayfun(@num2str, onesPositions, 'UniformOutput', false), '');
+    end
 end
