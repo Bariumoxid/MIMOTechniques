@@ -1,30 +1,40 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Version 2
-Version="2.0";
+%Version 4
+Version="4.0";
 close all force
 clearvars
 clc
 
-%Can either flex layer + modulation + TCR or flex modulation + TCR
-%Save function added
-%CDL
-
-Save_to_File=true; %true, false will save plotted figures too as a reference
+% Can either flex layer + modulation + TCR or flex modulation + TCR
+% Save function added
+% CDL, TDL both supported
+% Constellation Diagram supported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Frames = 2;
-Range = -5:5:40;
+%TODO
+%CSI Status: https://www.mathworks.com/help/5g/ug/nr-channel-estimation-using-csirs.html
+%CDL Tracing: https://www.mathworks.com/help/5g/ug/cdl-channel-model-customization-with-ray-tracing.html
+%CQI perfect vs estimated difference
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Save_to_File=false; %true, false will save plotted figures too as a reference
+Plot_Constellation = true;
+Constellation_SNR=[15, 25, 35, 45]; %Must be four entries
+Constellation_Animation=false;
+%So far can only be used when parfor is off
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Frames = 25;
+Range = -5:5:45;
 RIRestriction = [1 1 1 1 0 0 0 0];
-
-PO=[40 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
-CQIMode = 'Wideband'; % 'Wideband','Subband'
-PMIMode = 'Wideband'; % 'Wideband','Subband'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PO=[10 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
+CQIMode = 'wideband'; % 'Wideband','Subband'
+PMIMode = 'wideband'; % 'Wideband','Subband'
 CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
     %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
     %for 8 Tx case.
     %'Type2' max. rank is 2
-SubbandSize = 8; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
-CodebookMode = 1; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
+SubbandSize = 16; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
+CodebookMode = 2; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 simParameters = struct();       % Clear simParameters variable to contain all key simulation parameters 
@@ -135,6 +145,7 @@ simParameters.UEProcessingDelay = 7;
 simParameters.BSProcessingDelay = 1;
 
 simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
+
 simParameters.DelaySpread = 300e-9;     % s
 simParameters.MaximumDopplerShift = 10;  % Hz
 
@@ -152,20 +163,28 @@ log_tcr  = cell(numel(simParameters.SNRIn),1);
 
 % Cell array to store CSI reports per SNR point
 CSIReport = {};
+plotCount=0;
+ConstellationResults = struct('snr',[],'rxSymbols',[],'pdsch',[],'throughput',[],'tcr',[]);
+
 
 parfor snrIdx = 1:numel(simParameters.SNRIn)
 % parfor snrIdx = 1:numel(simParameters.SNRIn)
 % To reduce the total simulation time, you can execute this loop in
 % parallel by using the Parallel Computing Toolbox. Comment out the 'for'
 % statement and uncomment the 'parfor' statement.
+    bestThroughput=-3;
+    local_bestThroughput = -3;
+    local_BestData = struct();
+
     lsnr   = [];
     lslot  = [];
     llayer = [];
     lmod   = {};
     ltcr   = [];
     % Reset the random number generator for repeatability
-    rng(0,"twister");
-
+    %rng(0,"twister");
+    currRNG = rng('shuffle'); 
+    rng(currRNG.Seed + snrIdx);
     % Display simulation information at this SNR point
     displaySNRPointProgress(simParameters,snrIdx);
 
@@ -180,9 +199,14 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     [carrier,encodeDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParamLocal);
     [channel,maxChDelay] = setupChannel(simParamLocal);
     [decodeDLSCH,timingOffset,N0,noiseEst,csiReports,csiAvailableSlots] = setupReceiver(simParamLocal,channel,snrIdx,csiFeedbackOpts);
-
+    
     % Total number of slots in the simulation period
     NSlots = simParamLocal.NFrames * carrier.SlotsPerFrame;
+    
+    constDiagram = comm.ConstellationDiagram(...
+    'Title', 'PDSCH 接收星座图', ...
+    'XLimits', [-1.5 1.5], 'YLimits', [-1.5 1.5], ...
+    'SamplesPerSymbol', 1);
 
     % Loop over the entire waveform length
     for nslot = 0:NSlots-1
@@ -204,6 +228,7 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         lmod{end+1} = char(pdsch.Modulation);
         llayer(end+1) = double(pdsch.NumLayers);
         ltcr(end+1)   = pdschextra.TargetCodeRate;
+        
 
         % Create an OFDM resource grid for a slot
         dlGrid = nrResourceGrid(carrier,csirs.NumCSIRSPorts);
@@ -221,6 +246,54 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % Calculate the transport block sizes for the transmission in the slot
         [pdschIndices,pdschIndicesInfo] = nrPDSCHIndices(carrier,pdsch);
         trBlkSizes = nrTBS(pdsch.Modulation,pdsch.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
+        
+        
+        %-------------------------------
+        if (nslot == 0) && snrIdx == 1
+            ports = max(simParameters.CSIRS.NumCSIRSPorts); 
+            txGrid = nrResourceGrid(carrier, ports);
+            
+            % 仅针对第一个天线端口创建 2D 显示网格
+            % 这样坐标轴的"子载波索引"才和实际物理网格对应
+            displayGrid = zeros(size(txGrid, 1), size(txGrid, 2)); 
+            
+            % --- 填入索引（注意使用线性索引时要限制在单层内，或提取 2D 坐标） ---
+            % 这里的逻辑：利用 ind2sub 提取坐标，只画出属于第一层（天线 1）的资源
+            [subK, subL, subR] = ind2sub(size(txGrid), pdschIndices);
+            firstLayerIdx = (subR == 1);
+            displayGrid(subK(firstLayerIdx) + (subL(firstLayerIdx)-1)*size(displayGrid,1)) = 1;
+            
+            % DMRS 同理
+            [dmrsK, dmrsl, dmrsR] = ind2sub(size(txGrid), nrPDSCHDMRSIndices(carrier,pdsch));
+            dmrsFirstLayer = (dmrsR == 1);
+            displayGrid(dmrsK(dmrsFirstLayer) + (dmrsl(dmrsFirstLayer)-1)*size(displayGrid,1)) = 2;
+            
+            % CSI-RS 同理
+            
+            [csiK, csiL, csiR] = ind2sub(size(txGrid), csirsInd);
+            csiFirstLayer = (csiR == 1);
+            displayGrid(csiK(csiFirstLayer) + (csiL(csiFirstLayer)-1)*size(displayGrid,1)) = 3;
+           
+            
+            % --- 绘图 ---
+            figure('Name', '5G Resource Grid');
+            imagesc(displayGrid);
+            axis xy; 
+            % 这里的 colormap 长度应与你的分类匹配
+            % [背景, PDSCH, DMRS, CSIRS]
+            colormap([0.5 0.5 0.5; 0.2 0.4 0.8; 0.9 0.7 0.2; 0.9 0.4 0.2]);  
+            xlabel('OFDM Symbols');
+            ylabel('Subcarriers');
+            title('Resource Grid');
+            
+            ylim([10 50]);
+            % 调整 colorbar 使其居中对齐标签
+            cb = colorbar('Ticks', [0.375, 1.125, 1.875, 2.625], ...
+                          'TickLabels', {'Empty', 'PDSCH', 'DM-RS', 'CSI-RS'});
+
+            %-----------------------
+        end 
+
 
         % Transport block generation
         for cwIdx = 1:pdsch.NumCodewords
@@ -289,11 +362,14 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % resource grid, including padding in the event that practical
         % synchronization results in an incomplete slot being demodulated
         rxGrid = nrOFDMDemodulate(carrier,rxWaveform);
+
+        
         [K,L,R] = size(rxGrid);
         if (L < carrier.SymbolsPerSlot)
             rxGrid = cat(2,rxGrid,zeros(K,carrier.SymbolsPerSlot-L,R));
         end
-
+        %pdschRaw = rxGrid(pdschIndices);
+        %constDiagram(pdschRaw(:,1))
         if simParamLocal.PerfectChannelEstimator
             % For perfect channel estimate, use the OFDM channel response
             % obtained from the channel
@@ -322,10 +398,17 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
 
         % Equalization
         [pdschEq,eqCSIScaling] = nrEqualizeMMSE(pdschRx,pdschHest,noiseEst);
+        
+        %constDiagram(pdschEq(:,2));
+        %pdschEq = pdschEq .*exp(1i * 2 * pi * -200 *
+        %(0:length(pdschEq)-1)' / channel.SampleRate); %人为加入CFO噪音
 
         % Decode PDSCH physical channel
         [dlschLLRs,rxSymbols] = nrPDSCHDecode(carrier,pdsch,pdschEq,noiseEst);
         
+        if Constellation_Animation
+            constDiagram(rxSymbols{1});
+        end
         % Display EVM per layer, per slot and per RB
         if (simParamLocal.DisplayDiagnostics)
             plotLayerEVM(NSlots,nslot,pdsch,size(dlGrid),pdschIndices,pdschSymbols,pdschEq);
@@ -387,6 +470,21 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         if simParamLocal.DisplaySimulationInformation
             printSlotInfo(NSlots,carrier,pdsch,pdschextra,blkerr,trBlkSizes./pdschIndicesInfo.G,csirsTransmission,csiReports,repIdx)
         end
+        if ismember(simParameters.SNRIn(snrIdx), Constellation_SNR)
+            if simThroughput(snrIdx)>local_bestThroughput
+                local_bestThroughput=simThroughput(snrIdx);
+                local_BestData.pdsch=pdsch;
+                local_BestData.tcr=pdschextra.TargetCodeRate;
+                local_BestData.pdsch.NumLayers=pdsch.NumLayers;
+            else local_bestThroughput<0;
+                local_bestThroughput = 0;
+                local_BestData.pdsch=pdsch;
+                local_BestData.tcr=pdschextra.TargetCodeRate;
+                local_BestData.pdsch.NumLayers=pdsch.NumLayers;
+            end 
+        end 
+
+
     end
 
     % Store CSI report for each SNR point
@@ -397,8 +495,19 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         fprintf('\n');
     end
     fprintf('\nThroughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughput(snrIdx)/(simParamLocal.NFrames*10e-3));
+    
+    %constellation
 
+    if ismember(simParameters.SNRIn(snrIdx), Constellation_SNR)
+        ConstellationResults(snrIdx).snr = simParameters.SNRIn(snrIdx);
+        ConstellationResults(snrIdx).rxSymbols = rxSymbols{1}; 
+        ConstellationResults(snrIdx).pdsch = local_BestData.pdsch;  
+        ConstellationResults(snrIdx).throughput = 1e-6 * local_bestThroughput / (simParameters.NFrames * 10e-3);
+        ConstellationResults(snrIdx).tcr = local_BestData.tcr;
+    end
 end
+
+ConstellationResults = ConstellationResults(~cellfun(@isempty, {ConstellationResults.snr}));
 
 log_tcr_f=vertcat(log_tcr{:});
 log_layer_f=vertcat(log_layer{:});
@@ -423,7 +532,8 @@ if Save_to_File
         mkdir(fullResultsPath);
     end
 end
-    
+   
+   
 
 snrVals = simParameters.SNRIn;
 nSNR = numel(snrVals);
@@ -452,7 +562,36 @@ for i = 1:nSNR
     tcrFrac(i,3) = sum(tcr >= 0.6) / N;
 end
 
-figure('Name','Throughput % vs SNR', 'NumberTitle','off');
+%Constellation
+
+
+figure('Name','Constellation', 'NumberTitle','off','Color', 'w', 'Position', [100, 100, 1000, 900],'WindowStyle', 'docked');
+for i = 1:length(ConstellationResults)
+    ax = subplot(2, 2, i);  
+    res = ConstellationResults(i);
+    modType = res.pdsch.Modulation{1}; % May need to add {1}
+    refSymbols = getConstellationPoints(modType, res.pdsch.NumCodewords);
+    plot(res.rxSymbols, '.', 'Color', [0.5 0.5 0.5], 'MarkerSize', 1); % 实测点用灰色，方便看红十字
+    hold on
+    plot(refSymbols, 'r+', 'MarkerSize', 8, 'LineWidth', 1.2);
+    hold off
+    line1 = sprintf('SNR: %.1f dB | Mod: %s', res.snr, modType);
+    line2 = sprintf('TCR: %.3f | Layers: %d | Thr: %.1f Mbps', ...
+                    res.tcr, res.pdsch.NumLayers, res.throughput);
+    
+    titleStr = {line1, line2};
+    title(titleStr,'FontSize', 9);
+    grid on
+    axis square
+    axis([-1.5 1.5 -1.5 1.5]); % 固定坐标系，防止 256QAM 切换到 QPSK 时坐标乱跳
+    xlabel('In-Phase')
+    ylabel('Quadrature')
+end
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath,  'Constellation.png'));
+end    
+
+figure('Name','Throughput % vs SNR', 'NumberTitle','off','WindowStyle', 'docked');
 plot(simParameters.SNRIn, 100* simThroughput./maxThroughput, '-s', 'LineWidth', 1.5);
 xlabel('SNR (dB)');
 ylabel('Throughput (%)');
@@ -461,8 +600,9 @@ title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
-saveas(gcf, fullfile(fullResultsPath,  'Throughput% vs SNR.png'));
-
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath,  'Throughput% vs SNR.png'));
+end
 
 figure('Name','Throughput Mbps vs SNR', 'NumberTitle','off');
 plot(simParameters.SNRIn,1e-6*simThroughput/(simParameters.NFrames*10e-3),'o-.')
@@ -471,7 +611,9 @@ title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
-saveas(gcf, fullfile(fullResultsPath, 'Mbps vs SNR.png'));
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath, 'Mbps vs SNR.png'));
+end
 
 figure('Name','Modulation selection vs SNR', 'NumberTitle','off');
 bar(snrVals, modFrac, 'stacked');
@@ -479,7 +621,9 @@ xlabel('SNR (dB)');
 ylabel('Probability');
 legend(mods, 'Location','northwest');
 title('Modulation distribution per SNR');
-saveas(gcf, fullfile(fullResultsPath, 'Modulation_Selection_vs_SNR.png')); % Save as image
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath, 'Modulation_Selection_vs_SNR.png')); % Save as image
+end
 
 figure('Name','Target code rate distribution vs SNR', 'NumberTitle','off');
 subplot(1,2,1)
@@ -496,7 +640,9 @@ ylabel('Average TCR');
 title('Average TCR per SNR');
 grid on;
 
-saveas(gcf, fullfile(fullResultsPath,'Target_Code_Rate_vs_SNR.png')); % Save as image
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath,'Target_Code_Rate_vs_SNR.png')); % Save as image
+end 
 
 figure('Name','Layer selection behaviour vs SNR', ...
        'NumberTitle','off');
@@ -546,18 +692,20 @@ yticks(1:max(cellfun(@max,log_layer)));
 
 legend({'Layer selection probability','Mean number of layers'}, ...
        'Location','northwest');
-saveas(gcf, fullfile(fullResultsPath, 'Layer_Selection_vs_SNR.png'));
 
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath, 'Layer_Selection_vs_SNR.png'));
+end
 
-%%%
-%if simParameters.CSIReportMode == "RI-PMI-CQI"
- %   perc = 90;
-  %  plotCQI(simParameters,CSIReport,perc)    
-%end
+if simParameters.CSIReportMode == "RI-PMI-CQI"
+    perc = 90;
+    plotCQI(simParameters,CSIReport,perc)    
+end
+if Save_to_File
+    saveas(gcf, fullfile(fullResultsPath, 'CQI.png'));
+end
 
-
-
-
+simResults.CQI=cellfun(@(x) median([x.CQI]), CSIReport);
 % Bundle key parameters and results into a combined structure for recording
 simResults.simParameters = simParameters;
 simResults.simThroughput = simThroughput;
@@ -628,7 +776,11 @@ function [decodeDLSCH,timingOffset,N0,noiseEst,csiReports,csiAvailableSlots] = s
     % applies this normalization to the output
     chInfo = info(channel);
     if channel.NormalizeChannelOutputs
-        N0 = N0/sqrt(chInfo.NumOutputSignals);
+        if contains(simParameters.DelayProfile,'TDL')
+            N0 = N0/sqrt(chInfo.NumReceiveAntennas);
+        else 
+            N0 = N0/sqrt(chInfo.NumOutputSignals);
+        end
     end
 
     % Initial channel estimate
@@ -1036,7 +1188,8 @@ function plotCQI(simParameters,CSIReport,perc)
     % Calculate the percentage of CQI not in the set {median CQI -1, median CQI, median CQI +1} 
     cqiPerc = cellfun(@(x,y) sum(abs([x.CQI]-y)>1)/length(x),CSIReport,num2cell(med));
     
-    figure;
+    figure('Name','CQI vs SNR', ...
+       'NumberTitle','off');
     subplot(211)
     errorbar(simParameters.SNRIn,med,p2-p1,'o-.')
     ylabel('CQI value')
@@ -1059,4 +1212,23 @@ function ranklimit=rankrestrictionfromRI(RI)
         onesPositions = find(RI == 1);  
         ranklimit = strjoin(arrayfun(@num2str, onesPositions, 'UniformOutput', false), '');
     end
+end
+
+function sym = getConstellationPoints(Modulation, NumCodewords)
+%getConstellationPoints Constellation points
+%   SYM = getConstellationPoints(PDSCH) returns the constellation points
+%   SYM based on modulation schemes provided in PDSCH configuration object.
+
+    sym = [];
+    modulation = string(Modulation);  % Convert modulation scheme to string type
+    ncw = NumCodewords;               % Number of codewords
+    if ncw == 2 && isscalar(modulation)
+        modulation(end+1) = modulation(1);
+    end
+    % Get the constellation points
+    for cwIndex = 1:ncw
+        qm = strcmpi(modulation(cwIndex),{'QPSK','16QAM','64QAM','256QAM'})*[2 4 6 8]';
+        sym = [sym; nrSymbolModulate(int2bit((0:2^qm-1)',qm),modulation(cwIndex))]; %#ok<AGROW>
+    end
+
 end
