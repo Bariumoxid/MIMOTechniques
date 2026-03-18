@@ -5,43 +5,53 @@ close all force
 clearvars
 clc
 
+%parpool('local', 20);
 % Can either flex layer + modulation + TCR or flex modulation + TCR
 % Save function added
 % CDL, TDL both supported
 % Constellation Diagram supported
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO
-%CSI Status: https://www.mathworks.com/help/5g/ug/nr-channel-estimation-using-csirs.html
-%CDL Tracing: https://www.mathworks.com/help/5g/ug/cdl-channel-model-customization-with-ray-tracing.html
-%CQI perfect vs estimated difference
+%检查变量泄露问题
+%检查所有数据是不是都保存到输出文件里面了
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Save_to_File=false; %true, false will save plotted figures too as a reference
-Plot_Constellation = true;
+Save_to_File=true; %true, false will save plotted figures too as a reference
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Frames = 50;
+Range = -5:2:35;
+RIRestriction = [1 1 1 1 1 1 1 1];
+Perfect_Channel_Estimation= false;
+Doppler_Shift = 10;
+Simulation_Channel="CDL-C";
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Constellation_Animation=false; %So far can only be used when parfor is off
+CQI_PrefectvPractical = false; 
+CQI_Investigation_SNR=[-5,5,15,25];
+
+Plot_Constellation = false; %Only can be true if CQI_PrefectvPractical also true
 Constellation_SNR=[15, 25, 35, 45]; %Must be four entries
-Constellation_Animation=false;
-%So far can only be used when parfor is off
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Frames = 25;
-Range = -5:5:45;
-RIRestriction = [1 1 1 1 0 0 0 0];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PO=[10 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
-CQIMode = 'wideband'; % 'Wideband','Subband'
-PMIMode = 'wideband'; % 'Wideband','Subband'
+
+PO=[4 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
+CQIMode = 'Subband'; % 'Wideband','Subband'
+PMIMode = 'Subband'; % 'Wideband','Subband'
 CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
     %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
     %for 8 Tx case.
     %'Type2' max. rank is 2
-SubbandSize = 16; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
+SubbandSize = 8; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
 CodebookMode = 2; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 simParameters = struct();       % Clear simParameters variable to contain all key simulation parameters 
 simParameters.NFrames = Frames;      % Number of 10 ms frames
 simParameters.SNRIn = Range; % SNR range (dB)
 
-simParameters.PerfectChannelEstimator = false;
+simParameters.PerfectChannelEstimator = Perfect_Channel_Estimation;
 simParameters.DisplaySimulationInformation = false;
 simParameters.DisplayDiagnostics = false;
 % SCS carrier parameters
@@ -73,7 +83,7 @@ simParameters.PDSCH.DMRS.NumCDMGroupsWithoutData = 3; % CDM groups without data 
 
 simParameters.PDSCHExtension = struct();
 simParameters.PDSCHExtension.PRGBundleSize = 4; % 2, 4, or [] to signify "wideband"
-simParameters.PDSCHExtension.MCSTable      = 'Table1'; % 'Table1',...,'Table4'
+simParameters.PDSCHExtension.MCSTable      = 'Table2'; % 'Table1',...,'Table4'
 simParameters.PDSCHExtension.XOverhead     = [ ]; % 0, 6, 12, 18, or [] for automatic selection.
 
 simParameters.PDSCHExtension.LDPCDecodingAlgorithm = "Normalized min-sum";
@@ -113,7 +123,7 @@ simParameters.CSIReportConfig.Period = PO;  % Peridocity and offset of the CSI r
 
 if simParameters.CSIReportMode == "RI-PMI-CQI"  
     
-    simParameters.CSIReportConfig.CQITable          = "Table1"; % 'Table1','Table2','Table3'
+    simParameters.CSIReportConfig.CQITable          = "Table2"; % 'Table1','Table2','Table3'
     simParameters.CSIReportConfig.CQIMode           = CQIMode; % 'Wideband','Subband'
     simParameters.CSIReportConfig.PMIMode           = CQIMode; % 'Wideband','Subband'
     simParameters.CSIReportConfig.CodebookType      = CodebookType; % 'Type1SinglePanel','Type1MultiPanel','Type2','eType2'
@@ -144,10 +154,10 @@ end
 simParameters.UEProcessingDelay = 7;
 simParameters.BSProcessingDelay = 1;
 
-simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
+simParameters.DelayProfile = Simulation_Channel;   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
 
 simParameters.DelaySpread = 300e-9;     % s
-simParameters.MaximumDopplerShift = 10;  % Hz
+simParameters.MaximumDopplerShift = Doppler_Shift;  % Hz
 
 simParameters.Channel = createChannel(simParameters);
 
@@ -160,12 +170,16 @@ log_slot = cell(numel(simParameters.SNRIn),1);
 log_layer = cell(numel(simParameters.SNRIn),1);
 log_mod   = cell(numel(simParameters.SNRIn),1);
 log_tcr  = cell(numel(simParameters.SNRIn),1);
+csiReport_perfect=cell(numel(simParameters.SNRIn),1);
+csiReport_prac=cell(numel(simParameters.SNRIn),1);
 
 % Cell array to store CSI reports per SNR point
 CSIReport = {};
 plotCount=0;
-ConstellationResults = struct('snr',[],'rxSymbols',[],'pdsch',[],'throughput',[],'tcr',[]);
-
+if Plot_Constellation
+    ConstellationResults = struct('snr',[],'rxSymbols',[],'pdsch',[],'throughput',[],'tcr',[]);
+    HestResults=struct('h1',[],'h2',[], 'snr', []);4
+end 
 
 parfor snrIdx = 1:numel(simParameters.SNRIn)
 % parfor snrIdx = 1:numel(simParameters.SNRIn)
@@ -176,11 +190,20 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     local_bestThroughput = -3;
     local_BestData = struct();
 
+    local_h=struct();
+
+
     lsnr   = [];
     lslot  = [];
     llayer = [];
     lmod   = {};
     ltcr   = [];
+
+
+    csiReports_perfect=struct('RI', {}, 'CQI', {}, 'PMI', {},'W',{}, 'NSlot',{});
+    csiReports_prac=struct('RI', {}, 'CQI', {}, 'PMI', {},'W',{}, 'NSlot',{});
+    %csiReports_semi=struct('RI', {}, 'CQI', {}, 'PMI', {},'W',{}, 'NSlot',{});
+
     % Reset the random number generator for repeatability
     %rng(0,"twister");
     currRNG = rng('shuffle'); 
@@ -207,8 +230,10 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     'Title', 'PDSCH 接收星座图', ...
     'XLimits', [-1.5 1.5], 'YLimits', [-1.5 1.5], ...
     'SamplesPerSymbol', 1);
-
+    
+    offsetPractical = 0;
     % Loop over the entire waveform length
+    count = 0;
     for nslot = 0:NSlots-1
 
         % Update the carrier slot numbers for new slot
@@ -248,8 +273,8 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         trBlkSizes = nrTBS(pdsch.Modulation,pdsch.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
         
         
-        %-------------------------------
-        if (nslot == 0) && snrIdx == 1
+        %------------------------------- %Generate Resource Grid Plot
+        if (nslot == 0) && snrIdx == floor(numel(simParameters.SNRIn)/2)
             ports = max(simParameters.CSIRS.NumCSIRSPorts); 
             txGrid = nrResourceGrid(carrier, ports);
             
@@ -275,7 +300,7 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             displayGrid(csiK(csiFirstLayer) + (csiL(csiFirstLayer)-1)*size(displayGrid,1)) = 3;
            
             
-            % --- 绘图 ---
+            % --- 绘图 --- 
             figure('Name', '5G Resource Grid');
             imagesc(displayGrid);
             axis xy; 
@@ -290,9 +315,8 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             % 调整 colorbar 使其居中对齐标签
             cb = colorbar('Ticks', [0.375, 1.125, 1.875, 2.625], ...
                           'TickLabels', {'Empty', 'PDSCH', 'DM-RS', 'CSI-RS'});
-
-            %-----------------------
         end 
+        %----------------------- End Resource Grid Plot
 
 
         % Transport block generation
@@ -336,6 +360,79 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % Add AWGN to the received time-domain waveform
         noise = N0*randn(size(rxWaveform),"like",1i);
         rxWaveform = rxWaveform + noise;
+
+        %---------------------------------- %Begin CQI Perfect vs Practical
+        if CQI_PrefectvPractical 
+            timingOffset_perfect = tOffset;
+
+            [t_prac,mag_prac] = nrTimingEstimate(carrier,rxWaveform,dmrsIndices,dmrsSymbols); 
+            timingOffset_prac = hSkipWeakTimingOffset(timingOffset,t_prac,mag_prac);
+
+            
+            %[pathGains, sampleTimes] = getPathGains(channel); % 确保能获取到这些变量
+            %[rxWaveform, pathGains, sampleTimes] = channel(txWaveform, 0);
+            %timingOffset_semi = tOffset;
+            %dt = t_prac - tOffset; 
+            %K = size(ofdmResponse, 1);
+            %k = (0:K-1)' - (K/2); % 子载波索引中心化
+            %waveInfo = nrOFDMInfo(carrier);
+            %Nfft = waveInfo.Nfft;
+            %phaseRotation = exp(-1i * 2 * pi * dt * k / Nfft);
+            %Hest_semi = ofdmResponse .* reshape(phaseRotation, K, 1, 1, 1);
+
+            rxWaveform_perfect = rxWaveform(1+timingOffset_perfect:end,:);
+            rxWaveform_prac = rxWaveform(1+timingOffset_prac:end,:);
+
+            rxGrid_perfect = nrOFDMDemodulate(carrier,rxWaveform_perfect);
+            rxGrid_prac = nrOFDMDemodulate(carrier,rxWaveform_prac);
+            %rxGrid_semi    = nrOFDMDemodulate(carrier, rxWaveform_semi);
+
+            [K_perfect,L_perfect,R_perfect] = size(rxGrid_perfect);
+            if (L_perfect < carrier.SymbolsPerSlot)
+                rxGrid_perfect = cat(2,rxGrid_perfect,zeros(K_perfect,carrier.SymbolsPerSlot-L_perfect,R_perfect));
+            end
+            [K_prac,L_prac,R_prac] = size(rxGrid_prac);
+            if (L_prac < carrier.SymbolsPerSlot)
+                rxGrid_prac = cat(2,rxGrid_prac,zeros(K_prac,carrier.SymbolsPerSlot-L_prac,R_prac));
+            end
+
+            Hest_perfect = ofdmResponse;
+            [pdschRx_perfect,pdschHest_perfect,~,pdschHestIndices_perfect] = nrExtractResources(pdschIndices,rxGrid_perfect,Hest_perfect);
+            pdschHest_perfect = nrPDSCHPrecode(carrier,pdschHest_perfect,pdschHestIndices_perfect,permute(wtx,[2 1 3]));
+
+            [Hest_prac,noiseEst_prac] = nrChannelEstimate(carrier,rxGrid_prac,dmrsIndices,dmrsSymbols,PRGBundleSize = pdschextra.PRGBundleSize,CDMLengths = pdsch.DMRS.CDMLengths);
+            noiseEst_prac = mean(noiseEst_prac,'all');
+            [pdschRx_prac,pdschHest_prac] = nrExtractResources(pdschIndices,rxGrid_prac,Hest_prac);
+
+            noiseGrid_ideal = nrOFDMDemodulate(carrier, noise(1+timingOffset_perfect:end, :));
+            nVar_ideal = var(noiseGrid_ideal(:));
+            
+            if csirsTransmission    
+                nzpind_prac = (csirsSym ~= 0);
+                [Hest_prac,noiseEst_prac] = nrChannelEstimate(carrier,rxGrid_prac, ...
+                    csirsInd(nzpind_prac),csirsSym(nzpind_prac),'CDMLengths',csirsCDMLengths);
+                rxCSIReport_perfect = hCSIEncode(carrier,csirs,Hest_perfect,noiseEst,csiFeedbackOpts);
+                csiReports_perfect(end+1) = rxCSIReport_perfect; %#ok<SAGROW>
+
+                rxCSIReport_prac = hCSIEncode(carrier,csirs,Hest_prac,noiseEst_prac,csiFeedbackOpts);
+                csiReports_prac(end+1) = rxCSIReport_prac; %#ok<SAGROW>
+               
+                %rxCSIReport_semi = hCSIEncode(carrier, csirs, Hest_semi, nVar_ideal, csiFeedbackOpts);
+                %csiReports_semi(end+1)    = rxCSIReport_semi;
+                if count == 1 && ismember(simParameters.SNRIn(snrIdx), CQI_Investigation_SNR)
+                    % Plot the estimated channel
+                    local_h.h1=abs(Hest_prac(100:300,:,1,1));
+                    local_h.h2=abs(Hest_perfect(100:300,:,1,1));
+                
+                end 
+                count=count+1;
+            end
+
+
+          
+
+        end
+        %---------------------------------- %End CQI Perfect vs Practical
 
         if simParamLocal.PerfectChannelEstimator
             % For perfect synchronization, use the timing offset obtained
@@ -406,9 +503,12 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % Decode PDSCH physical channel
         [dlschLLRs,rxSymbols] = nrPDSCHDecode(carrier,pdsch,pdschEq,noiseEst);
         
+        %---------------------------------- Constellation Diagram
         if Constellation_Animation
             constDiagram(rxSymbols{1});
         end
+        %----------------------------------
+
         % Display EVM per layer, per slot and per RB
         if (simParamLocal.DisplayDiagnostics)
             plotLayerEVM(NSlots,nslot,pdsch,size(dlGrid),pdschIndices,pdschSymbols,pdschEq);
@@ -441,8 +541,7 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         %fprintf("  Mod:        {'%s','%s'}\n", pdsch.Modulation{1}, pdsch.Modulation{2});
         %fprintf("  TCR:        [%.3f %.3f]\n", pdschextra.TargetCodeRate(1), pdschextra.TargetCodeRate(2));
         % CSI measurements and encoding 
-        if csirsTransmission
-            
+        if csirsTransmission    
             if ~simParamLocal.PerfectChannelEstimator
                 % Consider only the NZP-CSI-RS symbols and indices for CSI-RS based
                 % channel estimation
@@ -489,7 +588,11 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
 
     % Store CSI report for each SNR point
     CSIReport{snrIdx} = csiReports; %#ok<SAGROW>
+    CSIReport_perfect{snrIdx} = csiReports_perfect;
+    CSIReport_prac{snrIdx} = csiReports_prac;
+    %CSIReport_semi{snrIdx} = csiReports_semi;
     
+
     % Display the results dynamically in the command window
     if simParamLocal.DisplaySimulationInformation
         fprintf('\n');
@@ -497,18 +600,31 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     fprintf('\nThroughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughput(snrIdx)/(simParamLocal.NFrames*10e-3));
     
     %constellation
+    
+    if Plot_Constellation
+        if ismember(simParameters.SNRIn(snrIdx), Constellation_SNR)
+            ConstellationResults(snrIdx).snr = simParameters.SNRIn(snrIdx);
+            ConstellationResults(snrIdx).rxSymbols = rxSymbols{1}; 
+            ConstellationResults(snrIdx).pdsch = local_BestData.pdsch;  
+            ConstellationResults(snrIdx).throughput = 1e-6 * local_bestThroughput / (simParameters.NFrames * 10e-3);
+            ConstellationResults(snrIdx).tcr = local_BestData.tcr;
+        end
+    
+        if ismember(simParameters.SNRIn(snrIdx), CQI_Investigation_SNR) && CQI_PrefectvPractical
+            HestResults(snrIdx).h1=local_h.h1;
+            HestResults(snrIdx).h2=local_h.h2;
+            HestResults(snrIdx).snr=simParameters.SNRIn(snrIdx);
+        end
+    end 
 
-    if ismember(simParameters.SNRIn(snrIdx), Constellation_SNR)
-        ConstellationResults(snrIdx).snr = simParameters.SNRIn(snrIdx);
-        ConstellationResults(snrIdx).rxSymbols = rxSymbols{1}; 
-        ConstellationResults(snrIdx).pdsch = local_BestData.pdsch;  
-        ConstellationResults(snrIdx).throughput = 1e-6 * local_bestThroughput / (simParameters.NFrames * 10e-3);
-        ConstellationResults(snrIdx).tcr = local_BestData.tcr;
-    end
 end
 
-ConstellationResults = ConstellationResults(~cellfun(@isempty, {ConstellationResults.snr}));
+if Plot_Constellation
+    ConstellationResults = ConstellationResults(~cellfun(@isempty, {ConstellationResults.snr}));
+    HestResults=HestResults(~cellfun(@isempty, {HestResults.snr}));
+end 
 
+%-------------------------------------------------- Plot Generation Region
 log_tcr_f=vertcat(log_tcr{:});
 log_layer_f=vertcat(log_layer{:});
 log_slot_f=vertcat(log_slot{:});
@@ -517,14 +633,21 @@ log_mod_f=vertcat(log_mod{:});
 log_tcr_mean = mean(log_tcr_f, 2);
 log_layer_mean = mean(log_layer_f, 2);
 
+if Perfect_Channel_Estimation
+    estStr = 'perfect';
+else
+    estStr = 'practical';
+end
+
 if Save_to_File
     timestamp = datestr(datetime('now'), 'yyyy-mm-dd_HHMM');
     filename = sprintf( ...
-    '%s_%s_L%s_%dHz', ...
+    '%s_%s_L%s_%dHz_%s', ...
     timestamp, ...
     simParameters.DelayProfile, ...
     rankrestrictionfromRI(RIRestriction), ...
-    simParameters.MaximumDopplerShift);
+    simParameters.MaximumDopplerShift, ...
+    estStr);
     resultsFolder = './results_updated/';
     fullResultsPath = fullfile(resultsFolder, filename);
 
@@ -562,34 +685,174 @@ for i = 1:nSNR
     tcrFrac(i,3) = sum(tcr >= 0.6) / N;
 end
 
+%Practical vs theoretical CSI feedbacks
+
+if CQI_PrefectvPractical
+    %&& ismember(simParameters.SNRIn(snrIdx), CQI_Investigation_SNR)
+    [Lia, Locb] = ismember(CQI_Investigation_SNR, Range);
+    validIdx = Locb(Lia);
+    %validIdx = cellfun(@(x) ~isempty(x) && all(size(x) > 0), CSIReport_perfect);
+    perf_valid = CSIReport_perfect(validIdx);
+    prac_valid = CSIReport_prac(validIdx);
+    %semi_valid=CSIReport_semi(validIdx);
+    numValidSNRs = length(perf_valid);
+    maxM=50;
+    for s = 1:numValidSNRs
+        currentM = length(perf_valid{s});
+        limitM = min(currentM, maxM);
+        perf_data = perf_valid{s}(1:limitM); % 这是一个 1xM 的 struct array
+        prac_data = prac_valid{s}(1:limitM);
+        %semi_data= semi_valid{s}(1:limitM);
+        M = length(perf_data);
+        x_axis = 1:M; % 横轴：通常是 Subbands 或 Slots
+        
+        % --- 预分配内存 (提高速度且防止维度报错) ---
+        p_RI = zeros(1, M); p_CQI = zeros(1, M); p_PMI = zeros(1, M);
+        r_RI = zeros(1, M); r_CQI = zeros(1, M); r_PMI = zeros(1, M);
+        
+        % --- 循环提取数据 ---
+        for m = 1:M
+            % Perfect 数据提取
+            p_RI(m)  = perf_data(m).RI;
+            p_CQI(m) = perf_data(m).CQI(1); % 强制取第一个，防止万一有双码字
+            % 动态判断 PMI 字段
+            p_i11(m) = perf_data(m).PMI.i1(1);
+            p_i12(m) = perf_data(m).PMI.i1(2);
+            p_i13(m) = perf_data(m).PMI.i1(3);
+            p_i2(m)  = perf_data(m).PMI.i2;
+    
+            % Practical
+            r_i11(m) = prac_data(m).PMI.i1(1);
+            r_i12(m) = prac_data(m).PMI.i1(2);
+            r_i13(m) = prac_data(m).PMI.i1(3);
+            r_i2(m)  = prac_data(m).PMI.i2;
+
+                        % Practical 数据提取
+            r_RI(m)  = prac_data(m).RI;
+            r_CQI(m) = prac_data(m).CQI(1);
+
+            %semi
+            %s_i11(m) = semi_data(m).PMI.i1(1);
+            %s_i12(m) = semi_data(m).PMI.i1(2);
+            %s_i13(m) = semi_data(m).PMI.i1(3);
+            %s_i2(m)  = semi_data(m).PMI.i2;
+
+            %s_RI(m)  = semi_data(m).RI;
+            %s_CQI(m) = semi_data(m).CQI(1);
+            
+
+        end
+        
+        % --- 绘图 ---
+        figure('Name', "Practival vs Real", ...
+               'NumberTitle', 'off', ...
+               'Color', 'w', ...
+               'Position', [100, 100, 1000, 900], ... % 仅在 WindowStyle 为 normal 时生效
+               'WindowStyle', 'docked');
+        
+        thisSNR = CQI_Investigation_SNR(Lia);
+        currentSNR =  thisSNR(s);
+
+        % 图1: RI
+        subplot(3,1,1);
+        plot(x_axis, p_RI, 'b-o', 'LineWidth', 1.5); hold on;
+        plot(x_axis, r_RI, 'r--x', 'LineWidth', 1);
+        ylabel('RI'); title(['SNR Index ', num2str(s), ' - Performance Comparison']);
+        legend('Perfect', 'Practical'); grid on;
+        
+        % 图2: CQI
+        subplot(3,1,2);
+        plot(x_axis, p_CQI, 'b-s', 'LineWidth', 1.5); hold on;
+        plot(x_axis, r_CQI, 'r--d', 'LineWidth', 1);
+        %plot(x_axis, s_CQI, 'r--d', 'LineWidth', 1);
+        ylabel('CQI'); grid on;
+        
+        % 图3: PMI (用阶梯图更符合索引跳变的物理特性)
+        subplot(3,1,3);
+        stairs(x_axis, p_i11, 'b', 'LineWidth', 1.5); hold on;
+        stairs(x_axis, r_i11, 'r--', 'LineWidth', 1);
+        ylabel('PMI (i11)'); xlabel('Slots');
+        grid on;
+    
+        sgtitle(sprintf('CSI Report Comparison (SNR: %d)', currentSNR), ...
+                'FontSize', 14, 'FontWeight', 'bold');
+    
+        if Save_to_File
+            saveas(gcf, fullfile(fullResultsPath, sprintf('PractivalvsActualCSI_SNR%d.png', currentSNR)));
+        end  
+    end
+end
+
 %Constellation
 
-
-figure('Name','Constellation', 'NumberTitle','off','Color', 'w', 'Position', [100, 100, 1000, 900],'WindowStyle', 'docked');
-for i = 1:length(ConstellationResults)
-    ax = subplot(2, 2, i);  
-    res = ConstellationResults(i);
-    modType = res.pdsch.Modulation{1}; % May need to add {1}
-    refSymbols = getConstellationPoints(modType, res.pdsch.NumCodewords);
-    plot(res.rxSymbols, '.', 'Color', [0.5 0.5 0.5], 'MarkerSize', 1); % 实测点用灰色，方便看红十字
-    hold on
-    plot(refSymbols, 'r+', 'MarkerSize', 8, 'LineWidth', 1.2);
-    hold off
-    line1 = sprintf('SNR: %.1f dB | Mod: %s', res.snr, modType);
-    line2 = sprintf('TCR: %.3f | Layers: %d | Thr: %.1f Mbps', ...
-                    res.tcr, res.pdsch.NumLayers, res.throughput);
-    
-    titleStr = {line1, line2};
-    title(titleStr,'FontSize', 9);
-    grid on
-    axis square
-    axis([-1.5 1.5 -1.5 1.5]); % 固定坐标系，防止 256QAM 切换到 QPSK 时坐标乱跳
-    xlabel('In-Phase')
-    ylabel('Quadrature')
+if Plot_Constellation
+    figure('Name','Constellation', 'NumberTitle','off','Color', 'w', 'Position', [100, 100, 1000, 900],'WindowStyle', 'docked', 'NumberTitle','off');
+    for i = 1:length(ConstellationResults)
+        ax = subplot(2,length(ConstellationResults) , i);  
+        res = ConstellationResults(i);
+        modType = res.pdsch.Modulation{1}; % May need to add {1}
+        refSymbols = getConstellationPoints(modType, res.pdsch.NumCodewords);
+        plot(res.rxSymbols, '.', 'Color', [0.5 0.5 0.5], 'MarkerSize', 1); % 实测点用灰色，方便看红十字
+        hold on
+        plot(refSymbols, 'r+', 'MarkerSize', 8, 'LineWidth', 1.2);
+        hold off
+        line1 = sprintf('SNR: %.1f dB | Mod: %s', res.snr, modType);
+        line2 = sprintf('TCR: %.3f | Layers: %d | Thr: %.1f Mbps', ...
+                        res.tcr, res.pdsch.NumLayers, res.throughput);
+        
+        titleStr = {line1, line2};
+        title(titleStr,'FontSize', 9);
+        grid on
+        axis square
+        axis([-1.5 1.5 -1.5 1.5]); % 固定坐标系，防止 256QAM 切换到 QPSK 时坐标乱跳
+        xlabel('In-Phase')
+        ylabel('Quadrature')
+    end
+    if Save_to_File
+        saveas(gcf, fullfile(fullResultsPath,  'Constellation.png'));
+    end    
 end
-if Save_to_File
-    saveas(gcf, fullfile(fullResultsPath,  'Constellation.png'));
-end    
+
+if Plot_Constellation
+    figure('Name', 'H for estimated and actual channel', 'NumberTitle','off');
+    for i = 1:length(HestResults)
+        data=HestResults(i);
+        data1=data.h1;
+        data2=data.h2;
+        maxVal = max([max(data1(:)), max(data2(:))]);
+        minVal = min([min(data1(:)), min(data2(:))]);
+        
+        subplot(2,length(HestResults),i)
+        h1=imagesc(data1);
+        colorbar;
+        clim([minVal, maxVal]);
+        line1 = "Estimated Channel";
+        line2 = sprintf('SNR: %.1f dB' , data.snr);
+        
+        titleStr = {line1, line2};
+        title(titleStr);
+        axis xy;
+        xlabel('OFDM Symbols');
+        ylabel('Subcarriers');
+        
+        % Plot the actual channel
+        subplot(2,length(HestResults),i+length(HestResults))
+        h2=imagesc(data2);
+        colorbar;
+        clim([minVal, maxVal]);
+        line1 = "Actual Channel";
+        line2 = sprintf('SNR: %.1f dB' , data.snr);
+        
+        titleStr = {line1, line2};
+        title(titleStr);
+        axis xy;
+        xlabel('OFDM Symbols');
+        ylabel('Subcarriers');
+    end 
+    if Save_to_File
+        saveas(gcf, fullfile(fullResultsPath,  'H_est_act.png'));
+    end  
+end
 
 figure('Name','Throughput % vs SNR', 'NumberTitle','off','WindowStyle', 'docked');
 plot(simParameters.SNRIn, 100* simThroughput./maxThroughput, '-s', 'LineWidth', 1.5);
@@ -699,28 +962,138 @@ end
 
 if simParameters.CSIReportMode == "RI-PMI-CQI"
     perc = 90;
-    plotCQI(simParameters,CSIReport,perc)    
-end
-if Save_to_File
-    saveas(gcf, fullfile(fullResultsPath, 'CQI.png'));
+    if strcmpi(CQIMode, "Wideband")
+        cqiStats = plotCQI(simParameters,CSIReport,perc) ;
+    else 
+        cqiStats = plotSubbandCQI(simParameters,CSIReport,perc) ;
+    end
+    if Save_to_File
+            saveas(gcf, fullfile(fullResultsPath, 'CQI.png'));
+            simResults.CSI.CQI_Stats_Table = cqiStats;
+    end
+    
+    riStats = plotRank(simParameters,CSIReport,perc) ;
+    if Save_to_File
+        saveas(gcf, fullfile(fullResultsPath, 'RI.png'));
+        simResults.CSI.RI_Stats_Table = riStats;
+    end
+    
+    if CQI_PrefectvPractical
+        plotCQI2(simParameters,CSIReport_perfect, CSIReport_prac,perc)
+        if Save_to_File
+            saveas(gcf, fullfile(fullResultsPath, 'CQI2.png'));
+        end
+    
+        plotRank2(simParameters,CSIReport_perfect, CSIReport_prac,perc)
+        if Save_to_File
+            saveas(gcf, fullfile(fullResultsPath, 'RI2.png'));
+        end
+    end
 end
 
-simResults.CQI=cellfun(@(x) median([x.CQI]), CSIReport);
+% --- 4. 视觉诊断原始数据 (用于复现星座图和 H 矩阵) ---
+if Plot_Constellation
+    simResults.ConstellationResults = ConstellationResults;
+    simResults.HestResults = HestResults;
+end
+
+if strcmpi(CQIMode, "Subband")
+    SNRIn = simParameters.SNRIn;             
+    
+    % 差分映射表 (3GPP TS 38.214)
+    offsetMap = [0, 1, 2, -1];
+    
+    % 过滤掉不存在于仿真序列中的 SNR 点
+    validSNRs = intersect(CQI_Investigation_SNR, SNRIn, 'stable');
+    numValid = length(validSNRs);
+    
+    % 创建画布
+    figure('Color', 'w', 'Name', 'Subband CQI Snapshots (Strict Match)');
+    tlo = tiledlayout(numValid, 1, 'TileSpacing', 'Compact');
+    
+    for i = 1:numValid
+        target = validSNRs(i);
+        
+        % 精确寻找索引
+        idx = find(SNRIn == target, 1);
+        
+        % 提取该 SNR 下的所有 Slot 数据
+        currentSNRReports = CSIReport{idx};
+        
+        % 固定选取每个 SNR 下的第一个时刻 (或者你可以改为 randi)
+        slotIdx = 5; 
+        report = currentSNRReports(slotIdx);
+        
+        % 还原物理 CQI
+        raw = double(report.CQI);
+        wbCQI = raw(1);
+        diffs = raw(2:end);
+        actualSubbandCQIs = wbCQI + offsetMap(diffs + 1);
+        numSB = length(actualSubbandCQIs);
+        
+        simResults.stats.subbandCQI(i).SNR = target;
+        simResults.stats.subbandCQI(i).SlotIdx = slotIdx;
+        simResults.stats.subbandCQI(i).WidebandCQI = wbCQI;
+        simResults.stats.subbandCQI(i).PhysicalSubbandCQI = actualSubbandCQIs;
+        % 绘图部分
+        nexttile;
+        % 绘制阶梯图，为了让最后一个子带显示完整，末尾补齐
+        plot(1:numSB, actualSubbandCQIs, '-o', 'LineWidth', 2, 'MarkerSize', 5, ...
+            'MarkerFaceColor', [0.1 0.3 0.6], 'Color',[0.1 0.3 0.6]);
+        
+        hold on;
+        % 画出 Wideband 参考线
+        yline(wbCQI, '--k', sprintf('WB=%d', wbCQI), 'LineWidth', 1.2, 'LabelHorizontalAlignment', 'right');
+        
+        % 细节装饰
+        grid on;
+        set(gca, 'GridLineStyle', ':', 'GridAlpha', 0.5);
+        ylim([0 16]); % CQI 范围 0-15，留一点顶部空间
+        xlim([1 numSB+1]);
+        ylabel('Physical CQI');
+        title(sprintf('Exact SNR: %.1f dB | Slot Index: %d', target, slotIdx), 'FontSize', 10);
+        
+        % 只在最后一张图显示横坐标
+        if i < numValid
+            set(gca, 'XTickLabel', {});
+        else
+            xlabel('Subband Index');
+            xticks(1.5 : 1 : numSB+0.5); % 让刻度对准阶梯中间
+            xticklabels(1:numSB);
+        end
+    end   
+    title(tlo, 'Comparison of Subband Frequency Selectivity at Specific SNRs', 'FontSize', 12);
+    if Save_to_File
+        saveas(gcf, fullfile(fullResultsPath, 'SubbandCQI.png'));
+    end
+end 
+
+%simResults.CQI=cellfun(@(x) median([x.CQI]), CSIReport);
 % Bundle key parameters and results into a combined structure for recording
-simResults.simParameters = simParameters;
-simResults.simThroughput = simThroughput;
-simResults.maxThroughput = maxThroughput;
-simResults.Throughput= 100* simThroughput./maxThroughput;
-simResults.CSIReport = CSIReport;
-simResults.log_tcr_mean=log_tcr_mean;
-simResults.log_layer_mean=log_layer_mean;
-simResults.Mbps=1e-6*simThroughput/(simParameters.NFrames*10e-3);
+simResults.Settings.simParameters = simParameters;
+simResults.Stats.simThroughput = simThroughput;
+simResults.Stats.maxThroughput = maxThroughput;
+simResults.Stats.Throughput= 100* simThroughput./maxThroughput;
+simResults.CSI.CSIReport = CSIReport;
+simResults.Stats.log_tcr_mean=log_tcr_mean;
+simResults.Stats.log_layer_mean=log_layer_mean;
+simResults.Stats.Mbps=1e-6*simThroughput/(simParameters.NFrames*10e-3);
 
 %flattended version
-simResults.log_tcr_f=log_tcr_f;
-simResults.log_layer_f=log_layer_f;
-simResults.log_slot_f=vertcat(log_slot{:});
-simResults.log_mod_f=vertcat(log_mod{:});
+simResults.Stats.log_tcr_f=log_tcr_f;
+simResults.Stats.log_layer_f=log_layer_f;
+simResults.Stats.log_slot_f=vertcat(log_slot{:});
+simResults.Stats.log_mod_f=vertcat(log_mod{:});
+
+simResults.Settings.snrVals = snrVals;
+
+% --- 3. CSI 对比原始数据 (Perfect vs Practical) ---
+if CQI_PrefectvPractical
+    simResults.CSI.CSIReport_perfect = CSIReport_perfect;
+    simResults.CSI.CSIReport_prac = CSIReport_prac;
+    simResults.Settings.CQI_Investigation_SNR = CQI_Investigation_SNR; % 记录调查了哪些 SNR
+end
+
 
 if Save_to_File
     save(fullfile(fullResultsPath, [filename, '.mat']), 'simResults', '-v7.3');
@@ -730,6 +1103,8 @@ end
 disp("End of the simulation");
 %exit
 
+
+%-----------------------------------------------------All functions used
 function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParameters)
 % Extract channel and signal-level parameters, create DL-SCH encoder, and
 % initialize MIMO precoding matrix.
@@ -1177,7 +1552,7 @@ function plotLayerEVM(NSlots,nslot,pdsch,siz,pdschIndices,pdschSymbols,pdschEqSy
     
 end
 
-function plotCQI(simParameters,CSIReport,perc)
+function statsTable = plotCQI(simParameters,CSIReport,perc)
 % Plot CQI median and percentiles 
 
     % Calculate median and percentiles
@@ -1188,6 +1563,9 @@ function plotCQI(simParameters,CSIReport,perc)
     % Calculate the percentage of CQI not in the set {median CQI -1, median CQI, median CQI +1} 
     cqiPerc = cellfun(@(x,y) sum(abs([x.CQI]-y)>1)/length(x),CSIReport,num2cell(med));
     
+    statsTable = table(simParameters.SNRIn(:), med(:), p1(:), p2(:), cqiPerc(:)*100, ...
+        'VariableNames', {'SNR_dB', 'Median_CQI', 'Lower_Bound', 'Upper_Bound', 'Deviation_Pct'});
+
     figure('Name','CQI vs SNR', ...
        'NumberTitle','off');
     subplot(211)
@@ -1205,9 +1583,224 @@ function plotCQI(simParameters,CSIReport,perc)
 
 end
 
+function plotCQI2(simParameters, CSIReportPerfect, CSIReportPrac, perc)
+% plotCQI2: 对比绘制 Perfect 和 Practical 报告的 CQI 中位数及离散度
+% simParameters.SNRIn: 横轴 SNR 向量
+% perc: 百分位数范围 (例如 90 代表 5% 和 95%)4
+    offset = 0.2;
+    
+    % --- 处理 Perfect Report ---
+    med1 = cellfun(@(x) median([x.CQI]), CSIReportPerfect);
+    p1_1 = cellfun(@(x) prctile([x.CQI], 50-perc/2), CSIReportPerfect);
+    p2_1 = cellfun(@(x) prctile([x.CQI], 50+perc/2), CSIReportPerfect);
+    % 计算偏差率
+    cqiPerc1 = cellfun(@(x,y) sum(abs([x.CQI]-y)>1)/length(x), CSIReportPerfect, num2cell(med1));
+
+    % --- 处理 Practical Report ---
+    med2 = cellfun(@(x) median([x.CQI]), CSIReportPrac);
+    p1_2 = cellfun(@(x) prctile([x.CQI], 50-perc/2), CSIReportPrac);
+    p2_2 = cellfun(@(x) prctile([x.CQI], 50+perc/2), CSIReportPrac);
+    % 计算偏差率
+    cqiPerc2 = cellfun(@(x,y) sum(abs([x.CQI]-y)>1)/length(x), CSIReportPrac, num2cell(med2));
+
+    % --- 获取 SNR 轴 ---
+    snr_axis = simParameters.SNRIn;
+    snr_min = min(snr_axis) - offset;
+    snr_max = max(snr_axis) + offset;
+    figure('Name', 'CQI Perfect vs Practical', 'NumberTitle', 'off', 'Color', 'w');
+    
+    % Subplot 1: Median and Percentiles
+    subplot(2,1,1)
+    % Perfect: 蓝色圆圈实线
+    errorbar(snr_axis-offset/2, med1, med1-p1_1, p2_1-med1, 'b-o', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
+    % Practical: 红色方块虚线
+    errorbar(snr_axis+offset/2, med2, med2-p1_2, p2_2-med2, 'r--s', 'LineWidth', 1.2, 'MarkerSize', 6);
+    
+    ylabel('CQI Value')
+    title(sprintf('Median CQI and (%g, %g) Percentiles', 50-perc/2, 50+perc/2));
+    legend('Perfect', 'Practical', 'Location', 'best');
+    grid on;
+    xlim([snr_min, snr_max]);
+    % Subplot 2: Out-of-range Percentage
+    subplot(2,1,2)
+    plot(snr_axis, cqiPerc1*100, 'b-o', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
+    plot(snr_axis, cqiPerc2*100, 'r--s', 'LineWidth', 1.2, 'MarkerSize', 6);
+    
+    xlabel('SNR (dB)')
+    ylabel('Deviation (%)')
+    title('CQI Deviation: % of samples not in {median \pm 1}');
+    legend('Perfect', 'Practical', 'Location', 'best');
+    grid on;
+    xlim([snr_min, snr_max]);
+end
+
+function statsTable = plotSubbandCQI(simParameters, CSIReport, perc)
+% PLOTSUBBANDCQI 还原差分 CQI 并进行统计（修正语法错误版）
+
+    % --- 1. 计算各项统计指标 ---
+    % 每一个 cellfun 内部嵌套 arrayfun 处理 26 个 slot 的结构体数组
+    
+    % 计算真实 CQI 均值
+    subMean = cellfun(@(x) mean(arrayfun(@(s) mean(decodeActualCQI(s.CQI)), x)), CSIReport);
+    
+    % 计算物理跨度 (Range)
+    subRange = cellfun(@(x) mean(arrayfun(@(s) calculateRange(s.CQI), x)), CSIReport);
+    
+    % 计算偏离度 (Deviation)
+    devPerc = cellfun(@(x) mean(arrayfun(@(s) calculateDev(s.CQI), x)), CSIReport);
+    
+    % --- 2. 后续统计与绘图 ---
+    med = subMean; 
+    statsTable = table(simParameters.SNRIn(:), med(:), subRange(:), devPerc(:)*100, ...
+        'VariableNames', {'SNR_dB', 'True_Mean_CQI', 'True_Physical_Range', 'Deviation_Pct'});
+
+    figure('Name', 'True Subband CQI Analysis', 'NumberTitle', 'off');
+    subplot(211)
+    plot(simParameters.SNRIn, subMean, 's-', 'LineWidth', 1.5, 'MarkerFaceColor', 'b');
+    ylim([0 15]);
+    ylabel('Real Physical CQI (Mean)');
+    title('True Average CQI (Wideband + Subband Offsets) vs SNR');
+    grid on;
+
+    subplot(212)
+    yyaxis left
+    bar(simParameters.SNRIn, subRange);
+    ylabel('Physical CQI Spread (Max-Min)');
+    yyaxis right
+    plot(simParameters.SNRIn, devPerc*100, 'ro-', 'MarkerFaceColor', 'r');
+    ylabel('Subband Deviation (%)');
+    xlabel('SNR (dB)');
+    title('Frequency Selectivity & Subband Deviation');
+    legend('Avg Physical Spread', 'Avg Deviation %');
+    grid on;
+end
+
+%% --- 局部辅助函数 (Local Functions) ---
+
+function actualVals = decodeActualCQI(rawCQI)
+    % 将 [Wideband; Diff1; Diff2...] 还原为物理 CQI 数组
+    raw = double(rawCQI);
+    wb = raw(1);
+    % 差分映射: 0->0, 1->+1, 2->+2, 3->-1
+    offsets = [0, 1, 2, -1];
+    % 还原所有子带值 (raw(2:end) 是索引，+1 匹配 MATLAB 1-based 索引)
+    subbands = wb + offsets(raw(2:end) + 1);
+    % 结果包含 wideband 和还原后的 subbands
+    actualVals = [wb; subbands(:)];
+end
+
+function r = calculateRange(rawCQI)
+    vals = decodeActualCQI(rawCQI);
+    % 只计算子带部分的物理跨度
+    if length(vals) > 1
+        subPart = vals(2:end);
+        r = max(subPart) - min(subPart);
+    else
+        r = 0;
+    end
+end
+
+function d = calculateDev(rawCQI)
+    vals = decodeActualCQI(rawCQI);
+    if length(vals) > 1
+        subPart = vals(2:end);
+        % 计算偏离子带均值超过 1 的比例
+        d = sum(abs(subPart - mean(subPart)) > 1) / length(subPart);
+    else
+        d = 0;
+    end
+end
+
+function statsTable = plotRank(simParameters, CSIReport, perc)
+% plotRank2: 对比绘制 Perfect 和 Practical 报告的 RI (Rank Index) 中位数及离散度
+% simParameters.SNRIn: 横轴 SNR 向量
+% perc: 百分位数范围 (例如 90 代表 5% 和 95%)
+
+    offset = 0.2; % 绘图偏移，防止误差棒重叠
+
+    % --- 处理 Perfect Report ---
+    % 假设字段名为 RI，如果你的数据结构里是 Rank，请将 .RI 改为 .Rank
+    med = cellfun(@(x) median([x.RI]), CSIReport);
+    p1 = cellfun(@(x) prctile([x.RI], 50-perc/2), CSIReport);
+    p2 = cellfun(@(x) prctile([x.RI], 50+perc/2), CSIReport);
+
+    statsTable = table(simParameters.SNRIn(:), med(:), p1(:), p2(:), ...
+        'VariableNames', {'SNR_dB', 'Median_RI', 'Lower_Bound', 'Upper_Bound'});
+    % --- 获取 SNR 轴 ---
+    snr_axis = simParameters.SNRIn;
+    snr_min = min(snr_axis) - offset;
+    snr_max = max(snr_axis) + offset;
+    figure('Name', 'Rank Perfect vs Practical', 'NumberTitle', 'off', 'Color', 'w');
+    
+    % Perfect: 蓝色圆圈实线
+    errorbar(snr_axis-offset/2, med, med-p1, p2-med, 'b-o', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
+    
+    ylabel('Rank Value (RI)')
+    title(sprintf('Median RI and (%g, %g) Percentiles', 50-perc/2, 50+perc/2));
+    legend('Perfect', 'Practical', 'Location', 'best');
+    grid on;
+    xlim([snr_min, snr_max]);
+    ylim([max(0, min(p1)-0.5), 4]);
+end
+
+function plotRank2(simParameters, CSIReportPerfect, CSIReportPrac, perc)
+% plotRank2: 对比绘制 Perfect 和 Practical 报告的 RI (Rank Index) 中位数及离散度
+% simParameters.SNRIn: 横轴 SNR 向量
+% perc: 百分位数范围 (例如 90 代表 5% 和 95%)
+
+    offset = 0.2; % 绘图偏移，防止误差棒重叠
+
+    % --- 处理 Perfect Report ---
+    % 假设字段名为 RI，如果你的数据结构里是 Rank，请将 .RI 改为 .Rank
+    med1 = cellfun(@(x) median([x.RI]), CSIReportPerfect);
+    p1_1 = cellfun(@(x) prctile([x.RI], 50-perc/2), CSIReportPerfect);
+    p2_1 = cellfun(@(x) prctile([x.RI], 50+perc/2), CSIReportPerfect);
+    % 计算偏差率 (RI 偏离中位数超过 1 的比例)
+    rankPerc1 = cellfun(@(x,y) sum(abs([x.RI]-y)>1)/length(x), CSIReportPerfect, num2cell(med1));
+
+    % --- 处理 Practical Report ---
+    med2 = cellfun(@(x) median([x.RI]), CSIReportPrac);
+    p1_2 = cellfun(@(x) prctile([x.RI], 50-perc/2), CSIReportPrac);
+    p2_2 = cellfun(@(x) prctile([x.RI], 50+perc/2), CSIReportPrac);
+    % 计算偏差率
+    rankPerc2 = cellfun(@(x,y) sum(abs([x.RI]-y)>1)/length(x), CSIReportPrac, num2cell(med2));
+
+    % --- 获取 SNR 轴 ---
+    snr_axis = simParameters.SNRIn;
+    snr_min = min(snr_axis) - offset;
+    snr_max = max(snr_axis) + offset;
+    figure('Name', 'Rank Perfect vs Practical', 'NumberTitle', 'off', 'Color', 'w');
+    
+    % Subplot 1: Median and Percentiles
+    subplot(2,1,1)
+    % Perfect: 蓝色圆圈实线
+    errorbar(snr_axis-offset/2, med1, med1-p1_1, p2_1-med1, 'b-o', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
+    % Practical: 红色方块虚线
+    errorbar(snr_axis+offset/2, med2, med2-p1_2, p2_2-med2, 'r--s', 'LineWidth', 1.2, 'MarkerSize', 6);
+    
+    ylabel('Rank Value (RI)')
+    title(sprintf('Median RI and (%g, %g) Percentiles', 50-perc/2, 50+perc/2));
+    legend('Perfect', 'Practical', 'Location', 'best');
+    grid on;
+    xlim([snr_min, snr_max]);
+    ylim([min([med1, med2])-1, max([med1, med2])+1]); % 优化显示范围
+
+    % Subplot 2: Out-of-range Percentage
+    subplot(2,1,2)
+    plot(snr_axis, rankPerc1*100, 'b-o', 'LineWidth', 1.5, 'MarkerSize', 6); hold on;
+    plot(snr_axis, rankPerc2*100, 'r--s', 'LineWidth', 1.2, 'MarkerSize', 6);
+    
+    xlabel('SNR (dB)')
+    ylabel('Deviation (%)')
+    title('Rank Deviation: % of samples not in {median \pm 1}');
+    legend('Perfect', 'Practical', 'Location', 'best');
+    grid on;
+    xlim([snr_min, snr_max]);
+end
+
 function ranklimit=rankrestrictionfromRI(RI)
     if all(RI == 1)
-        ranklimit = 0;
+        ranklimit = "0";
     else
         onesPositions = find(RI == 1);  
         ranklimit = strjoin(arrayfun(@num2str, onesPositions, 'UniformOutput', false), '');
@@ -1231,4 +1824,445 @@ function sym = getConstellationPoints(Modulation, NumCodewords)
         sym = [sym; nrSymbolModulate(int2bit((0:2^qm-1)',qm),modulation(cwIndex))]; %#ok<AGROW>
     end
 
+end
+
+function plotWidebandCQIAndSINR(cqiPracticalPerSlot,cqiPerfectPerSlot,SINRPerSubbandPerCWPractical,SINRPerSubbandPerCWPerfect,activeSlotNum)
+%   Plots the wideband SINR and wideband CQI values for each codeword
+%   across all specified active slots (1-based) (in which the CQI is
+%   reported as other than NaN) for practical and perfect channel
+%   estimation cases.
+
+    % Check if there are no slots in which NZP-CSI-RS is present
+    if isempty(activeSlotNum)
+        disp('No CQI data to plot, because there are no slots in which NZP-CSI-RS is present.');
+        return;
+    end
+    cqiPracticalPerCW = permute(cqiPracticalPerSlot(1,:,:),[1 3 2]);
+    cqiPerfectPerCW = permute(cqiPerfectPerSlot(1,:,:),[1 3 2]);
+    SINRPerCWPractical = permute(SINRPerSubbandPerCWPractical(1,:,:),[1 3 2]);
+    SINRPerCWPerfect = permute(SINRPerSubbandPerCWPerfect(1,:,:),[1 3 2]);
+
+    % Extract wideband CQI indices for slots where NZP-CSI-RS is present
+    cqiPracticalPerCWActiveSlots = cqiPracticalPerCW(1,activeSlotNum,:);
+    cqiPerfectPerCWActiveSlots = cqiPerfectPerCW(1,activeSlotNum,:);
+    widebandSINRPractical = 10*log10(SINRPerCWPractical(1,activeSlotNum,:));
+    widebandSINRPerfect = 10*log10(SINRPerCWPerfect(1,activeSlotNum,:));
+
+    if isempty(reshape(cqiPracticalPerCWActiveSlots(:,:,1),1,[]))
+        disp('No CQI data to plot, because all CQI values are NaNs.');
+        return;
+    end
+
+    figure();
+    plotWBCQISINR(widebandSINRPerfect,widebandSINRPractical,211,activeSlotNum,'SINR');
+    plotWBCQISINR(cqiPerfectPerCWActiveSlots,cqiPracticalPerCWActiveSlots,212,activeSlotNum,'CQI');
+end
+
+function plotSubbandCQIAndSINR(subbandCQIPractical,subbandCQIPerfect,SINRPerCWPractical,SINRPerCWPerfect,activeSlotNum,nslot)
+%   Plots the SINR and CQI values for each codeword across all the subbands
+%   for practical and perfect channel estimation cases for the given slot
+%   number (0-based) among all specified active slots (1-based). The
+%   function does not plot the values if CQIMode is 'Wideband' or if the
+%   CQI and SINR values are all NaNs in the given slot.
+
+    % Check if there are no slots in which NZP-CSI-RS is present
+    if isempty(activeSlotNum)
+        disp('No CQI data to plot, because there are no slots in which NZP-CSI-RS is present.');
+        return;
+    end
+    numSubbands = size(subbandCQIPractical,1);
+    if numSubbands > 1 && ~any(nslot+1 == activeSlotNum) % Check if the CQI values are reported in the specified slot
+        disp(['For the specified slot (' num2str(nslot) '), CQI values are not reported. Please choose another slot number.']);
+        return;
+    end
+
+    % Plot subband CQI values
+    if numSubbands > 1 % Subband mode
+        subbandCQIPerCWPractical = subbandCQIPractical(2:end,:,nslot+1);
+        subbandCQIPerCWPerfect = subbandCQIPerfect(2:end,:,nslot+1);
+        subbandSINRPerCWPractical = 10*log10(SINRPerCWPractical(2:end,:,nslot+1));
+        subbandSINRPerCWPerfect = 10*log10(SINRPerCWPerfect(2:end,:,nslot+1));
+        figure();
+        plotSBCQISINR(subbandSINRPerCWPerfect,subbandSINRPerCWPractical,numSubbands,211,nslot,'SINR')
+        plotSBCQISINR(subbandCQIPerCWPerfect,subbandCQIPerCWPractical,numSubbands,212,nslot,'CQI');
+    end
+end
+
+function plotSBCQISINR(perfectVals,practicalVals,numSubbands,subplotIdx,nslot,inpText)
+%   Plots the SINR and CQI values for each codeword across all the subbands
+%   for practical and perfect channel estimation cases for the given slot
+%   number (0-based). The function does not plot the values if CQIMode is
+%   'Wideband' or if the CQI and SINR values are all NaNs in the given
+%   slot.
+
+    subplot(subplotIdx)
+    plot(perfectVals(:,1),'ro-');
+    hold on;
+    plot(practicalVals(:,1),'b*-');
+    if ~all(isnan(perfectVals(:,2))) % Two codewords
+        hold on;
+        plot(perfectVals(:,2),'rs:');
+        hold on;
+        plot(practicalVals(:,2),'bd:');
+        legend({'Codeword 1:Perfect channel est.','Codeword 1:Practical channel est.','Codeword 2:Perfect channel est.','Codeword 2:Practical channel est.'});
+        title(['Estimated Subband ' inpText ' Values for Codeword 1&2 in Slot ' num2str(nslot)]);
+    else % Single codeword
+        legend({'Codeword 1:Perfect channel est.','Codeword 1:Practical channel est.'});
+        title(['Estimated Subband ' inpText ' Values for Codeword 1 in Slot ' num2str(nslot)]);
+    end
+
+    if strcmpi(inpText,'SINR')
+        units = ' in dB';
+    else
+        units = '';
+    end
+    xlabel('Subbands');
+    ylabel(['Subband ' inpText ' Values' units]);
+    xticks(1:numSubbands);
+    xTickLables = num2cell(1:numSubbands);
+    xticklabels(xTickLables);
+    xlim([0 numSubbands+1]);
+    [lowerBound,upperBound] = bounds([perfectVals(:);practicalVals(:)]);
+    ylim([lowerBound-1 upperBound+3.5]);
+end
+
+function plotType1PMIAndRI(pmiPracticalPerSlot,pmiPerfectPerSlot,riPracticalPerSlot,riPerfectPerSlot,activeSlotNum,nslot)
+%   Plots the RI and PMI i1 indices across all specified active slots
+%   (1-based), for practical and perfect channel estimation scenarios. The
+%   function also plots the i2 indices of practical and perfect channel
+%   estimation scenarios across all specified active slots when the PMI
+%   mode is 'Wideband' or plots i2 indices across all the subbands for the
+%   specified slot number (0-based) when the PMI mode is 'Subband'.
+
+    % Check if there are no slots in which NZP-CSI-RS is present
+    if isempty(activeSlotNum)
+        disp('No PMI and RI data to plot, because there are no slots in which NZP-CSI-RS is present.');
+        return;
+    end
+    
+    numi1Indices = numel(pmiPracticalPerSlot(activeSlotNum(1)).i1);
+    if numi1Indices == 6
+        codebookType = 'Type1MultiPanel';
+    else
+        codebookType = 'Type1SinglePanel';
+    end
+    
+    % Extract wideband PMI indices (i1 values) for slots where NZP-CSI-RS
+    % is present
+    i1PerfectValsActiveSlots = reshape([pmiPerfectPerSlot(activeSlotNum).i1],numi1Indices,[])';
+    i1PracticalValsActiveSlots = reshape([pmiPracticalPerSlot(activeSlotNum).i1],numi1Indices,[])';
+    
+    if isempty(i1PerfectValsActiveSlots)
+        disp('No PMI and RI data to plot, because all PMI and RI values are NaNs.');
+        return;
+    end
+    
+    figure;
+    % Plot RI
+    plotRI(riPracticalPerSlot,riPerfectPerSlot,activeSlotNum,411);
+    
+    % Extract and plot i11 indices
+    i11PerfectVals = i1PerfectValsActiveSlots(:,1);
+    i11PracticalVals = i1PracticalValsActiveSlots(:,1);
+    plotIxxIndices(i11PerfectVals,i11PracticalVals,activeSlotNum,412,'i11');
+
+    % Extract and plot i12 indices
+    i12PerfectVals = i1PerfectValsActiveSlots(:,2);
+    i12PracticalVals = i1PracticalValsActiveSlots(:,2);
+    plotIxxIndices(i12PerfectVals,i12PracticalVals,activeSlotNum,413,'i12');
+
+    % Extract and plot i13 indices
+    i13PerfectVals = i1PerfectValsActiveSlots(:,3);
+    i13PracticalVals = i1PracticalValsActiveSlots(:,3);
+    plotIxxIndices(i13PerfectVals,i13PracticalVals,activeSlotNum,414,'i13');
+    
+    % Plot the i141, i142 and i143 indices in type I multi-panel case
+    if strcmpi(codebookType,'Type1MultiPanel')
+        figure()
+        % Extract and plot i141 indices
+        i141PerfectVals = i1PerfectValsActiveSlots(:,4);
+        i141PracticalVals = i1PracticalValsActiveSlots(:,4);
+        plotIxxIndices(i141PerfectVals,i141PracticalVals,activeSlotNum,311,'i141');
+
+        % Extract and plot i142 indices
+        i142PerfectVals = i1PerfectValsActiveSlots(:,5);
+        i142PracticalVals = i1PracticalValsActiveSlots(:,5);
+        plotIxxIndices(i142PerfectVals,i142PracticalVals,activeSlotNum,312,'i142');
+    
+        % Extract and plot i143 indices
+        i143PerfectVals = i1PerfectValsActiveSlots(:,6);
+        i143PracticalVals = i1PracticalValsActiveSlots(:,6);
+        plotIxxIndices(i143PerfectVals,i143PracticalVals,activeSlotNum,313,'i143');
+    end
+
+    % Get the number of subbands
+    numSubbands = size(pmiPracticalPerSlot(activeSlotNum(1)).i2,2);
+    % Get the number of i2 indices according to codebook type
+    numi2Indices = 1;
+    if strcmpi(codebookType,'Type1MultiPanel')
+        numi2Indices = 3;
+    end
+
+    % Get number of active slots
+    numActiveSlots = numel(activeSlotNum);
+    % Extract i2 values
+    i2PerfectVals = reshape([pmiPerfectPerSlot(activeSlotNum).i2],[numSubbands,numi2Indices,numActiveSlots]);     % Of size numActiveSlots-by-numi2Indices-numSubbands
+    i2PracticalVals = reshape([pmiPracticalPerSlot(activeSlotNum).i2],[numSubbands,numi2Indices,numActiveSlots]); % Of size numActiveSlots-by-numi2Indices-numSubbands
+
+    % Plot i2 values
+    if numSubbands == 1 % Wideband mode
+        figure;
+
+        % In type I single-panel case, there is only one i2 index. The
+        % first column of i2PerfectVals and i2PracticalVals corresponds to
+        % i2 index. In type I multi-panel case, the i2 values are a set of
+        % three indices i20, i21, and i22. Each column of i2PerfectVals and
+        % i2PracticalVals correspond to i20, i21, and i22 indices. Extract
+        % and plot the respective index values
+        if strcmpi(codebookType,'Type1SinglePanel')
+            % Extract and plot i2 values in each slot
+            i2PerfectVals = reshape(i2PerfectVals(:,1,:),[],numActiveSlots).';
+            i2PracticalVals = reshape(i2PracticalVals(:,1,:),[],numActiveSlots).';
+            plotIxxIndices(i2PerfectVals,i2PracticalVals,activeSlotNum,111,'i2');
+        else
+            % Extract and plot i20 values in each slot
+            i20PerfectVals = reshape(i2PerfectVals(:,1,:),[],numActiveSlots).';
+            i20PracticalVals = reshape(i2PracticalVals(:,1,:),[],numActiveSlots).';
+            plotIxxIndices(i20PerfectVals,i20PracticalVals,activeSlotNum,311,'i20');
+
+            % Extract and plot i21 values in each slot
+            i21PerfectVals = reshape(i2PerfectVals(:,2,:),[],numActiveSlots).';
+            i21PracticalVals = reshape(i2PracticalVals(:,2,:),[],numActiveSlots).';
+            plotIxxIndices(i21PerfectVals,i21PracticalVals,activeSlotNum,312,'i21');
+
+            % Extract and plot i22 values in each slot
+            i22PerfectVals = reshape(i2PerfectVals(:,3,:),[],numActiveSlots).';
+            i22PracticalVals = reshape(i2PracticalVals(:,3,:),[],numActiveSlots).';
+            plotIxxIndices(i22PerfectVals,i22PracticalVals,activeSlotNum,313,'i22');
+        end
+    else % Subband mode
+        if any(nslot+1 == activeSlotNum)
+    
+            % In subband mode, plot the PMI i2 indices corresponding to the
+            % specified slot number
+            figure;
+
+            if strcmpi(codebookType,'Type1SinglePanel')
+                % Extract and plot i2 values
+                pmiSBi2Perfect = pmiPerfectPerSlot(nslot+1).i2(1,:);
+                pmiSBi2Practical = pmiPracticalPerSlot(nslot+1).i2(1,:);
+                plotI2xIndices_SB(pmiSBi2Perfect,pmiSBi2Practical,numSubbands,nslot,111,'i2');
+            else
+                % Extract and plot i20 values
+                pmiSBi20Perfect = pmiPerfectPerSlot(nslot+1).i2(1,:);
+                pmiSBi20Practical = pmiPracticalPerSlot(nslot+1).i2(1,:);
+                plotI2xIndices_SB(pmiSBi20Perfect,pmiSBi20Practical,numSubbands,nslot,311,'i20');
+                
+                % Extract and plot i21 values
+                pmiSBi21Perfect = pmiPerfectPerSlot(nslot+1).i2(2,:);
+                pmiSBi21Practical = pmiPracticalPerSlot(nslot+1).i2(2,:);
+                plotI2xIndices_SB(pmiSBi21Perfect,pmiSBi21Practical,numSubbands,nslot,312,'i21');
+    
+                % Extract and plot i22 values
+                pmiSBi22Perfect = pmiPerfectPerSlot(nslot+1).i2(3,:);
+                pmiSBi22Practical = pmiPracticalPerSlot(nslot+1).i2(3,:);
+                plotI2xIndices_SB(pmiSBi22Perfect,pmiSBi22Practical,numSubbands,nslot,313,'i22');
+            end
+        else
+            disp(['For the specified slot (' num2str(nslot) '), PMI i2 indices are not reported. Please choose another slot number.'])
+        end
+    end
+end
+
+function plotType2PMIAndRI(pmiPracticalPerSlot,pmiPerfectPerSlot,riPracticalPerSlot,riPerfectPerSlot,panelDims,numBeams,activeSlotNum,nslot)
+%   Plots the grid of beams by highlighting the beams that are used for the
+%   precoding matrix generation for the specified slot number (0-based),
+%   for practical and perfect channel estimation scenarios.
+
+    % Check if there are no slots in which NZP-CSI-RS is present
+    if isempty(activeSlotNum)
+        disp('No PMI and RI data to plot, because there are no slots in which NZP-CSI-RS is present.');
+        return;
+    end
+    plotRI(riPracticalPerSlot,riPerfectPerSlot,activeSlotNum,111);
+    if ~any(nslot+1 == activeSlotNum)
+        disp(['For the specified slot (' num2str(nslot) '), PMI values are not reported. Please choose another slot number.']);
+    else
+        pmiPractical = pmiPracticalPerSlot(nslot+1);
+        pmiPerfect = pmiPerfectPerSlot(nslot+1);
+        figure();
+        plotType2GridOfBeams(pmiPractical,panelDims,numBeams,'Practical Channel Estimation Scenario',1);
+        hold on;
+        plotType2GridOfBeams(pmiPerfect,panelDims,numBeams,'Perfect Channel Estimation Scenario',2);
+    end
+end
+
+function plotRI(riPracticalPerSlot,riPerfectPerSlot,activeSlotNum,subplotIndex)
+%   Plots the RI values across all specified active slots (1-based), for
+%   practical and perfect channel estimation scenarios.
+
+    % Get number of active slots
+    numActiveSlots = numel(activeSlotNum);
+
+    % Extract RI values for slots where NZP-CSI-RS is present
+    RIPerfectValsActiveSlots = riPerfectPerSlot(activeSlotNum)';
+    RIPracticalValsActiveSlots = riPracticalPerSlot(activeSlotNum)';
+    
+    if isempty(RIPerfectValsActiveSlots)
+        disp('No RI data to plot, because all RI values are NaNs.');
+        return;
+    end
+    
+    figure;
+    subplot(subplotIndex);
+    plot(RIPerfectValsActiveSlots,'r-o');
+    hold on;
+    plot(RIPracticalValsActiveSlots,'b-*');
+    xlabel('Slots')
+    ylabel('RI Values');
+    xticks(1:numActiveSlots);
+    xTickLables = num2cell(activeSlotNum(:)-1);
+    xticklabels(xTickLables);
+    [~,upperBound] = bounds([RIPerfectValsActiveSlots; RIPracticalValsActiveSlots]);
+    xlim([0 numActiveSlots+8]);
+    ylim([0 upperBound+1]);
+    yticks(0:upperBound+1);
+    title('RI Values')
+    legend({'Perfect channel est.','Practical channel est.'});
+end
+
+function plotType2GridOfBeams(PMISet,panelDims,numBeams,chEstType,subplotNum)
+%   Plots the grid of beams by highlighting the beams that are used for the
+%   type II codebook based precoding matrix generation.
+
+    N1 = panelDims(1);
+    N2 = panelDims(2);    
+    % Get the oversampling factors
+    O1 = 4;
+    O2 = 1 + 3*(N2 ~= 1);
+
+    % Extract q1, q2 values
+    qSet = PMISet.i1(1:2);
+    q1 = qSet(1)-1;
+    q2 = qSet(2)-1;
+
+    % Extract i12 value
+    i12 = PMISet.i1(3);
+    s = 0;
+    % Find the n1, n2 values for all the beams, as defined in TS 38.214
+    % Section 5.2.2.2.3
+    n1_i12 = zeros(1,numBeams);
+    n2_i12 = zeros(1,numBeams);
+    for beamIdxI = 0:numBeams-1
+        i12minussVal = i12 - s;
+        xValues = numBeams-1-beamIdxI:N1*N2-1-beamIdxI;
+        CValues = zeros(numel(xValues),1);
+        for xIdx = 1:numel(xValues)
+            if xValues(xIdx) >= numBeams-beamIdxI
+                CValues(xIdx) = nchoosek(xValues(xIdx),numBeams-beamIdxI);
+            end
+        end
+        indices = i12minussVal >= CValues;
+        maxIdx = find(indices,1,'last');
+        xValue = xValues(maxIdx);
+        ei = CValues(maxIdx);
+        s = s+ei;
+        ni = N1*N2 - 1 - xValue;
+        n1_i12(beamIdxI+1) = mod(ni,N1);
+        n2_i12(beamIdxI+1) = (ni-n1_i12(beamIdxI+1))/N1;
+    end
+    m1 = O1*(0:N1-1) + q1;
+    m2 = O2*(0:N2-1) + q2;
+
+    % Calculate the indices of orthogonal basis set which corresponds to
+    % the reported i12 value
+    m1_LBeams = O1*(n1_i12) + q1;
+    m2_LBeams = O2*(n2_i12) + q2;
+    OrthogonalBeams = [repmat(m1,1,length(m2));reshape(repmat(m2,length(m1),1),1,[])]';
+
+    % Plot the grid of beams
+    numCirlcesInRow = N1*O1;
+    numCirlcesInCol = N2*O2;
+    subplot(2,1,subplotNum);
+    circleRadius = 1;
+    for colIdx = 0:numCirlcesInCol-1
+        for rowIdx = 0:numCirlcesInRow-1
+            p = nsidedpoly(1000, 'Center', [2*rowIdx 2*colIdx], 'Radius', circleRadius);
+            if any(prod(OrthogonalBeams == [rowIdx colIdx],2))
+                h2 = plot(p, 'FaceColor', 'w','EdgeColor','r','LineWidth',2.5);
+                hold on;
+                if any(prod([m1_LBeams' m2_LBeams'] == [rowIdx colIdx],2))
+                    h3 = plot(p, 'FaceColor', 'g','LineStyle','-.');                
+                end
+            else
+                h1 = plot(p, 'FaceColor', 'w');
+            end
+            hold on;
+        end
+    end
+    rowLength = 2*circleRadius*O1;
+    colLength = 2*circleRadius*O2;
+    for n2 = 0:N2-1
+        for n1 = 0:N1-1
+            x1 = -1*circleRadius + rowLength*n1;
+            x2 = x1 + rowLength;
+            y1 = -1*circleRadius + colLength*n2;
+            y2 = y1 + colLength;
+            x = [x1, x2, x2, x1, x1];
+            y = [y1, y1, y2, y2, y1];
+            plot(x, y, 'b-', 'LineWidth', 2);
+            hold on;
+        end
+    end
+    
+    xlabel('N1O1 beams');
+    ylabel('N2O2 beams');
+    axis equal;
+    set(gca,'xtick',[],'ytick',[]);
+    legend([h1 h2 h3],{'Oversampled DFT beams',['Orthogonal basis set with [q1 q2] = [' num2str(q1) ' ' num2str(q2) ']'],'Selected beam group'},'Location','northeast');
+    title(['Grid of Beams or DFT Vectors for ' chEstType]);
+end
+
+function plotIxxIndices(ixxPerfectVals,ixxPracticalVals,activeSlotNum,subplotInp,pmiIdxType)
+%   Plots i11, i12, i13 indices in case of type I single-panel codebooks
+%   and plots i141, i142, and i143 in case of type I multi-panel codebooks.
+
+    % Plot ixx values
+    subplot(subplotInp)
+    plot(ixxPerfectVals,'r-o');
+    hold on;
+    plot(ixxPracticalVals,'b-*');
+    xlabel('Slots')
+    ylabel([pmiIdxType ' Indices']);
+    % Get number of active slots
+    numActiveSlots = numel(activeSlotNum);
+    xticks(1:numActiveSlots);
+    xTickLables = num2cell(activeSlotNum(:)-1);
+    xticklabels(xTickLables);
+    [lowerBound,upperBound] = bounds([ixxPerfectVals; ixxPracticalVals]);
+    xlim([0 numActiveSlots+8]);
+    ylim([lowerBound-2 upperBound+2]);
+    title(['PMI: ' pmiIdxType ' Indices']);
+    legend({'Perfect channel est.','Practical channel est.'});
+end
+
+function plotI2xIndices_SB(pmiSBi2Perfect,pmiSBi2Practical,numSubbands,nslot,subplotInp,pmiIdxType)
+%   Plots i2 indices in case of type I single-panel codebooks and plots
+%   i20, i21, and i22 in case of type I multi-panel codebooks.
+
+    subplot(subplotInp)
+    plot(pmiSBi2Perfect,'r-o');
+    hold on;
+    plot(pmiSBi2Practical,'b-*');
+    title(['PMI: ' pmiIdxType ' Indices for All Subbands in Slot ' num2str(nslot)]);
+    xlabel('Subbands')
+    ylabel([pmiIdxType ' Indices']);
+    xticks(1:numSubbands);
+    xticklabels(num2cell(1:numSubbands));
+    [lowerBound,upperBound] = bounds([pmiSBi2Perfect pmiSBi2Practical]);
+    yticks(lowerBound:upperBound);
+    yticklabels(num2cell(lowerBound:upperBound));
+    xlim([0 numSubbands+1])
+    ylim([lowerBound-1 upperBound+1]);
+    legend({'Perfect channel est.','Practical channel est.'});
 end
