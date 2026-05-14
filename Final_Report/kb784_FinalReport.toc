@@ -1,0 +1,28 @@
+\contentsline {section}{List of Abbreviations}{4}{section*.6}%
+\contentsline {section}{\numberline {1}Introduction}{5}{section.1}%
+\contentsline {section}{\numberline {2}Background and Methodology}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}5G NR Downlink Physical Layer Overview}{5}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}MIMO Transmission and CSI Feedback}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}CDL Channel Model and Doppler Shift}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}MATLAB Simulation Framework}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Baseline Configuration and Experimental Design}{5}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Baseline CSI-Feedback Downlink Behaviour}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Baseline CDL-C 4x4 Throughput Behaviour}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}CSI-driven Link Adaptation Statistics}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Fixed-Rank Controls}{7}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Summary of Baseline Findings}{7}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Impact of Mobility and CSI Reporting Periodicity}{7}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Doppler Shift under Default CSI Reporting Period}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Reporting Periodicity at Low, Medium and High mobility}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Joint Interpretation: CSI Freshness}{8}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Discussion of Feedback Overhead and Practical Trade-Off}{8}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Robustness across MIMO and Channel Configurations}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Antenna Configuration Sweep}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}CDL Channel Profile Sweep}{8}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}One-layer Control Experiments}{8}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Discussion and Conclusion}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Interpretation of Results}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Limitations}{8}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Future Work}{8}{subsection.6.3}%
+\contentsline {section}{\numberline {7}References}{8}{section.7}%
+\contentsline {section}{\numberline {8}Appendix}{8}{section.8}%
