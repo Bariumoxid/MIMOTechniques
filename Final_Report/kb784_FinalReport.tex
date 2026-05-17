@@ -8,13 +8,26 @@
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
+\usepackage{fancyhdr}  
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage{ragged2e}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{pdflscape}
 \usepackage{listings}
+\usepackage{etoolbox}  
 \usepackage{bbm}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
 \usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{siunitx}
 \tcbuselibrary{listings}
 \usepackage{subcaption}
 \usepackage{titling}
@@ -61,11 +74,10 @@
 \setlength{\droptitle}{-2.5cm}
 
 
-
 %%% Title
 \title{\LARGE \bf
 	Technical Abstract \\
-	\hl{CSI-Feedback-Driven Link Adaptation in 5G NR Downlink MIMO: A Link-Level Simulation Study}}
+	CSI-Feedback-Driven Link Adaptation in 5G NR Downlink MIMO: A Link-Level Simulation Study}
 \author{
 	Kaiyuan Bao (kb784)\\
 	Homerton College, University of Cambridge\\[6pt]
@@ -82,26 +94,41 @@
 	fitpaper=true
 	]{FrontPage.pdf}
 \clearpage
+
 \setcounter{page}{1}
+\newpage
+\section*{\centering Acknowledgement}
+\newpage
+
+
 
 	\maketitle
 	\vspace{-35pt}
-	\pagestyle{plain}
+	\pagestyle{fancy}
+	\fancyhead[L]{}   % 左侧页眉
+	\fancyhead[C]{} 
+	\fancyhead[R]{\rightmark}
+	\renewcommand{\subsectionmark}[1]{\markright{#1}}  % 只显示标题，不显示编号
 	
+\thispagestyle{empty}
 \section*{Background and Motivation}
 
 \section*{Methodology}
 
 \newpage
+
+\thispagestyle{empty}
 \section*{Key Results and Interpretation}
 
 \section*{Conclusion}
 	
 \newpage
 \tableofcontents
+\thispagestyle{empty}
 \newpage
 
 \section*{List of Abbreviations}
+\thispagestyle{empty}
 \addcontentsline{toc}{section}{List of Abbreviations}
 
 \begin{longtable}{p{3cm}p{10cm}}
@@ -119,7 +146,7 @@
 	CSI-RS  & CSI Reference Signal \\
 	
 	DL      & Downlink \\
-	DMRS   & Demodulation Reference Signal \\
+	DM-RS   & Demodulation Reference Signal \\
 	
 	FR & Frequency Range \\
 	
@@ -166,100 +193,263 @@
 
 \section{Introduction}
 
-
+1. 5G NR, Physical Layer, MIMO background. Why 5G needs mimo and adaptive transmission \\
+2. Importance of CSI\\
+3. Why fixed-rank, fixed-modulation BER curve is not enough
+3. Matlab 5G toolbox simulation\\
+4. Baseline scenario \\
+5. RQs\\
+6. Structure of my research\\
+\newpage
 \section{Background and Methodology}
 	\subsection{5G NR Downlink Physical Layer Overview}
+	1. OFDM\\
+	2. PDSCH (DL)\\
+	3. DM-RS\\
+	4. CSI-RS\\
+	5. Slot, RB\\
+	6. Definition of BER/BLER/Throughput\\
+	7. Why throughput not BER
+	\newpage
 	\subsection{MIMO Transmission and CSI Feedback}
+	Specifics of CSI: PMI,RI, CQI \\
+	Feedback loops\\
+	How the modulation scheme/TCR/rank changes based on the feedback
+	\newpage
 	\subsection{CDL Channel Model and Doppler Shift}
+	CDL model definition\\
+	CDL ABCDE difference, why CDL-C default\\
+	Doppler shift definition and impact
+	\newpage
 	\subsection{MATLAB Simulation Framework}
-		\begin{figure}[h]
+		\begin{figure}[H]
 			\centering
 			\includegraphics[width=1\linewidth]{figures/TIKZ_graph_1.pdf}
 			\caption{Overview of the CSI-based downlink transmission and feedback framework, adapted from~\cite{Matlab_PDSCH_CSI}}
 			\label{fig:csi_overview}
 		\end{figure}
-	\subsection{Baseline Configuration and Experimental Design}
-		\begin{table}[h]
+		
+		\begin{table}[H]
 			\centering
 			\caption{System and channel configuration used in the simulation}
 			\label{tab:system_config}
 			\begin{tabular}{ll}
 				\hline
 				\textbf{Parameter} & \textbf{Value} \\
-				\hline
+				\toprule
 				Carrier frequency      & FR1, 3.5 GHz \\
 				Subcarrier spacing          & 30 kHz \\
 				Channel bandwidth           & 106 RBs \\
 				Antenna configuration       & 4 Tx, 4 Rx \\
 				Maximum number of layers    & 4 \\
 				Channel model               & CDL-C \\
-				Mobility scenarios          & Low (10 Hz), High (120 km/h)\\
+				Mobility scenarios          & \makecell[l]{Low (10 Hz), Medium (100 Hz), \\High (390 Hz)}\\
 				Simulation type             & Downlink link-level \\
 				\hline
 			\end{tabular}
 		\end{table}
-
-		\begin{table}[h]
+		
+				\begin{figure}[H]
 			\centering
-			\caption{CSI feedback configuration}
+			\includegraphics[width=\linewidth]{figures/24ResouceGrid.png}
+			\caption{}
+			\label{fig:24ResouceGrid}
+		\end{figure}
+	\subsection{System Configuration and Experimental Design}
+
+
+		\begin{table}[H]
+			\centering
+			\caption{Baseline CSI feedback configuration}
 			\label{tab:csi_config}
-			\begin{tabular}{lll}
+			\begin{tabular}{ll}
 				\hline
-				\textbf{Parameter} & \textbf{Baseline setting} & \textbf{Investigated values} \\
-				\hline
-				CSI report periodicity      & 10 slots & 2–40 slots \\
-				CQI reporting mode          & Wideband & Wideband / Subband \\
-				PMI reporting mode          & Wideband & Wideband / Subband \\
-				Subband size                & 16 RBs   & 4–32 RBs \\
-				RI configuration            & Adaptive & Fixed / Adaptive \\
-				Codebook type               & Type I   & Type I \\
-				Codebook mode               & Mode 1   & Mode 1 / Mode 2 \\
+				\textbf{Parameter} & \textbf{Baseline setting}  \\
+				\toprule
+				CSI report periodicity      & 10 slots \\
+				CQI reporting mode          & Wideband  \\
+				PMI reporting mode          & Wideband  \\
+				Subband size                & 16 RBs   \\
+				RI configuration            & Adaptive \\
+				Codebook type               & Type I    \\
+				Codebook mode               & Mode 1   \\
 				\hline
 			\end{tabular}
 		\end{table}
+		
+		In addition to baseline setting, further tests will be done by changing....\\
+	\begin{table}[H]
+		\centering
+		\caption{Simulation studies and purpose}
+		\label{tab:sim_studies}
+		\begin{tabular}{llc}
+			\hline
+			\textbf{Study Group} & \textbf{Purpose} & \textbf{No. of simulations} \\
+			\toprule
+			Baseline             & CDL-C 4x4 reference        & 1 \\
+			Fixed-rank controls  & Isolate RI effect          &  \\ 
+			Antenna sweep        & MIMO robustness            &  \\  
+			CDL sweep            & Channel robustness         &  \\ 
+			Doppler sweep        & Mobility effect            & 3 \\
+			CSI period sweep     & CSI freshness              &  \\  
+			\hline
+		\end{tabular}
+	\end{table}
 \section{Baseline CSI-Feedback Downlink Behaviour}
 	\subsection{Baseline CDL-C 4x4 Throughput Behaviour}
-		\begin{figure}[h!]
+		\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.75\linewidth]{figures/31StandardRun.pdf}
-			\caption{}
+			\caption{Baseline throughput performance of the CDL-C 4x4 downlink configuration with adaptive CSI feedback}
 			\label{fig:31StandardRun}
-		\end{figure}
+	\end{figure}
+	
+	\vspace{15cm}
 	\subsection{CSI-driven Link Adaptation Statistics}
-		\begin{figure}[h!]
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=1\linewidth]{figures/32New_wMean.pdf}
 		\caption{}
 		\label{fig:32New_wMean}
 	\end{figure}
+	
+	\newpage
 	\subsection{Fixed-Rank Controls}
-	\begin{figure}[h!]
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.75\linewidth]{figures/33Layer124.pdf}
 		\caption{Throughput performance under different maximum layer configurations}
 		\label{fig:33Layer124}
 	\end{figure}
-	\subsection{Summary of Baseline Findings}
-
 	
-
-
+	* To show how the adaptive layer (RI) actually performs 
+	
+	\subsection{Summary of Baseline Findings}
+	1. The above result is the baseline
+	2. Examines the impact of CSI and how it actually works
+	
+	\newpage
+	
+	
+	\section{Robustness across MIMO and Channel Configurations}
+		*** The baseline is then tested against changes in antenna configuration and CDL channel profile, showing which behaviours are robust and which depend on spatial/channel conditions. [Should not go to deep into this section]
+		
+		This chapter examines whether the baseline behaviour observed in the CDL-C 4x4 case remains interpretable under different antenna configurations and CDL channel profiles.
+		\subsection{Antenna Configuration Sweep}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.75\linewidth]{figures/51AntennaNew.pdf}
+			\caption{\hl{Still need to check 1x1 and 4x8 results}}
+			\label{fig:51AntennaNew}
+		\end{figure}
+		
+		\subsection{CDL Channel Profile Sweep}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.75\linewidth]{figures/52CDLBCD.pdf}
+			\caption{}
+			\label{fig:52CDLBCD}
+		\end{figure}
+		\subsection{One-layer Control Experiments}
+		\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.75\linewidth]{figures/53Fixed1Layer.pdf}
+		\caption{\hl{Some issue with [2x2] and [8x4] curves, re-simulate}}
+		\label{fig:53Fixed1Layer}
+	\end{figure}
 \section{Impact of Mobility and CSI Reporting Periodicity}
 	\subsection{Doppler Shift under Default CSI Reporting Period}
-	\begin{figure}[h!]
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.75\linewidth]{figures/41Throughput_Speed.pdf}
 		\caption{}
 		\label{fig:41Throughput_Speed}
 	\end{figure}
-	\subsection{Reporting Periodicity at Low, Medium and High mobility}
-	\subsection{Joint Interpretation: CSI Freshness}
-	\subsection{Discussion of Feedback Overhead and Practical Trade-Off}
+	
 
-\section{Robustness across MIMO and Channel Configurations}
-	\subsection{Antenna Configuration Sweep}
-	\subsection{CDL Channel Profile Sweep}
-	\subsection{One-layer Control Experiments}
+
+	\begin{table}[H]
+		\centering
+		\caption{Interpolated SNR values for different target throughput levels}
+		\label{tab:snr_interpolation}
+		
+		\begin{tabular}{cccc}
+			\midrule
+			\textbf{\makecell{Target Throughput\\(Mbps)}} & \textbf{\makecell{SNR 10 Hz \\(dB)}} & \textbf{\makecell{SNR 100 Hz \\(dB)}} & \textbf{\makecell{SNR 390 Hz \\(dB)}} \\
+			\toprule
+			50  & 4.31  & 5.50  & 6.69  \\
+			80  & 7.66  & 8.91  & 10.50 \\
+			110 & 12.66 & 12.73 & 14.35 \\
+			140 & 15.70 & 16.23 & 17.89 \\
+			\bottomrule
+		\end{tabular}
+		
+		\vspace{0.3em}
+		\raggedright
+		\footnotesize{$^\dagger$ SNR values obtained using linear interpolation.}
+		
+	\end{table}
+	
+
+
+
+	\subsection{Reporting Periodicity at Low and High mobility}
+		\begin{figure}[H]
+		\centering
+		\includegraphics[width=\linewidth]{figures/42PO.pdf}
+		\caption{}
+		\label{fig:42PO}
+			\end{figure}
+		\begin{equation}
+			\Delta \gamma_{f_D,P}
+			=
+			\gamma_{f_D,P}(0.5R^{\max}_{f_D,[10,0]})
+			-
+			\gamma_{f_D,[10,0]}(0.5R^{\max}_{f_D,[10,0]}).
+		\end{equation}
+
+		\begin{table}[H]
+			\centering
+			\caption{SNR required to reach 50\% of the reference peak throughput of the \([10,0]\) baseline, and the corresponding SNR offset relative to this baseline. Positive values indicate an SNR penalty, while negative values indicate an SNR gain}
+			\label{tab:csi_period_snr_required}
+			\begin{tabular}{llcc}
+				\midrule
+				\textbf{Doppler} & \textbf{CSI period} & \(\gamma_{50\%}\) & \(\Delta\gamma\) \\
+				\toprule
+				10 Hz  & 4 slots   & 8.23 dB & 0.18 dB \\
+				10 Hz  & 10 slots  & 8.05 dB & -- \\
+				10 Hz  & 64 slots  & 8.95 dB & 0.90 dB \\
+				10 Hz  & 160 slots & 10.47 dB & 2.42 dB \\
+				\midrule
+				100 Hz & 4 slots   & 8.48 dB & -0.50 dB \\
+				100 Hz & 10 slots  & 8.98 dB & -- \\
+				100 Hz & 64 slots  & 11.01 dB & 2.03 dB \\
+				100 Hz & 160 slots & 10.76 dB & 1.78 dB \\
+				\midrule
+				390 Hz & 4 slots   & 10.28 dB & -0.09 dB \\
+				390 Hz & 10 slots  & 10.37 dB & -- \\
+				390 Hz & 64 slots  & 10.84 dB & 0.47 dB \\
+				390 Hz & 160 slots & 11.21 dB & 0.84 dB \\
+				\bottomrule
+			\end{tabular} \\
+			$^\dagger$: 10 Hz: 163.89Mbps; 100 Hz: 161.01 Mbps; 390 Hz: 157.98 Mbps.\\
+			\hl{No need for 2 digit precision, will change later}
+		\end{table}
+		
+		\newpage
+	\subsection{Joint Interpretation: CSI Freshness}
+	Summarize 4.2 and 4.3 
+	CSI feedback should not be evaluated only by its granularity or reporting frequency. Its value depends on whether the reported channel state remains relevant over the time scale of channel variation.
+	\subsection{Discussion of Feedback Overhead and Practical Trade-Off}
+	1. What exactly is the cost of CSI  feedback
+	2. Under what scenarios are frequent CSI report actually useful
+	
+	\newpage
+	
+
+
 
 
 \section{Discussion and Conclusion}
@@ -269,13 +459,17 @@
 	
 	\subsection{Future Work}
 	
-	
+\newpage
 \section{References} \let\refname\relax
+\thispagestyle{empty}
 	\vspace*{-1cm}
 	\begingroup
 	\bibliography{FinalReport}
 \endgroup
 
+\newpage
 \section{Appendix}
+\thispagestyle{empty}
+\appendix
 
 \end{document}
