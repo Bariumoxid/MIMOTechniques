@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.2)  25 MAY 2026 00:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.2)  25 MAY 2026 17:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1331,7 +1331,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <figures/52CDLBCD.pdf, id=440, 398.82227pt x 242.2377pt>
 File: figures/52CDLBCD.pdf Graphic file (type pdf)
 <use figures/52CDLBCD.pdf>
-Package pdftex.def Info: figures/52CDLBCD.pdf  used on input line 519.
+Package pdftex.def Info: figures/52CDLBCD.pdf  used on input line 512.
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
 
 
@@ -1342,16 +1342,26 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[19 <./figures/51AntennaNew.pdf>]
-<figures/53Fixed1Layer.pdf, id=472, 398.82227pt x 242.2377pt>
+[19 <./figures/51AntennaNew.pdf> <./figures/52CDLBCD.pdf>]
+<figures/53Fixed1Layer.pdf, id=492, 398.82227pt x 242.2377pt>
 File: figures/53Fixed1Layer.pdf Graphic file (type pdf)
 <use figures/53Fixed1Layer.pdf>
-Package pdftex.def Info: figures/53Fixed1Layer.pdf  used on input line 526.
+Package pdftex.def Info: figures/53Fixed1Layer.pdf  used on input line 539.
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
-<figures/41Throughput_Speed.pdf, id=473, 398.82227pt x 242.2377pt>
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[20]
+<figures/41Throughput_Speed.pdf, id=498, 398.82227pt x 242.2377pt>
 File: figures/41Throughput_Speed.pdf Graphic file (type pdf)
 <use figures/41Throughput_Speed.pdf>
-Package pdftex.def Info: figures/41Throughput_Speed.pdf  used on input line 538
+Package pdftex.def Info: figures/41Throughput_Speed.pdf  used on input line 551
 .
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
 
@@ -1363,23 +1373,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[20 <./figures/52CDLBCD.pdf> <./figures/53Fixed1Layer.pdf>]
-<figures/42PO.pdf, id=513, 398.82227pt x 242.2377pt>
+[21 <./figures/53Fixed1Layer.pdf> <./figures/41Throughput_Speed.pdf>]
+<figures/42PO.pdf, id=538, 398.82227pt x 242.2377pt>
 File: figures/42PO.pdf Graphic file (type pdf)
 <use figures/42PO.pdf>
-Package pdftex.def Info: figures/42PO.pdf  used on input line 574.
+Package pdftex.def Info: figures/42PO.pdf  used on input line 587.
 (pdftex.def)             Requested size: 455.24411pt x 276.51236pt.
 
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[21 <./figures/41Throughput_Speed.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 585--589
+Underfull \hbox (badness 10000) in paragraph at lines 598--602
 
  []
 
@@ -1424,7 +1425,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 [26]
 
 [27]
-Overfull \hbox (18.66536pt too wide) in paragraph at lines 677--699
+Overfull \hbox (18.66536pt too wide) in paragraph at lines 704--726
  [][] 
  []
 
@@ -1443,11 +1444,11 @@ Package rerunfilecheck Info: File `kb784_FinalReport.out' has not changed.
 (rerunfilecheck)             Checksum: DA1E27E050CC1D0E64405AB8FD031AF6;6821.
  ) 
 Here is how much of TeX's memory you used:
- 35436 strings out of 473190
- 750811 string characters out of 5719980
- 1136501 words of memory out of 5000000
- 58046 multiletter control sequences out of 15000+600000
- 569512 words of font info for 77 fonts, out of 8000000 for 9000
+ 35444 strings out of 473190
+ 750928 string characters out of 5719980
+ 1136553 words of memory out of 5000000
+ 58053 multiletter control sequences out of 15000+600000
+ 569681 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  102i,17n,106p,1008b,1163s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/tex
@@ -1461,11 +1462,12 @@ fb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texl
 ive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2025/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2025/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2025/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmti12.pfb>
-Output written on kb784_FinalReport.pdf (29 pages, 2276463 bytes).
+e1/public/amsfonts/cm/cmti12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmtt12.pfb>
+Output written on kb784_FinalReport.pdf (29 pages, 2284272 bytes).
 PDF statistics:
- 680 PDF objects out of 1000 (max. 8388607)
- 534 compressed objects within 6 object streams
+ 692 PDF objects out of 1000 (max. 8388607)
+ 542 compressed objects within 6 object streams
  99 named destinations out of 1000 (max. 500000)
  478 words of extra memory for PDF output out of 10000 (max. 10000000)
 

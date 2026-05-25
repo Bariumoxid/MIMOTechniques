@@ -447,7 +447,7 @@ The completion of the project marks the end of my four year study at Cambridge. 
 		\end{highlightblock}
 	\newpage
 	\subsection{Fixed-Rank Controls}
-
+	\label{sec:Fixed-rank}
 	
 	\begin{highlightblock}
 		Figure~\ref{fig:33Layer124} compares the downlink throughput under different rank-restriction configurations. The RI $\leq 4$ case corresponds to the original baseline, where up to four transmission layers are permitted. The RI $\leq 2$ case restricts the adaptive RI selection to at most two layers, while the RI $=1$ case forces single-layer transmission.
@@ -503,15 +503,8 @@ The completion of the project marks the end of my four year study at Cambridge. 
 		\begin{highlightblock}
 		The second check varies the CDL channel profile while keeping the baseline $4\times4$ MIMO configuration and CSI feedback settings unchanged. 
 		
-		Figure~\ref{fig:52CDLBCD} compares the downlink throughput performance under CDL-B, a typical NLOS channel, and CDL-D, a typical LOS channel with the baseline. The CDL-C case corresponds to the baseline configuration. 
-		
-		Across all three profiles, the throughput increases with SNR and eventually approaches a profile-dependent saturation level, showing that the general link-adaptation behaviour remains interpretable. However, the transition region and high-SNR throughput differ significantly between channel profiles.
-		
-		The CDL-D profile achieves the best low-to-medium SNR performance and reaches the high-throughput region earlier than CDL-C. In the transition region, CDL-D shows an SNR gain of approximately 5--6~dB relative to the CDL-C baseline at comparable throughput levels. This appears as a leftward shift of the throughput curve, indicating that the same throughput can be achieved at a lower SNR. At high SNR, CDL-D and CDL-C converge to similar saturation throughput levels, with CDL-D only slightly above the baseline.
-		
-		In contrast, the CDL-B profile increases more gradually and saturates at a much lower throughput, around 80~Mbps. This indicates that, under the current CSI feedback and receiver configuration, the CDL-B channel does not support the same level of effective spatial multiplexing or link adaptation gain as CDL-C and CDL-D. Therefore, the high-SNR throughput ceiling is strongly affected by the channel profile, not only by the nominal antenna configuration.
-		
-		Overall, the CDL profile sweep shows that the qualitative shape of the throughput curve is robust, but the achievable throughput and required SNR are channel-dependent. CDL-D mainly improves the transition-region SNR requirement, CDL-C provides the baseline high-throughput behaviour, while CDL-B represents a more limiting channel condition under the current setup.
+		Figure~\ref{fig:52CDLBCD} compares the downlink throughput performance under CDL-B, a typical NLOS channel, and CDL-D, a typical LOS channel with the baseline. The CDL-C case corresponds to the baseline configuration. ?????Maybe explain why CDL-C is most commonly used.?????
+	
 		\end{highlightblock}
 		
 		\begin{figure}[H]
@@ -520,7 +513,27 @@ The completion of the project marks the end of my four year study at Cambridge. 
 			\caption{Downlink throughout performance under different CDL channel models}
 			\label{fig:52CDLBCD}
 		\end{figure}
+		
+		\begin{highlightblock}
+			For all three CDL profiles, the throughput increases with SNR and eventually approaches saturated levels, showing that the general link-adaptation behaviour remains consistent. 
+			
+			However, the performance of the system under different channel models vary greatly. The CDL-B profile increases gradually, almost always worse than the baseline scenario and saturates at a much lower throughput, around xxx Mbps, as compared to baseline CDL-C. This is as expected as the CDL-B channel model has lower potential in spatial multiplexing as compared to CDL-C. <?>
+			
+			The CDL-D profile on the other hand achieves the best overall performance. It generally leads to higher throughput at low-to-medium SNR regions and, while leading to almost the same saturated throughput as CDL-C at the high SNR, enters the saturated zone in advance. The overall performance has approximately 5~dB in SNR gain as compared to the baseline. This behaviour is also as expected, as the CDL-D channel has a major LOS component, which supports reliable and rapid transmission even at a low SNR situation, leading to clear advantage as compared to other scenarios, when one-layer transmission is used.
+			
+			Overall, the CDL profile sweep shows that regardless the channel used, the overall shape of the throughput curve is to a large extent consistent. But the achievable throughput and required SNR are channel-dependent. For example, among the two additional models tested here, CDL-D mainly improves the transition-region SNR requirement while CDL-B represents a more limiting channel condition under the current setup <?>.
+		\end{highlightblock}
 		\subsection{One-layer Control Experiments}
+		
+		\begin{highlightblock}
+			Similar to section \ref{sec:Fixed-rank}, a controlled experience  is conducted to test the performance of the simulations in this section performs when the maximum number of layers supported is fixed to 1, as shown in Figure~\ref{fig:53Fixed1Layer}. In contrast to the adaptive baseline, where the rank indicator is selected through CSI feedback, the transmission rank is constrained to one layer throughout the SNR sweep. 
+			
+			Considering the $4\times4$ cases, the conclusion from Fig. \ref{fig:52CDLBCD} remains mostly unchanged. CDL-B model is, across the whole simulated SNR range, largely worse than the baseline scenario. CDL-D channel outperforms the baseline at low-and-medium SNR regions, while achieving slightly lower saturated throughput than the baseline.
+			
+			Compared with the adaptive CDL profile sweep, the fixed one-layer result provides a useful diagnostic reference. In the adaptive case, performance differences may arise from both single-layer link quality and the ability of the channel to support spatial multiplexing. Under fixed one-layer transmission, however, rank adaptation is removed. Therefore, the remaining differences mainly reflect how each CDL profile supports robust single-layer transmission under the same CSI feedback and other configurations.
+			
+			Considering the sweep of MIMO configurations when the CDL-C channel model is used, the ....
+		\end{highlightblock}
 		\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.75\linewidth]{figures/53Fixed1Layer.pdf}
@@ -661,11 +674,25 @@ The completion of the project marks the end of my four year study at Cambridge. 
 \section{Appendix}
 \thispagestyle{empty}
 \subsection{Risk Assessment}
-
+	\begin{highlightblock}
+	A complete risk assessment was provided in the submitted Technical Milestone Report (TMR). Since this project is entirely simulation-based and does not involve any physical laboratory experiments, no safety-related or hardware-related risks were identified. The only practical risk identified was the limited time available for the project relative to the computational cost of the simulations.
+	
+	The risk assessment made in the TMR remains valid, and the identified computational risk has been carefully managed throughout the project. For example, during the development of the simulation program, specific care was taken to ensure that the code could be executed in parallel on multiple CPU workers using the MATLAB Parallel Computing Toolbox, rather than being limited to a single CPU thread at a time. In addition, external computing resources were used where necessary, including the CUED central computing system, \texttt{ts-access}.
+	\end{highlightblock}
 \subsection{Ethical Statement}
-
+	\begin{highlightblock}
+	This project is entirely simulation-based and does not involve human participants, personal data, physical laboratory experiments, or deployment of communication hardware. Therefore, no direct safety, privacy, or human-subject ethical risks are identified. The main ethical consideration is the accurate and transparent reporting of the simulation assumptions, limitations, and results.
+	
+	From an environmental perspective, the project requires computational resources for SNR sweeps, channel simulations, and MIMO configuration studies. Although this has a lower environmental impact than physical prototyping or laboratory testing, unnecessary computation was avoided where possible by using a consistent baseline setup and focusing parameter sweeps on the most relevant variables.
+	
+	The project may have positive social and environmental implications if the studied CSI feedback and MIMO techniques contribute to more efficient wireless communication systems. Improved link adaptation can support better spectral efficiency and more reliable connectivity. However, such benefits depend on wider system-level deployment, and advanced communication techniques may also increase implementation complexity and cost. Therefore, the results are presented as link-level simulation findings rather than general claims about real-world network performance.
+	\end{highlightblock}
 \subsection{Declaration of the use of generative AI}
-
+	\begin{highlightblock}
+		Generative AI tools, specifically ChatGPT and Google Gemini, were used in a limited number of situations during the completion of the project. The AI assistance is used mainly during the early stage of the project, including to facilitate the understanding of related concepts, as well as the debugging of the MATLAB simulation implementation.  
+		
+		It can be confirmed that the experimental design, data analysis, interpretation of results, final conclusions, and report content were completed and verified by the author only. No AI tool was used, in any form, to generate, modify, or manipulate the simulated data.
+	\end{highlightblock}
 \newpage
 \thispagestyle{empty}
 \subsection{Detailed Baseline Simulation Configuration}
@@ -673,10 +700,10 @@ The completion of the project marks the end of my four year study at Cambridge. 
 
 \begin{table}[H]
 	\centering
-	\caption{\hl{Baseline simulation parameters, adapted from 3GPP TR 38.753 where applicable}}
-	\begin{tabular}{|ll|l|}
+	\caption{Baseline simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
+	\begin{tabular}{|ll|c|}
 		\hline
-		\multicolumn{2}{|l|}{Parameter}                                                                                                                                   & Value               \\ \hline
+		\multicolumn{2}{|c|}{Parameter}                                                                                                                                   & Value               \\ \hline
 		\multicolumn{2}{|l|}{Duplex mode}                                                                                                                                 & TDD                 \\ \hline
 		\multicolumn{2}{|l|}{FR / Carrier frequency}                                                                                                                      & FR1, 3.5GHz         \\ \hline
 		\multicolumn{2}{|l|}{Maximum Doppler shift}                                                                                                                                    &  10~Hz                  \\ \hline
@@ -691,7 +718,7 @@ The completion of the project marks the end of my four year study at Cambridge. 
 		\multicolumn{1}{|l|}{}                                          & k0                                                                                              & 0                   \\ \cline{2-3} 
 		\multicolumn{1}{|l|}{}                                          & Starting symbol                                                                                 & 2                   \\ \cline{2-3} 
 		\multicolumn{1}{|l|}{}                                          & Length                                                                                          & 12                  \\ \hline
-		\multicolumn{1}{|c|}{\multirow{3}{*}{PDSCH DMRS configuration}} & DMRS Type                                                                                       & Type 1              \\ \cline{2-3} 
+		\multicolumn{1}{|c|}{\multirow{4}{*}{PDSCH DMRS configuration}} & DMRS Type                                                                                       & Type 1              \\ \cline{2-3} 
 		\multicolumn{1}{|c|}{}                                          & Number of additional DMRS                                                                       & 1                   \\ \cline{2-3} 
 		\multicolumn{1}{|c|}{}                                          & \begin{tabular}[c]{@{}l@{}}Max. number of OFDM \\ symbols for DL front loaded DMRS\end{tabular} & 2                   \\ \hline
 
@@ -702,11 +729,11 @@ The completion of the project marks the end of my four year study at Cambridge. 
 % \usepackage{multirow}
 \begin{table}[H]
 	\centering
-	\caption{\hl{Baseline CSI simulation parameters, adapted from 3GPP TR 38.753 where applicable}}
-	\begin{tabular}{|ll|l|l|}
+	\caption{Baseline CSI simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
+	\begin{tabular}{|ll|c|c|}
 		\hline
-		\multicolumn{2}{|l|}{Parameter}                                                                                                               & Unit & Value    \\ \hline
-		\multicolumn{1}{|l|}{\multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}NZP CSI-RS for \\ CSI acquisition\end{tabular}}} & CSI-RS resource type       &      & Periodic \\ \cline{2-4} 
+		\multicolumn{2}{|c|}{Parameter}                                                                                                               & Unit & Value    \\ \hline
+		\multicolumn{1}{|l|}{\multirow{5}{*}{\begin{tabular}[c]{@{}l@{}}NZP CSI-RS for \\ CSI acquisition\end{tabular}}} & CSI-RS resource type       &      & Periodic \\ \cline{2-4} 
 		\multicolumn{1}{|l|}{}                                                                                           & Density                    &      & 1        \\ \cline{2-4} 
 		
 		\multicolumn{1}{|l|}{}                                                                                           & Symbol location                   &      & 4        \\  \cline{2-4} 

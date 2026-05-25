@@ -26,8 +26,8 @@ A.~Manikas, ``Principles of {3G} ({CDMA}), {4G} ({OFDMA}) and {5G},'' Imperial
   College London EE303 Communication Systems.
 
 \bibitem{EricssonBook}
-E.~Dahlman, S.~Parkvall, and J.~Sköld, \emph{5G NR: The Next Generation
-  Wireless Access Technology}, 2nd~ed.\hskip 1em plus 0.5em minus 0.4em\relax
+E.~Dahlman, S.~Parkvall, and J.~Sköld, \emph{{{5G} {NR}: The Next Generation
+  Wireless Access Technology}}, 2nd~ed.\hskip 1em plus 0.5em minus 0.4em\relax
   Academic Press, 2020.
 
 \bibitem{Ericsson_MIMO}
@@ -50,8 +50,8 @@ MathWorks, ``{{{NR} {PDSCH} Throughput Using Channel State Information
 \BIBentrySTDinterwordspacing
 
 \bibitem{ETSI_TDL_CDL}
-{ETSI TR 138 901}, ``Study on channel model for frequencies from 0.5 to 100
-  {GHz},'' ETSI, Tech. Rep., Nov. 2020.
+{ETSI}, ``Study on channel model for frequencies from 0.5 to 100 {GHz},'' {ETSI
+  TR 138 901}, Nov. 2020.
 
 \bibitem{MathWorks2026}
 \BIBentryALTinterwordspacing
@@ -61,12 +61,11 @@ MathWorks, ``Model {5G NR} transport channels with {HARQ},'' 5G Toolbox
 \BIBentrySTDinterwordspacing
 
 \bibitem{3GPPSimulationSpec}
-3GPP, ``Study on spatial channel model for demodulation performance
-  requirements for {NR},'' 3GPP, Tech. Rep. Release 19, Sep. 2025.
+{3GPP}, ``Study on spatial channel model for demodulation performance
+  requirements for {NR},'' {3GPP TR 38.753}, Sep. 2025, {Release 19}.
 
 \bibitem{3gpp_ts_38101_4}
 {{3GPP}}, ``{{User Equipment (UE) radio transmission and reception. Part 4:
-  Performance requirements}},'' {3rd Generation Partnership Project (3GPP)},
-  Tech. Rep. {TS 38.101-4}, Sep. 2025, {Release 19}.
+  Performance requirements}},'' {3GPP TS 38.101-4}, Sep. 2025, {Release 19}.
 
 \end{thebibliography}

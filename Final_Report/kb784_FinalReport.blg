@@ -15,42 +15,42 @@ Database file #1: FinalReport.bib
 Done.
 You've used 9 entries,
             4087 wiz_defined-function locations,
-            868 strings with 8571 characters,
-and the built_in function-call counts, 3523 in all, are:
-= -- 267
-> -- 47
-< -- 4
+            868 strings with 8550 characters,
+and the built_in function-call counts, 3489 in all, are:
+= -- 256
+> -- 48
+< -- 3
 + -- 22
 - -- 11
-* -- 143
-:= -- 656
+* -- 136
+:= -- 632
 add.period$ -- 18
 call.type$ -- 9
 change.case$ -- 9
-chr.to.int$ -- 6
+chr.to.int$ -- 9
 cite$ -- 9
-duplicate$ -- 301
-empty$ -- 332
+duplicate$ -- 293
+empty$ -- 350
 format.name$ -- 12
-if$ -- 754
+if$ -- 758
 int.to.chr$ -- 0
 int.to.str$ -- 9
-missing$ -- 70
+missing$ -- 65
 newline$ -- 58
 num.names$ -- 9
-pop$ -- 185
+pop$ -- 193
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 257
+skip$ -- 260
 stack$ -- 0
-substring$ -- 16
-swap$ -- 178
-text.length$ -- 2
+substring$ -- 20
+swap$ -- 163
+text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 5
 type$ -- 9
 warning$ -- 0
 while$ -- 10
 width$ -- 10
-write$ -- 102
+write$ -- 100
