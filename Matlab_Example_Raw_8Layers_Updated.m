@@ -1,84 +1,16 @@
-% V3 10.12.25 (Single CW, 4 layers)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%这是原版模拟，pmi实现有问题。pmi使用matlab example例子
+Target_Code_Rate= 490/1024/2;
+Modulation = "8QAM";
 
+simParameters = struct();       % Clear simParameters variable to contain all key simulation parameters 
+simParameters.NFrames = 35;      % Number of 10 ms frames
+simParameters.SNRIn = -5:2:55; % SNR range (dB)
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-close all force
-clearvars
-clc
-Version="3";
-simParameters = struct();  
-%set(0, 'DefaultFigureVisible', 'off'); % use this line of code if want to use no GUI simulation (ts-access)
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%CSI-related parameters:
-PO=[4 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
-CQIMode = 'Wideband'; % 'Wideband','Subband'
-PMIMode = 'Wideband'; % 'Wideband','Subband'
-CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
-    %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
-    %for 8 Tx case.
-    %'Type2' max. rank is 2
-SubbandSize = 8; % only required for 'subband', subband size in RB (4,8,16,32) 能被BWP size整除, generally 8, 16 for BWP 106 (NSizeGrid)
-CodebookMode = 1; %1, 2 1: sparse, 2: dense, should only be valid to CB1?
-RIRestriction=[1 1 1 1 0 0 0 0]; % must be length 8, [] means no restriction
-Note='Fixed RI=4, Period = 2'; % Add manually
-%RIRestriction=[];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Simulation Parameters:
-PMI_Setting = "best"; % (random, best, fixed) %off mode TODO
-HARQ_Setting = false; % (ture, false)
-Channel_Model = 'CDL-C'; %% 'CDL-A',...,'CDL-E', custom, 'TDL-A',...,'TDL-E', custom
-Target_Code_Rate= 490/1024;
-Modulation = "256QAM";
-Max_Doppler_Shift=10;  %10, 390 -> 120km/h speed, 195-> 60km/h
-
-%Simulation Settings
-SNR=-5:3:25; % Range or Single Value
-NFrames= 5; 
-Save_to_File=false; %true,false 
-PerfectChannelEstimator=false; %true,false
-DisplaySimulationInformation=false; %true,false
-MaxThroughputDefinition = "absolute layer"; %'absolute layer' (fixed to max layer), 'relative layer'(vary based on the current selection), TODO
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%TODO
-%1. Fix HARQ block size mismatch issue -> no layer change during
-%retransmission
-%2. Output ABS optimal throughput as the base (make this as an option)
-%3. systemetic csi configuration change
-%4. check 1Y vs. 3
-%5. Add additional labelling to the simulation
-%6. Harq retransmission rate figure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-pool = gcp('nocreate');    % get current pool (or empty if none)
-
-if isempty(pool)
-    maxWorkers = feature('numcores');  % 或者 parcluster('local').NumWorkers
-    
-    % 你希望的 worker 数
-    numWorkers = max(1, maxWorkers - 3);
-
-    % 打开自己的 pool
-    pool = parpool('local', numWorkers);
-else
-    fprintf("Reusing existing pool with %d workers\n", pool.NumWorkers);
-end
-
-timestampstart = datestr(now, 'yyyy-mm-dd_HHMM');
-    % Clear simParameters variable to contain all key simulation parameters 
-simParameters.NFrames = NFrames;      % Number of 10 ms frames
-simParameters.SNRIn = SNR; % SNR range (dB)
-simParameters.PerfectChannelEstimator = PerfectChannelEstimator;
-simParameters.DisplaySimulationInformation = DisplaySimulationInformation;
+simParameters.PerfectChannelEstimator = true;
+simParameters.DisplaySimulationInformation = false;
 simParameters.DisplayDiagnostics = false;
-
 % SCS carrier parameters
-simParameters.Carrier = nrCarrierConfig;         % Carrier resource grid nconfiguration
+simParameters.Carrier = nrCarrierConfig;         % Carrier resource grid configuration
 simParameters.Carrier.NSizeGrid = 106;            % Bandwidth in number of resource blocks
 simParameters.Carrier.SubcarrierSpacing = 30;    % 15, 30, 60, 120 (kHz)
 simParameters.Carrier.CyclicPrefix = 'Normal';   % 'Normal' or 'Extended' (Extended CP is relevant for 60 kHz SCS only)
@@ -98,53 +30,25 @@ simParameters.PDSCH.PRBSet = 0:simParameters.Carrier.NSizeGrid-1;
 simParameters.PDSCH.NID = simParameters.Carrier.NCellID;
 simParameters.PDSCH.RNTI = 1;
 
-simParameters.PDSCH.NumLayers = 4;
-
 simParameters.PDSCH.DMRS.DMRSTypeAPosition       = 2; % Mapping type A only. First DM-RS symbol position (2,3)
-simParameters.PDSCH.DMRS.DMRSLength              = 1; % Number of front-loaded DM-RS symbols (1(single symbol),2(double symbol))
+simParameters.PDSCH.DMRS.DMRSLength              = 2; % Number of front-loaded DM-RS symbols (1(single symbol),2(double symbol))
 simParameters.PDSCH.DMRS.DMRSAdditionalPosition  = 1; % Additional DM-RS symbol positions (max range 0...3)
-simParameters.PDSCH.DMRS.DMRSConfigurationType   = 1; % DM-RS configuration type (1,2)
+simParameters.PDSCH.DMRS.DMRSConfigurationType   = 2; % DM-RS configuration type (1,2)
 simParameters.PDSCH.DMRS.NumCDMGroupsWithoutData = 3; % CDM groups without data (1,2,3)
 
 simParameters.PDSCHExtension = struct();
-simParameters.PDSCHExtension.PRGBundleSize = 2; % 2, 4, or [] to signify "wideband"
+simParameters.PDSCHExtension.PRGBundleSize = 4; % 2, 4, or [] to signify "wideband"
 simParameters.PDSCHExtension.MCSTable      = 'Table1'; % 'Table1',...,'Table4'
 simParameters.PDSCHExtension.XOverhead     = [ ]; % 0, 6, 12, 18, or [] for automatic selection.
-simParameters.PDSCHExtension.NHARQProcesses   = 4;       % e.g. 8 parallel HARQ processes
-simParameters.PDSCHExtension.EnableHARQ       = HARQ_Setting;    % enable retransmissions
-simParameters.PDSCHExtension.EnableCBGTransmission = true; % Enable CBG-based transmission, otherwise TB-based transmission
-simParameters.PDSCHExtension.MaxNumCBG = 4;          % Maximum number of CBGs per transport block for each HARQ process in CBG-based transmission
-simParameters.PDSCHExtension.RVSequence       = [0 2 3 1]; % standard 4-RV cycle
-if simParameters.PDSCHExtension.EnableHARQ == false
-    simParameters.PDSCHExtension.NHARQProcesses   = 1; 
-    simParameters.PDSCHExtension.RVSequence = 0;
-    simParameters.PDSCHExtension.EnableCBGTransmission =false;
-end
-        
-simParameters.PDSCHExtension.TargetCodeRate = Target_Code_Rate;
 
-% Available algorithms: 'Belief propagation', 'Layered belief propagation', 'Normalized min-sum', 'Offset min-sum'
-simParameters.PDSCHExtension.LDPCDecodingAlgorithm = "Layered belief propagation";
+simParameters.PDSCHExtension.LDPCDecodingAlgorithm = "Normalized min-sum";
 simParameters.PDSCHExtension.MaximumLDPCIterationCount = 6;
 
-simParameters.TransmitAntennaArray = struct('Size',[8 2 2 8 1], ... % [8 2 2 8 1] for 4Tx, [8 4 2 8 1] for 8Tx AAV(8,1) config.1; [1 2 2 1 1], [1 4 2 1 1] for config.2 
-        'ElementSpacing',[0.5 0.5 4 1], ...
-        'PolarizationAngles', [-45 45], ...
-        'Orientation', [0; 13.1; 0], ...
-        'Element', '38.901', ...
-        'PolarizationModel', 'Model-2'); 
-simParameters.ReceiveAntennaArray = struct('Size',[2 1 2 1 1], ... % [2 1 2 1 1] for 4Rx, [1 4 2 1 1] for 8Rx for both configurations
-        'ElementSpacing',[0.5 0.5 1 1], ...
-        'PolarizationAngles', [-45 45], ...
-        'Orientation', [180; 13.1; 0], ...
-        'Element', 'isotropic', ...
-        'PolarizationModel', 'Model-2');
-
-simParameters.TransmitAntennaArray.NumPanels        = 1; % Number of panels in horizontal dimension (Ng)
-simParameters.TransmitAntennaArray.PanelDimensions  = [2 1]; % Number of columns and rows in a panel (N1, N2)
+simParameters.TransmitAntennaArray.NumPanels        = 1; % Number of transmit panels in horizontal dimension (Ng)
+simParameters.TransmitAntennaArray.PanelDimensions  = [2 2]; % Number of columns and rows in the transmit panel (N1, N2)
 simParameters.TransmitAntennaArray.NumPolarizations = 2; % Number of transmit polarizations
-simParameters.ReceiveAntennaArray.NumPanels         = 1; % Number of panels in horizontal dimension (Ng)
-simParameters.ReceiveAntennaArray.PanelDimensions   = [2 1];                % Number of columns and rows in a panel (N1, N2)
+simParameters.ReceiveAntennaArray.NumPanels         = 1; % Number of receive panels in horizontal dimension (Ng)
+simParameters.ReceiveAntennaArray.PanelDimensions   = [2 2];                % Number of columns and rows in the receive panel (N1, N2)
 simParameters.ReceiveAntennaArray.NumPolarizations  = 2; % Number of receive polarizations
 
 simParameters.NTxAnts = numAntennaElements(simParameters.TransmitAntennaArray);
@@ -152,14 +56,15 @@ simParameters.NRxAnts = numAntennaElements(simParameters.ReceiveAntennaArray);
 
 simParameters.CSIRS = nrCSIRSConfig;
 simParameters.CSIRS.CSIRSType = 'nzp'; % 'nzp','zp'
-simParameters.CSIRS.RowNumber = 4; % 4 for 4 CSI, 6 for 8 CSI
+simParameters.CSIRS.RowNumber = 6; % 1...18
 simParameters.CSIRS.NumRB = simParameters.Carrier.NSizeGrid - simParameters.CSIRS.RBOffset;
-simParameters.CSIRS.CSIRSPeriod = PO;
-simParameters.CSIRS.SymbolLocations = 13;
-simParameters.CSIRS.SubcarrierLocations = 0; % 0 or [0,3,6,9]
+simParameters.CSIRS.CSIRSPeriod = [4 0];
+simParameters.CSIRS.SymbolLocations = 4;
+simParameters.CSIRS.SubcarrierLocations = [0,3,6,9];
 simParameters.CSIRS.Density = 'one';
 
 disp(['Number of CSI-RS ports: ' num2str(simParameters.CSIRS.NumCSIRSPorts) '.'])
+
 csirsCDMLengths = getCSIRSCDMLengths(simParameters.CSIRS);
 
 % Check that the number of CSI-RS ports and transmit antenna elements match
@@ -169,41 +74,33 @@ validateCSIRSConfig(simParameters.Carrier,simParameters.CSIRS,simParameters.NTxA
 simParameters.CSIReportMode = 'RI-PMI-CQI'; % 'RI-PMI-CQI','AI CSI compression','Perfect CSI'
 
 simParameters.CSIReportConfig = struct();
-simParameters.CSIReportConfig.Period = PO;  % Peridocity and offset of the CSI report in slots
+simParameters.CSIReportConfig.Period = [4 0];  % Peridocity and offset of the CSI report in slots
 
 if simParameters.CSIReportMode == "RI-PMI-CQI"  
     
-    riRestrict = zeros(1,8);
-    riRestrict(simParameters.PDSCH.NumLayers) = 1;
-
-    simParameters.CSIReportConfig.CQITable          = "Table3"; % 'Table1','Table2','Table3'
-    simParameters.CSIReportConfig.CQIMode           = CQIMode; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.PMIMode           = PMIMode; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.CodebookType      = CodebookType; % 'Type1SinglePanel','Type1MultiPanel','Type2'
-    simParameters.CSIReportConfig.SubbandSize       = SubbandSize; % Subband size in RB (4,8,16,32)
-    simParameters.CSIReportConfig.CodebookMode      = CodebookMode ; % 1,2
-    simParameters.CSIReportConfig.RIRestriction     = RIRestriction;                   % Empty for no rank restriction
+    simParameters.CSIReportConfig.CQITable          = "Table1"; % 'Table1','Table2','Table3'
+    simParameters.CSIReportConfig.CQIMode           = 'Wideband'; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.PMIMode           = 'Wideband'; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.CodebookType      = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2','eType2'
+    simParameters.CSIReportConfig.SubbandSize       = 4; % Subband size in RB (4,8,16,32)
+    simParameters.CSIReportConfig.CodebookMode      = 1; % 1,2
+    simParameters.CSIReportConfig.RIRestriction     = [0 0 0 0 0 0 0 1];                   % Empty for no rank restriction
+    simParameters.CSIReportConfig.NumberOfBeams     = 2; % 2,3,4. Only for Type II codebooks
+    simParameters.CSIReportConfig.PhaseAlphabetSize = 8; % 4,8. Only for Type II codebooks  
     simParameters.CSIReportConfig.SubbandAmplitude  = true;                  % true/false. Only for Type II codebooks
-    simParameters.CSIReportConfig.NStartBWP         = [];                   % Empty to signal the entire carrier
-    simParameters.CSIReportConfig.NSizeBWP          = [];                   % Empty to signal the entire carrier
-    simParameters.CSIReportConfig.NumberOfBeams = 2;                    % Applicable only when CodebookType is 'Type2' 2,3,4.
-    simParameters.CSIReportConfig.SubbandAmplitude = false;             % Applicable only when CodebookType is 'Type2'
-    simParameters.CSIReportConfig.PhaseAlphabetSize = 4;                % Applicable only when CodebookType is 'Type2' 4,8
-    simParameters.CSIReportConfig.ParameterCombination = 2;             % Applicable only when CodebookType is 'eType2'
-    simParameters.CSIReportConfig.NumberOfPMISubbandsPerCQISubband = 2; % Applicable only when CodebookType is 'eType2'
-    simParameters.CSIReportConfig.PMIModeOverride = PMI_Setting;  % 'best','random','fixed'
-    simParameters.CSIReportConfig.FixedPMI       = 3;       % zero‐based PMI if you choose 'fixed'
+    simParameters.CSIReportConfig.ParameterCombination = 1;             % 1...8. Only for Enhanced Type II codebooks
+    simParameters.CSIReportConfig.NumberOfPMISubbandsPerCQISubband = 1; % 1,2. Only for Enhanced Type II codebooks
+    simParameters.CSIReportConfig.NStartBWP         = [];                                  % Empty to signal the entire carrier
+    simParameters.CSIReportConfig.NSizeBWP          = [];                                  % Empty to signal the entire carrier
 
     % Configure the CSI report with the antenna panel dimensions specified
     simParameters.CSIReportConfig.PanelDimensions = getCSIReportPanelDimensions(simParameters.TransmitAntennaArray,simParameters.CSIReportConfig.CodebookType);
     
-    % Adjust the RIRestriction according to the provided DM-RS
-    % configuration. If the number of DM-RS antenna ports in a given
-    % configuration is less than the possible number of ranks for a CSI
-    % report, restrict those ranks through CSIReportConfig
+    % Adjust the rank restriction based on the number of ports supported by
+    % the DM-RS configuration, as defined in TS 38.211 Table 7.4.1.1.2-5.
     simParameters.CSIReportConfig.RIRestriction = updateRankRestriction(simParameters.PDSCH.DMRS,simParameters.CSIReportConfig);
 else % AI CSI compression
-    
+
     % Specify the file name of the AI neural network
     simParameters.AINetworkFilename = 'csiTrainedNetwork.mat'; 
 
@@ -212,40 +109,33 @@ end
 simParameters.UEProcessingDelay = 7;
 simParameters.BSProcessingDelay = 1;
 
-simParameters.DelayProfile = Channel_Model;   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
+simParameters.DelayProfile = 'CDL-C';   % 'CDL-A',...,'CDL-E','TDL-A',...,'TDL-E'
 simParameters.DelaySpread = 300e-9;     % s
-simParameters.MaximumDopplerShift = Max_Doppler_Shift;  % Hz
+simParameters.MaximumDopplerShift = 5;  % Hz
 
 simParameters.Channel = createChannel(simParameters);
 
-% Create DL-SCH coder / decoder with HARQ
-encodeDLSCH = nrDLSCH;
-encodeDLSCH.MultipleHARQProcesses = true;
-encodeDLSCH.TargetCodeRate         = simParameters.PDSCHExtension.TargetCodeRate;
+% Array to store the maximum throughput for all SNR points
+maxThroughput = zeros(length(simParameters.SNRIn),1); 
+% Array to store the simulation throughput for all SNR points
+simThroughput = zeros(length(simParameters.SNRIn),1);
+simThroughputLayer0=zeros(numel(simParameters.SNRIn),1);
+maxThroughputLayer0=zeros(numel(simParameters.SNRIn),1);
+simThroughputLayer1=zeros(numel(simParameters.SNRIn),1);
+maxThroughputLayer1=zeros(numel(simParameters.SNRIn),1);
 
-decodeDLSCH = nrDLSCHDecoder;
-decodeDLSCH.MultipleHARQProcesses = true;
-decodeDLSCH.TargetCodeRate         = simParameters.PDSCHExtension.TargetCodeRate;
-decodeDLSCH.LDPCDecodingAlgorithm = simParameters.PDSCHExtension.LDPCDecodingAlgorithm;
-decodeDLSCH.MaximumLDPCIterationCount = simParameters.PDSCHExtension.MaximumLDPCIterationCount;
+% Cell array to store CSI reports per SNR point
+CSIReport = {};
 
-errorBlocksPar = zeros(numel(simParameters.SNRIn),1);
-totalBlocksPar = zeros(numel(simParameters.SNRIn),1);
-simThroughputPar = zeros(numel(simParameters.SNRIn),1);
-maxThroughputPar = zeros(numel(simParameters.SNRIn),1);
-slotDuration = 1e-3 / (simParameters.Carrier.SubcarrierSpacing / 15); % seconds per slot, 30kHz scs in this case
-totalTimePar   = zeros(size(simThroughputPar));
-CSIReportPar = cell(numel(simParameters.SNRIn),1);
-blerPar = zeros(numel(simParameters.SNRIn),1);
-
-%for snrIdx = 1:numel(simParameters.SNRIn)
 parfor snrIdx = 1:numel(simParameters.SNRIn)
+    disp(snrIdx)
+% parfor snrIdx = 1:numel(simParameters.SNRIn)
 % To reduce the total simulation time, you can execute this loop in
 % parallel by using the Parallel Computing Toolbox. Comment out the 'for'
 % statement and uncomment the 'parfor' statement.
     
     % Reset the random number generator for repeatability
-    %rng(snrIdx + 1000, "twister")
+    rng(0,"twister");
 
     % Display simulation information at this SNR point
     displaySNRPointProgress(simParameters,snrIdx);
@@ -254,48 +144,16 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
     % they are not PCT broadcast variables when using parfor
     simParamLocal = simParameters;
 
-    % Set up the transmitter, propagation channel, receiver, and CSI
-    % feedback configuration parameters.
-    [carrier,encodeDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParamLocal);
-    [channel,maxChDelay,N0] = setupChannel(simParamLocal,snrIdx);
-    [decodeDLSCH,pathFilters,timingOffset] = setupReceiver(simParamLocal);
+    % Extract CSI feedback configuration parameters
     csiFeedbackOpts = getCSIFeedbackOptions(simParamLocal,snrIdx);
 
-    % Obtain an initial CSI report based on perfect channel estimates that
-    % the Tx can use to adapt the transmission parameters.
-    [csiReports, Hest] = initialCSIReport(simParamLocal,snrIdx,carrier,csirs,channel,csiFeedbackOpts);
-    csiAvailableSlots = 0;
-    
-    if simParameters.CSIReportMode == "RI-PMI-CQI" 
-
-        mode      = simParameters.CSIReportConfig.PMIModeOverride;
-        reportCfg = simParameters.CSIReportConfig;
-        nLayers   = pdsch.NumLayers;
-    
-        switch lower(mode)
-          case 'best'
-            % do nothing, keep the UE‐chosen W in csiReports.W
-            %[~,info] = hDLPMISelect(carrier, csirs, simParamLocal.CSIReportConfig, ...
-                           %nLayers, Hest);
-            %csiReports.W   = info.W;
-
-          case 'random'
-            % replace with truly random PMI
-            [~,info]      = hDLPMIRandom(carrier, csirs, reportCfg, nLayers, Hest);
-            csiReports.W   = info.W;
-    
-          otherwise
-            error('Unknown PMI override mode "%s".',mode);
-        end
-    end
+    % Set up the transmitter, propagation channel, and receiver
+    [carrier,encodeDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParamLocal);
+    [channel,maxChDelay] = setupChannel(simParamLocal);
+    [decodeDLSCH,timingOffset,N0,noiseEst,csiReports,csiAvailableSlots] = setupReceiver(simParamLocal,channel,snrIdx,csiFeedbackOpts);
 
     % Total number of slots in the simulation period
     NSlots = simParamLocal.NFrames * carrier.SlotsPerFrame;
-    
-    % Set up HARQ sequencing
-    harqSeq   = 0:(simParameters.PDSCHExtension.NHARQProcesses-1);
-    rvSeq     = simParameters.PDSCHExtension.RVSequence;
-    harqEntity = HARQEntity(harqSeq, rvSeq, simParameters.PDSCH.NumCodewords);
 
     % Loop over the entire waveform length
     for nslot = 0:NSlots-1
@@ -308,19 +166,21 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % there is a new report available.
         [isNewReport,repIdx] = ismember(nslot,csiAvailableSlots);
         if isNewReport
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %
+            % 1. Get the Precoder (wtx) from CSI, but ignore the suggested Modulation/Rate
             [~,~,wtx] = hCSIDecode(carrier,pdsch,pdschextra,csiReports(repIdx),csiFeedbackOpts);
-            pdsch.NumLayers = size(wtx,1); %Optimum Case
-            %pdsch.NumLayers = simParameters.PDSCH.NumLayers; %Forced
-            %disp(size(wtx))
-            pdsch.Modulation = Modulation;
-
-            if pdsch.NumCodewords > 1
-                pdschextra.TargetCodeRate = [Target_Code_Rate, Target_Code_Rate];
-            else 
-                pdschextra.TargetCodeRate = Target_Code_Rate;
-            end
+            
+            % 2. FORCE FIXED PARAMETERS
+            pdsch.NumLayers = size(wtx,1);
+            
+            % Note: For >4 layers, 5G requires 2 Codewords. 
+            % We must provide Modulation and Rate for BOTH codewords.
+            pdsch.Modulation = {'16QAM', '16QAM'}; 
+            pdschextra.TargetCodeRate = [490/1024, 490/1024];
+            
+            % 3. SAFETY: Force Precoding Matrix to match 8 Layers
+            % If the channel is poor, the CSI report might suggest Rank 1 or 2.
+            % We must override this to prevent dimension mismatch errors.
+            % Apply the fixed rate to the encoder
             encodeDLSCH.TargetCodeRate = pdschextra.TargetCodeRate;
         end
 
@@ -341,34 +201,21 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         [pdschIndices,pdschIndicesInfo] = nrPDSCHIndices(carrier,pdsch);
         trBlkSizes = nrTBS(pdsch.Modulation,pdsch.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
 
-        if MaxThroughputDefinition=="absolute layer"
-            TBSref = nrTBS(pdsch.Modulation,simParameters.PDSCH.NumLayers,numel(pdsch.PRBSet),pdschIndicesInfo.NREPerPRB,pdschextra.TargetCodeRate,pdschextra.XOverhead);
+        % Transport block generation
+        for cwIdx = 1:pdsch.NumCodewords
+            % New data for current codeword then create a new DL-SCH transport block
+            trBlk = randi([0 1],trBlkSizes(cwIdx),1);
+            setTransportBlock(encodeDLSCH,trBlk,cwIdx-1);
+            resetSoftBuffer(decodeDLSCH,cwIdx-1);
         end
 
-        % ─── HARQ-controlled TB generation & encoding ───
-        for cwIdx = 1:pdsch.NumCodewords
-            procID = harqEntity.HARQProcessID;       % current HARQ process
-            rv     = harqEntity.RedundancyVersion(cwIdx);
-        
-            % New data only if this is a fresh transmission
-            if harqEntity.NewData(cwIdx)
-                trBlk = randi([0 1], trBlkSizes(cwIdx), 1);
-                setTransportBlock(encodeDLSCH, trBlk, cwIdx-1, procID);
-            end
-        
-            % If this process has timed out, clear its soft buffer
-            if harqEntity.SequenceTimeout(cwIdx)
-                resetSoftBuffer(decodeDLSCH, cwIdx-1, procID);
-            end
-        end
-        
-        % Now encode using the per-CW RVs and process ID
-        RVs = harqEntity.RedundancyVersion;  % 1×NumCodewords
-        codedTrBlocks = encodeDLSCH(pdsch.Modulation, pdsch.NumLayers, pdschIndicesInfo.G, RVs);
+        % Encode the DL-SCH transport blocks
+        RV = zeros(1,pdsch.NumCodewords);
+        codedTrBlocks = encodeDLSCH(pdsch.Modulation,pdsch.NumLayers, ...
+            pdschIndicesInfo.G,RV);
 
         % PDSCH modulation and precoding
         pdschSymbols = nrPDSCH(carrier,pdsch,codedTrBlocks);
-        %pdschSymbols = pdschSymbols / sqrt(pdsch.NumLayers);   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         [pdschAntSymbols,pdschAntIndices] = nrPDSCHPrecode(carrier,pdschSymbols,pdschIndices,wtx);
         dlGrid(pdschAntIndices) = pdschAntSymbols;        
 
@@ -378,6 +225,11 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         [dmrsAntSymbols,dmrsAntIndices] = nrPDSCHPrecode(carrier,dmrsSymbols,dmrsIndices,wtx);
         dlGrid(dmrsAntIndices) = dmrsAntSymbols;
 
+        % Warn if CSI-RS and PDSCH DM-RS resources overlap
+        if any(ismember(dmrsIndices,csirsInd))
+            warning("CSI-RS and PDSCH DM-RS resources overlap in the resource grid. This can result in decoding failures.")
+        end
+
         % OFDM modulation
         txWaveform = nrOFDMModulate(carrier,dlGrid);
 
@@ -385,36 +237,16 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         % transmitted waveform to flush channel content. These zeros take
         % into account any delay introduced in the channel.
         txWaveform = [txWaveform; zeros(maxChDelay,size(txWaveform,2))]; %#ok<AGROW>
-        [rxWaveform,pathGains,sampleTimes] = channel(txWaveform);
+        [rxWaveform,ofdmResponse,tOffset] = channel(txWaveform,carrier);
         
-        tx = rxWaveform;
-
         % Add AWGN to the received time-domain waveform
-        noise = N0*complex(randn(size(rxWaveform)),randn(size(rxWaveform)));
+        noise = N0*randn(size(rxWaveform),"like",1i);
         rxWaveform = rxWaveform + noise;
-        
-        Ps = mean(abs(tx).^2);     % 信号功率
-        Pn = mean(abs(noise).^2);  % 噪声功率
-        SNR_meas = Ps / Pn;
-        SNRdB_meas = 10*log10(SNR_meas);
 
-
-        %waveInfo = nrOFDMInfo(simParameters.Carrier);
-        %Nfft = double(waveInfo.Nfft); %%%%%%
-        %Ncp  = mean(waveInfo.CyclicPrefixLengths);
-        %cpCorrection = Nfft/(Nfft + Ncp);
-        %SNRdB = simParameters.SNRIn(snrIdx);
-        %SNR = 10^(SNRdB/10);
-        %noiseVar= cpCorrection / SNR;    
-        %noise   = sqrt(noiseVar/2) * (randn(size(rxWaveform),"like",rxWaveform) ...
-                            %+ 1i*randn(size(rxWaveform),"like",rxWaveform));
-        
-
-        if (simParamLocal.PerfectChannelEstimator)
-            % Perfect synchronization. Use information provided by the
-            % channel to find the strongest multipath component
-            pathFilters = getPathFilters(channel);
-            [timingOffset,mag] = nrPerfectTimingEstimate(pathGains,pathFilters);
+        if simParamLocal.PerfectChannelEstimator
+            % For perfect synchronization, use the timing offset obtained
+            % from the channel
+            timingOffset = tOffset;
         else
             % Practical synchronization. Correlate the received waveform
             % with the PDSCH DM-RS to obtain the timing offset and
@@ -441,15 +273,10 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             rxGrid = cat(2,rxGrid,zeros(K,carrier.SymbolsPerSlot-L,R));
         end
 
-        if (simParamLocal.PerfectChannelEstimator)
-            % Perfect channel estimation, using the value of the path gains
-            % provided by the channel. This channel estimate does not
-            % include the effect of transmitter precoding
-            Hest = nrPerfectChannelEstimate(carrier,pathGains,pathFilters,timingOffset,sampleTimes);
-
-            % Get perfect noise estimate (from the noise realization)
-            noiseGrid = nrOFDMDemodulate(carrier,noise(1+timingOffset:end ,:));
-            noiseEst = var(noiseGrid(:));
+        if simParamLocal.PerfectChannelEstimator
+            % For perfect channel estimate, use the OFDM channel response
+            % obtained from the channel
+            Hest = ofdmResponse;
 
             % Get PDSCH resource elements from the received grid and 
             % channel estimate
@@ -462,7 +289,7 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             % each transmission layer, using the PDSCH DM-RS for each
             % layer. This channel estimate includes the effect of
             % transmitter precoding
-            [Hest,noiseEst] = hSubbandChannelEstimate(carrier,rxGrid,dmrsIndices,dmrsSymbols,pdschextra.PRGBundleSize,'CDMLengths',pdsch.DMRS.CDMLengths);
+            [Hest,noiseEst] = nrChannelEstimate(carrier,rxGrid,dmrsIndices,dmrsSymbols,PRGBundleSize = pdschextra.PRGBundleSize,CDMLengths = pdsch.DMRS.CDMLengths);
 
             % Average noise estimate across PRGs and layers
             noiseEst = mean(noiseEst,'all');
@@ -491,40 +318,30 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             dlschLLRs{cwIdx} = dlschLLRs{cwIdx} .* eqCSIScaling{cwIdx}(:); % scale LLRs
         end
         
-        % Decode DL-SCH
+        % Decode the DL-SCH transport channel
         decodeDLSCH.TransportBlockLength = trBlkSizes;
-        [rxBits, blkerr] = decodeDLSCH(dlschLLRs, pdsch.Modulation, pdsch.NumLayers, harqEntity.RedundancyVersion);
-
-
-        % Update HARQ state
-        status = updateAndAdvance(harqEntity, blkerr, trBlkSizes, pdschIndicesInfo.G);
-        if simParamLocal.DisplaySimulationInformation
-            fprintf(' [%s]', status);
-        end
-
-        % Treat any codeword error as a block error:
-        errorBlocksPar(snrIdx) = errorBlocksPar(snrIdx) + any(blkerr);
-        totalBlocksPar(snrIdx) = totalBlocksPar(snrIdx) + 1;
+        decodeDLSCH.TargetCodeRate = pdschextra.TargetCodeRate;
+        [decbits,blkerr] = decodeDLSCH(dlschLLRs,pdsch.Modulation,pdsch.NumLayers,RV);
 
         % Store values to calculate throughput
-        simThroughputPar(snrIdx) = simThroughputPar(snrIdx) + sum(~blkerr .* trBlkSizes);
+        simThroughput(snrIdx) = simThroughput(snrIdx) + sum(~blkerr .* trBlkSizes);
+        maxThroughput(snrIdx) = maxThroughput(snrIdx) + sum(trBlkSizes);
+        simThroughputLayer0(snrIdx) = simThroughputLayer0(snrIdx) + (~blkerr(1)) * trBlkSizes(1);
+        maxThroughputLayer0(snrIdx) = maxThroughputLayer0(snrIdx) + trBlkSizes(1);
 
-        if MaxThroughputDefinition=="absolute layer"
-            maxThroughputPar(snrIdx) = maxThroughputPar(snrIdx) + sum(TBSref);
-        else
-            maxThroughputPar(snrIdx) = maxThroughputPar(snrIdx) + sum(trBlkSizes);
-
+        if numel(trBlkSizes) >= 2
+            simThroughputLayer1(snrIdx) = simThroughputLayer1(snrIdx) + (~blkerr(2)) * trBlkSizes(2);
+            maxThroughputLayer1(snrIdx) = maxThroughputLayer1(snrIdx) + trBlkSizes(2);
         end
-   
-        
-        
-        totalTimePar(snrIdx) = totalTimePar(snrIdx) + slotDuration;
-        
 
+        %fprintf("  trBlkSizes: [%d %d]\n", trBlkSizes(1), trBlkSizes(2));
+        %fprintf("  blkerr:     [%d %d]\n", blkerr(1), blkerr(2));
+        %fprintf("  Mod:        {'%s','%s'}\n", pdsch.Modulation{1}, pdsch.Modulation{2});
+        %fprintf("  TCR:        [%.3f %.3f]\n", pdschextra.TargetCodeRate(1), pdschextra.TargetCodeRate(2));
         % CSI measurements and encoding 
         if csirsTransmission
             
-            if (~simParamLocal.PerfectChannelEstimator)
+            if ~simParamLocal.PerfectChannelEstimator
                 % Consider only the NZP-CSI-RS symbols and indices for CSI-RS based
                 % channel estimation
                 nzpind = (csirsSym ~= 0);
@@ -548,92 +365,67 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
         end
 
         % Print slot-wise information
-        if (simParamLocal.DisplaySimulationInformation)
+        if simParamLocal.DisplaySimulationInformation
             printSlotInfo(NSlots,carrier,pdsch,pdschextra,blkerr,trBlkSizes./pdschIndicesInfo.G,csirsTransmission,csiReports,repIdx)
         end
     end
 
     % Store CSI report for each SNR point
-    CSIReportPar{snrIdx} = csiReports;
-
-    % After finishing all slots for this SNR
-    blerPar(snrIdx) = errorBlocksPar(snrIdx) / totalBlocksPar(snrIdx);
+    CSIReport{snrIdx} = csiReports; %#ok<SAGROW>
     
     % Display the results dynamically in the command window
-    if (simParamLocal.DisplaySimulationInformation)
+    if simParamLocal.DisplaySimulationInformation
         fprintf('\n');
     end
-
-    fprintf('\nSNR (dB) = %.1f\n', simParameters.SNRIn(snrIdx));
-    fprintf('Throughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughputPar(snrIdx)/(simParamLocal.NFrames*10e-3));
-    fprintf('Throughput(%%) for %d frame(s) = %.4f\n',simParamLocal.NFrames,simThroughputPar(snrIdx)*100/maxThroughputPar(snrIdx));
-    fprintf('BLER for %d frame(s) = %.4f\n', simParameters.NFrames, blerPar(snrIdx));
-    fprintf('Transmission Rate (Mbps) = %.4f\n', simThroughputPar(snrIdx)./totalTimePar(snrIdx)/1e6)
-   
+    fprintf('\nThroughput(Mbps) for %d frame(s) = %.4f\n',simParamLocal.NFrames,1e-6*simThroughput(snrIdx)/(simParamLocal.NFrames*10e-3));
 
 end
-
-goodputMbpsPar = simThroughputPar ./ totalTimePar / 1e6; %1e-6 to Mbps unit
-bler = blerPar;
-maxThroughput = maxThroughputPar;
-simThroughput = simThroughputPar;
-CSIReport = CSIReportPar;
-
-%%%%%%%%%%%%%%
 figure;
 plot(simParameters.SNRIn,simThroughput*100./maxThroughput,'o-.')
+
 xlabel('SNR (dB)'); ylabel('Throughput (%)'); grid on;
-
-figure;
-plot(simParameters.SNRIn, goodputMbpsPar, '-s', 'LineWidth', 1.5);
-xlabel('SNR (dB)');
-ylabel('Goodput (Mbps)');
-grid on;
-
-
 title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
               simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
               simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
               char(simParameters.CSIReportMode)));
+figure;
+plot(simParameters.SNRIn,simThroughputLayer0*100./maxThroughputLayer0,'o-.')
+
+xlabel('SNR (dB)'); ylabel('Throughput (%)'); grid on;
+title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
+              simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
+              simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
+              char(simParameters.CSIReportMode)));
+figure;
+plot(simParameters.SNRIn,simThroughputLayer1*100./maxThroughputLayer1,'o-.')
+
+xlabel('SNR (dB)'); ylabel('Throughput (%)'); grid on;
+title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
+              simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
+              simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
+              char(simParameters.CSIReportMode)));
+
+figure;
+plot(simParameters.SNRIn,1e-6*simThroughput/(simParameters.NFrames*10e-3),'o-.')
+
+xlabel('SNR (dB)'); ylabel('Throughput (Mbps)'); grid on;
+title(sprintf('%s (%dx%d) / NRB=%d / SCS=%dkHz / CSI: %s', ...
+              simParameters.DelayProfile,simParameters.NTxAnts,simParameters.NRxAnts, ...
+              simParameters.Carrier.NSizeGrid,simParameters.Carrier.SubcarrierSpacing,...
+              char(simParameters.CSIReportMode)));
+
+%%%
 %if simParameters.CSIReportMode == "RI-PMI-CQI"
-  %  perc = 90;
- %   plotCQI(simParameters,CSIReport,perc)
-%    simResults.CSIReport = CSIReport;
+ %   perc = 90;
+  %  plotCQI(simParameters,CSIReport,perc)    
 %end
 
 % Bundle key parameters and results into a combined structure for recording
 simResults.simParameters = simParameters;
 simResults.simThroughput = simThroughput;
 simResults.maxThroughput = maxThroughput;
-simResults.bler         = bler;
-simResults.goodput=goodputMbpsPar;
-if Save_to_File
-    resultsFolder = './results/';
-    
-    harqFlag = simParameters.PDSCHExtension.EnableHARQ;
-    pmiMode = simParameters.CSIReportConfig.PMIModeOverride;
-    
-    timestampend = datestr(now, 'yyyy-mm-dd_HHMM');
-    filename = sprintf( ...
-    '%s__%s_%s_%dx%d_L%d_%dHz_HARQ-%d_PMI-%s_ver%s_%s.mat', ...
-    timestampstart, timestampend, ...
-    simParameters.DelayProfile, ...
-    simParameters.NTxAnts, simParameters.NRxAnts, ...
-    simParameters.PDSCH.NumLayers, ...
-    simParameters.MaximumDopplerShift, ...
-    harqFlag, pmiMode, Version, Note);
+simResults.CSIReport = CSIReport;
 
-    fullPath = fullfile(resultsFolder, filename);
-    
-    if ~exist(resultsFolder, 'dir')
-        mkdir(resultsFolder);
-    end
-    disp("File Saved successfully")
-    save(fullPath, 'simResults', '-v7.3');
-end   
-    
-disp("end of the simulation");
-%exit
 function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParameters)
 % Extract channel and signal-level parameters, create DL-SCH encoder, and
 % initialize MIMO precoding matrix.
@@ -657,8 +449,9 @@ function [carrier,eDLSCH,pdsch,pdschextra,csirs,wtx] = setupTransmitter(simParam
     
 end
 
-function [decodeDLSCH,pathFilters,timingOffset] = setupReceiver(simParameters)
-% Create and configure DL-SCH decoder and initialize receiver parameters
+function [decodeDLSCH,timingOffset,N0,noiseEst,csiReports,csiAvailableSlots] = setupReceiver(simParameters,channel,snrIdx,csiFeedbackOpts)
+% Create and configure DL-SCH decoder. Obtain noise related quantities and
+% initial CSI feedback from perfect channel knowledge.
 
     % Create DL-SCH decoder system object to perform transport channel
     % decoding
@@ -666,11 +459,37 @@ function [decodeDLSCH,pathFilters,timingOffset] = setupReceiver(simParameters)
     decodeDLSCH.LDPCDecodingAlgorithm = simParameters.PDSCHExtension.LDPCDecodingAlgorithm;
     decodeDLSCH.MaximumLDPCIterationCount = simParameters.PDSCHExtension.MaximumLDPCIterationCount;
 
-    % Initialize channel path filters and timing offset. Timing offset is
-    % updated in every slot for perfect synchronization and when the
-    % correlation is strong for practical synchronization
-    pathFilters = [];
-    timingOffset = 0;
+    % Calculate noise standard deviation. Normalize noise power by the IFFT
+    % size used in OFDM modulation, as the OFDM modulator applies this
+    % normalization to the transmitted waveform.
+    carrier = simParameters.Carrier;
+    waveInfo = nrOFDMInfo(carrier);
+    SNRdB = simParameters.SNRIn(snrIdx);
+    SNR = 10^(SNRdB/10);    
+    N0 = 1/sqrt(double(waveInfo.Nfft)*SNR);
+
+    % Also normalize by the number of receive antennas if the channel
+    % applies this normalization to the output
+    chInfo = info(channel);
+    if channel.NormalizeChannelOutputs
+        N0 = N0/sqrt(chInfo.NumOutputSignals);
+    end
+
+    % Initial channel estimate
+    [Hest,timingOffset] = getInitialChannelEstimate(carrier,channel,chInfo.MaximumChannelDelay);
+
+    % Initial noise variance
+    noiseEst = N0^2*double(waveInfo.Nfft);
+
+    % Obtain an initial CSI report based on perfect channel estimates that
+    % the Tx can use to adapt the transmission parameters.
+    csirs = simParameters.CSIRS;
+
+    % Initial CSI report using initial channel estimate
+    csiFeedbackOpts.PerfectChannelEstimator = true;
+    csirs.CSIRSPeriod = 'on';
+    csiReports = hCSIEncode(carrier,csirs,Hest,noiseEst,csiFeedbackOpts);
+    csiAvailableSlots = 0;
 
 end
 
@@ -680,9 +499,9 @@ function channel = createChannel(simParameters)
 
     % Number of antenna elements and polarizations
     nTxAnts = simParameters.NTxAnts;
-    numTxPol = simParameters.TransmitAntennaArray.NumPolarizations;
+    numTxPol = 1 + (nTxAnts>1);
     nRxAnts = simParameters.NRxAnts;
-    numRxPol = simParameters.ReceiveAntennaArray.NumPolarizations;
+    numRxPol = 1 + (nRxAnts>1);
     
     if contains(simParameters.DelayProfile,'CDL')
 
@@ -704,10 +523,6 @@ function channel = createChannel(simParameters)
         channel.TransmitAntennaArray.Size = [M N numTxPol 1 Ng];
         channel.TransmitAntennaArray.ElementSpacing = [0.5 0.5 1 1]; % Element spacing in wavelengths
         channel.TransmitAntennaArray.PolarizationAngles = [-45 45];  % Polarization angles in degrees
-        channel.TransmitAntennaArray.Orientation = [0; 13.1; 0];
-        channel.TransmitAntennaArray.Element = '38.901';
-        channel.TransmitAntennaArray.PolarizationModel = 'Model-2';
-
         
         % Rx antenna array configuration in CDL channel
         rxArray = simParameters.ReceiveAntennaArray;
@@ -718,9 +533,6 @@ function channel = createChannel(simParameters)
         channel.ReceiveAntennaArray.Size = [M N numRxPol 1 Ng];
         channel.ReceiveAntennaArray.ElementSpacing = [0.5 0.5 1 1];  % Element spacing in wavelengths
         channel.ReceiveAntennaArray.PolarizationAngles = [0 90];     % Polarization angles in degrees
-        channel.ReceiveAntennaArray.Orientation = [180; 13.1; 0];
-        channel.ReceiveAntennaArray.Element = 'isotropic';
-        channel.ReceiveAntennaArray.PolarizationModel = 'Model-2';
 
     elseif contains(simParameters.DelayProfile,'TDL')
 
@@ -739,9 +551,10 @@ function channel = createChannel(simParameters)
     channel.DelayProfile = simParameters.DelayProfile;
     channel.DelaySpread = simParameters.DelaySpread;
     channel.MaximumDopplerShift = simParameters.MaximumDopplerShift;
-    if contains(simParameters.DelayProfile, "CDL") 
-        channel.CarrierFrequency=3.5e9;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    end
+
+    % Configure the channel to return the OFDM response
+    channel.ChannelResponseOutput = 'ofdm-response';
+
     % Get information about the baseband waveform after OFDM modulation step
     waveInfo = nrOFDMInfo(simParameters.Carrier);
 
@@ -750,11 +563,10 @@ function channel = createChannel(simParameters)
     
 end
 
-function [channel,maxChannelDelay,N0] = setupChannel(simParameters,snrIdx)
-% Reset the propagation channel. Obtain the maximum channel
-% delay and calculate the AWGN standard deviation.
+function [channel,maxChannelDelay] = setupChannel(simParameters)
+% Reset propagation channel and obtain the maximum channel delay
 
-    % Extract channel
+    % Extract carrier and channel
     channel = simParameters.Channel;
     channel.reset();
 
@@ -762,72 +574,20 @@ function [channel,maxChannelDelay,N0] = setupChannel(simParameters,snrIdx)
     chInfo = info(channel);
     maxChannelDelay = chInfo.MaximumChannelDelay;
 
-    % Calculate noise standard deviation. Normalize noise power by the IFFT
-    % size used in OFDM modulation, as the OFDM modulator applies this
-    % normalization to the transmitted waveform.
-    SNRdB = simParameters.SNRIn(snrIdx);
-    SNR = 10^(SNRdB/10);
-    waveInfo = nrOFDMInfo(simParameters.Carrier);
-     
-    %Nfft = double(waveInfo.Nfft);
-    %Ncp  = mean(waveInfo.CyclicPrefixLengths);
-
-    % CP energy correction
-    %cpCorrection = Nfft / (Nfft + Ncp);
-   %N0 = sqrt(cpCorrection) / sqrt(Nfft * SNR);
-
-    %N0=N0/sqrt(simParameters.PDSCH.NumLayers);%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Also normalize by the number of receive antennas if the channel
-    % applies this normalization to the output
-    %if channel.NormalizeChannelOutputs
-        %N0 = N0/sqrt(chInfo.NumOutputSignals);
-    %end
-   % N0 = N0 / sqrt(2);%%%%%%%
-    
-    Nfft = double(waveInfo.Nfft);
-    N0 = 1 / sqrt(2 * Nfft * SNR);
-    
-    if channel.NormalizeChannelOutputs
-       N0 = N0/sqrt(chInfo.NumOutputSignals/2); %%%%%%%%%%%%%%%%%%%%% change according to the number of receiving antennas
-    end
-
 end
 
-function [csiReport, Hest] = initialCSIReport(simParameters,snrIdx,carrier,csirs,channel,csiFeedbackOpts)
-% Get an initial CSI report using a perfect channel estimate
+function [ofdmResponse,toffset] = getInitialChannelEstimate(carrier,channel,maxChannelDelay)
+% Obtain OFDM channel response and timing offset before first transmission.
+% This can be used to obtain initial transmission parameters.
 
-    [Hest,nVar] = getInitialChannelEstimate(carrier,channel,simParameters.SNRIn(snrIdx));
-    csiFeedbackOpts.PerfectChannelEstimator = true;
-    csirs.CSIRSPeriod = 'on';
-    csiReport = hCSIEncode(carrier,csirs,Hest,nVar,csiFeedbackOpts);
-    
-end
-
-function [estChannelGrid,nVar] = getInitialChannelEstimate(carrier,propchannel,SNRdB)
-% Obtain channel estimate before first transmission. This can be used to
-% obtain initial transmission parameters
-
-    ofdmInfo = nrOFDMInfo(carrier);
-    
-    chInfo = info(propchannel);
-
-    % Clone channel and get path gains and sample times for perfect timing
-    % and channel estimation
-    channel = clone(propchannel);
+    % Clone channel and configure channel to get OFDM channel response for
+    % one slot
+    channel = clone(channel);
     release(channel);
     channel.ChannelFiltering = false;
-    channel.NumTimeSamples = (ofdmInfo.SampleRate/1000/carrier.SlotsPerSubframe)+chInfo.MaximumChannelDelay;
-    [pathGains,sampleTimes] = channel();
-    
-    % Perfect timing synch    
-    pathFilters = getPathFilters(channel);
-    offset = nrPerfectTimingEstimate(pathGains,pathFilters);
-    
-    % Perfect channel estimate
-    estChannelGrid = nrPerfectChannelEstimate(carrier,pathGains,pathFilters,offset,sampleTimes);
-
-    % Noise variance (does not account for channel effects at this point.)
-    nVar = 10^(-SNRdB/10)/size(estChannelGrid,3);
+    ofdmInfo = nrOFDMInfo(carrier);
+    channel.NumTimeSamples = (ofdmInfo.SampleRate*1e-3/carrier.SlotsPerSubframe) + maxChannelDelay;
+    [ofdmResponse,toffset] = channel(carrier);
     
 end
 
@@ -838,6 +598,10 @@ function XOverhead = getXOverhead(carrier,csirs)
     [~,csirsInfo] = nrCSIRSIndices(carrier,csirs);
     csirsRE = length(csirsInfo.KBarLBar{1})*length(csirsInfo.KPrime{1})*length(csirsInfo.LPrime{1});
     [~,XOverhead] = quantiz(csirsRE,[0 6 12],[0 6 12 18]);
+    
+    if csirsRE > XOverhead
+        warning("The CSI-RS RE overhead is higher than the maximum 18. This can result in decoding failures.")
+    end
 
 end
 
@@ -907,24 +671,26 @@ function numElemenets = numAntennaElements(antArray)
     
 end
 
-function RIRestriction = updateRankRestriction(dmrsConfig,CSIReportConfig)
-% Adjust the csi report configuration to restrict ranks, if the allowed number of DMRS Antenna ports less than the possible ranks for the given DMRS configuration  
-    RIRestriction    =  CSIReportConfig.RIRestriction;
+function ranks = updateRankRestriction(dmrsConfig,CSIReportConfig)
+% Restrict ranks unsupported by the DM-RS configuration
+    ranks = CSIReportConfig.RIRestriction;
     
     if ~dmrsConfig.DMRSEnhancedR18 && (dmrsConfig.DMRSLength == 1) && strcmpi(CSIReportConfig.CodebookType, 'Type1SinglePanel')
         if (dmrsConfig.DMRSConfigurationType == 1)
-            % restrict ranks upto 4 for DMRS configuration type 1
-            dmrsAllowedRanks    = [ones(1,4) zeros(1,4)];
+            % Up to rank 4 for DM-RS configuration type 1
+            dmrsRankRestriction = [ones(1,4) zeros(1,4)];
         else
-            % restrict ranks upto 6 for DMRS configuration type 2
-            dmrsAllowedRanks    = [ones(1,6) zeros(1,2)];
-        end
-        
-        if isempty(RIRestriction)
-            RIRestriction = ones(1,8);
+            % Up to rank 6 for DM-RS configuration type 2
+            dmrsRankRestriction = [ones(1,6) zeros(1,2)];
         end
 
-        RIRestriction = RIRestriction.*dmrsAllowedRanks;
+        if isempty(ranks)
+            ranks = ones(1,8);
+        end
+
+        ranks = ranks.*dmrsRankRestriction;
+
+        fprintf('The PDSCH DM-RS configuration limits the maximum number of layers to %d. \n',find(dmrsRankRestriction,1,'last'));
     end
 end
 
@@ -1013,17 +779,17 @@ end
 
 function printSlotInfo(NSlots,carrier,pdsch,pdschextra,blkerr,ECR,csirsTransmission,csiReports,reportIndex)
 % Print information about the current slot transmission
-    
+
     ncw = pdsch.NumCodewords;
     cwLayers = floor((pdsch.NumLayers + (0:ncw-1)) / ncw);
     infoStr = [];
     for cwIdx = 1:ncw
-        if blkerr
+        if blkerr(cwIdx)
             infoStrCW = "Transmission failed";
         else
             infoStrCW = "Transmission succeeded";
         end
-        infoStrCW = sprintf("%22s (Layers=%d, Mod=%5s, TCR=%.3f, CR=%.3f).",infoStrCW,cwLayers(cwIdx),pdsch.Modulation,pdschextra.TargetCodeRate(cwIdx),ECR(cwIdx));
+        infoStrCW = sprintf("%22s (Layers=%d, Mod=%5s, TCR=%.3f, CR=%.3f).",infoStrCW,cwLayers(cwIdx),pdsch.Modulation{cwIdx},pdschextra.TargetCodeRate(cwIdx),ECR(cwIdx));
         if (ncw>1)
             infoStr = sprintf('%s\n%s%s',infoStr,sprintf('CW%d: %s',cwIdx-1),infoStrCW);
         else

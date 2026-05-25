@@ -1,9 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Version 4
-Version="4.0";
+%Version 5
+Version="5.0";
 close all force
 clearvars
 clc
+
 
 %parpool('local', 20);
 % Can either flex layer + modulation + TCR or flex modulation + TCR
@@ -17,26 +18,26 @@ clc
 %检查所有数据是不是都保存到输出文件里面了
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Save_to_File=true; %true, false will save plotted figures too as a reference
+Save_to_File=false; %true, false will save plotted figures too as a reference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Frames = 50;
-Range = -5:2:35;
-RIRestriction = [1 1 1 1 1 1 1 1];
+Frames = 3;
+Range = -5:5:15;
+RIRestriction = [1 1 1 1 0 0 0 0];
 Perfect_Channel_Estimation= false;
 Doppler_Shift = 10;
 Simulation_Channel="CDL-C";
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Constellation_Animation=false; %So far can only be used when parfor is off
-CQI_PrefectvPractical = false; 
+CQI_PrefectvPractical = true; 
 CQI_Investigation_SNR=[-5,5,15,25];
 
-Plot_Constellation = false; %Only can be true if CQI_PrefectvPractical also true
-Constellation_SNR=[15, 25, 35, 45]; %Must be four entries
+Plot_Constellation = true; %Only can be true if CQI_PrefectvPractical also true
+Constellation_SNR=[-5,5,15,25]; %Must be four entries
 
-PO=[4 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
-CQIMode = 'Subband'; % 'Wideband','Subband'
-PMIMode = 'Subband'; % 'Wideband','Subband'
+PO=[10 0];  % Peridocity and offset of the CSI report in slots % (4,5,8,10,16,20,32,40,64,80,160,320,640).
+CQIMode = 'Wideband'; % 'Wideband','Subband'
+PMIMode = 'Wideband'; % 'Wideband','Subband'
 CodebookType = 'Type1SinglePanel'; % 'Type1SinglePanel','Type1MultiPanel','Type2', 'eType2'
     %"Type1MultiPanel", CSI-RS ports must be 8, 16, or 32: -> Only can be used
     %for 8 Tx case.
@@ -78,8 +79,8 @@ simParameters.PDSCH.RNTI = 1;
 simParameters.PDSCH.DMRS.DMRSTypeAPosition       = 2; % Mapping type A only. First DM-RS symbol position (2,3)
 simParameters.PDSCH.DMRS.DMRSLength              = 2; % Number of front-loaded DM-RS symbols (1(single symbol),2(double symbol))
 simParameters.PDSCH.DMRS.DMRSAdditionalPosition  = 1; % Additional DM-RS symbol positions (max range 0...3)
-simParameters.PDSCH.DMRS.DMRSConfigurationType   = 2; % DM-RS configuration type (1,2)
-simParameters.PDSCH.DMRS.NumCDMGroupsWithoutData = 3; % CDM groups without data (1,2,3)
+simParameters.PDSCH.DMRS.DMRSConfigurationType   = 1; % DM-RS configuration type (1,2)
+simParameters.PDSCH.DMRS.NumCDMGroupsWithoutData = 1; % CDM groups without data (1,2,3)
 
 simParameters.PDSCHExtension = struct();
 simParameters.PDSCHExtension.PRGBundleSize = 4; % 2, 4, or [] to signify "wideband"
@@ -125,7 +126,7 @@ if simParameters.CSIReportMode == "RI-PMI-CQI"
     
     simParameters.CSIReportConfig.CQITable          = "Table2"; % 'Table1','Table2','Table3'
     simParameters.CSIReportConfig.CQIMode           = CQIMode; % 'Wideband','Subband'
-    simParameters.CSIReportConfig.PMIMode           = CQIMode; % 'Wideband','Subband'
+    simParameters.CSIReportConfig.PMIMode           = PMIMode; % 'Wideband','Subband'
     simParameters.CSIReportConfig.CodebookType      = CodebookType; % 'Type1SinglePanel','Type1MultiPanel','Type2','eType2'
     simParameters.CSIReportConfig.SubbandSize       = SubbandSize; % Subband size in RB (4,8,16,32)
     simParameters.CSIReportConfig.CodebookMode      = CodebookMode; % 1,2
@@ -181,7 +182,7 @@ if Plot_Constellation
     HestResults=struct('h1',[],'h2',[], 'snr', []);4
 end 
 
-parfor snrIdx = 1:numel(simParameters.SNRIn)
+for snrIdx = 1:numel(simParameters.SNRIn)
 % parfor snrIdx = 1:numel(simParameters.SNRIn)
 % To reduce the total simulation time, you can execute this loop in
 % parallel by using the Parallel Computing Toolbox. Comment out the 'for'
@@ -296,25 +297,50 @@ parfor snrIdx = 1:numel(simParameters.SNRIn)
             % CSI-RS 同理
             
             [csiK, csiL, csiR] = ind2sub(size(txGrid), csirsInd);
-            csiFirstLayer = (csiR == 1);
-            displayGrid(csiK(csiFirstLayer) + (csiL(csiFirstLayer)-1)*size(displayGrid,1)) = 3;
+            [csiK, csiL, ~] = ind2sub(size(txGrid), csirsInd); 
+            for i = 1:numel(csiK)
+                displayGrid(csiK(i), csiL(i)) = 3; 
+            end
            
-            
+
             % --- 绘图 --- 
             figure('Name', '5G Resource Grid');
-            imagesc(displayGrid);
+           imagesc(displayGrid);
+            ax = gca;                     % 获取当前坐标轴
+            ax.FontSize = 16;   
+            
             axis xy; 
             % 这里的 colormap 长度应与你的分类匹配
             % [背景, PDSCH, DMRS, CSIRS]
-            colormap([0.5 0.5 0.5; 0.2 0.4 0.8; 0.9 0.7 0.2; 0.9 0.4 0.2]);  
-            xlabel('OFDM Symbols');
-            ylabel('Subcarriers');
-            title('Resource Grid');
-            
-            ylim([10 50]);
+            %colormap([0.5 0.5 0.5; 0.2 0.4 0.8; 0.9 0.7 0.2; 0.9 0.4 0.2]);  
+            xlabel('OFDM Symbols','FontSize', 18);
+            ylabel('Subcarriers','FontSize', 18);
+            xlim([0.5 14.5]);
+            ylim([0.5 60.5]);
+            xticks(1:14);
+            xticklabels(string(0:13)); 
+            yticks(1:12:61);
+            yticklabels(string(0:12:60));
+
             % 调整 colorbar 使其居中对齐标签
-            cb = colorbar('Ticks', [0.375, 1.125, 1.875, 2.625], ...
-                          'TickLabels', {'Empty', 'PDSCH', 'DM-RS', 'CSI-RS'});
+            %cb = colorbar('Ticks', [0.375, 1.125, 1.875, 2.625], ...
+             %             'TickLabels', {'Empty', 'PDSCH', 'DM-RS', 'CSI-RS'});
+             hex2rgb = @(hex) reshape(sscanf(hex(2:end), '%2x')/255, 1, 3);
+
+            cmap = [
+                0.60 0.60 0.60;          % Empty, grey
+                hex2rgb('#42B8B1');      % PDSCH
+                hex2rgb('#D8CA77');      % DM-RS
+                hex2rgb('#E78489')       % CSI-RS
+            ];
+            
+            colormap(gca, cmap);
+            clim([-0.5 3.5]);
+            
+            cb = colorbar;
+            cb.FontSize = 16; 
+            cb.Ticks = 0:3;
+            cb.TickLabels = {'Empty', 'PDSCH', 'DM-RS', 'CSI-RS'};
         end 
         %----------------------- End Resource Grid Plot
 
