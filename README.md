@@ -44,7 +44,7 @@ These files record the development process, intermediate findings, and project u
 The full list of simulation test cases is provided in:
 
 ```text
-5GNR_Full List.xlsx
+5GNR_Full_List.xlsx
 ```
 
 This spreadsheet includes the simulation groups, parameter settings, and corresponding test case identifiers.
