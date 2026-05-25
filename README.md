@@ -1,4 +1,4 @@
-# 5GMIMO
+# CSI-Feedback-Driven Link Adaptation in 5G NR Downlink MIMO: A Link-Level Simulation Study
 
 Matlab simulation files for 5G NR based on 3GPP standards.
 
