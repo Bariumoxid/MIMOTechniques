@@ -72,7 +72,7 @@ CSI-Feedback-Driven-Link-Adaptation/
 │
 ├── Batch_Run.m
 ├── FUNCTION_Run_5G_Simulation.m
-├── 5GNR_Full List.xlsx
+├── 5GNR_Full_List.xlsx
 │
 ├── progress/
 │   └── Weekly progress documents
