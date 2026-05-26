@@ -15,6 +15,9 @@
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
 \usepackage{ragged2e}
 \usepackage{textcomp}
 \usepackage{xcolor}
@@ -228,7 +231,7 @@
 6. Structure of my research\\
 
 \begin{highlightblock}
-	
+	[Not complete]
 	Mobile telecommunications have experienced rapid development over the past two decades. Starting from the deployment of third-generation (3G) systems in the early 2000s, followed by the introduction of fourth-generation long-term evolution (4G LTE) in the early 2010s, each generation has delivered substantial improvements in data rate and user experience. For end users, the most noticeable change has been the transition from limited and slow web browsing to smooth video streaming and real-time online services. These improvements were enabled by key physical-layer innovations, including the use of orthogonal frequency division multiple access (OFDMA) in 4G LTE, replacing the code division multiple access (CDMA) used in earlier systems, as well as the introduction of more advanced multi-antenna techniques \cite{Manikas}.
 	
 	Building upon the capabilities of 4G, the fifth-generation mobile communication system (5G) has been designed to further increase data rates, reduce latency, and support a wide range of services. Three main usage scenarios are defined for 5G: enhanced mobile broadband (eMBB), massive machine-type communications (mMTC), and ultra-reliable and low-latency communications (URLLC) \cite{EricssonBook}. Together, these scenarios impose diverse requirements on 5G, ranging from extremely high data rates to massive device connectivity, as well as stringent latency and reliability constraints. To meet these requirements, multiple-input multiple-output (MIMO) techniques play a central role. In particular, massive MIMO systems enable significant throughput gains through spatial multiplexing, null forming and beamforming \cite{Ericsson_MIMO}.
@@ -236,20 +239,21 @@
 	The realization of these requirements relies on globally agreed technical specifications, which are defined by the Third Generation Partnership Project (3GPP), a global standardisation body established in 1998 for the development of specifications for 3G. Its scope has expanded from third-generation of cellular networks to the standardisation and continuous evolution of 4G, 5G, and technologies beyond. The first release of 5G NR, Release~15, was published by 3GPP in 2019, marking the point at which 5G NR became ready for practical implementation. In the release, core technical specifications for 5G NR were defined. 3GPP is currently continuing its work on 5G-Advanced and early studies towards 6G \cite{3GPP}. 
 \end{highlightblock}
 \begin{highlightblock}
+		[Not complete]
 	This research project aims to provide insights that can support future 3GPP standardisation discussions related to MIMO techniques in 5G and beyond. Simulations are conducted in MATLAB using a framework aligned with 3GPP specifications. This alignment includes the use of standardized channel models as well as baseline system parameters commonly adopted in 3GPP testings, such as carrier frequency and bandwidth. This report introduces the relevant background concepts, presents the adopted simulation methodology, and summarises the current progress and preliminary findings of the project.
 \end{highlightblock}
 
 \section{Background and Methodology}
 \subsection{5G NR Downlink Physical Layer Overview}
+\hl{
 	1. OFDM\\
 	2. PDSCH (DL)\\
 	3. DM-RS\\
 	4. CSI-RS\\
 	5. Slot, RB\\
 	6. Definition of BER/BLER/Throughput\\
-	7. Why throughput not BER
+	7. Why throughput not BER}
 	\newpage
-	
 	
 \subsection{MIMO Transmission and CSI Feedback}
 	Specifics of CSI: PMI,RI, CQI \\
@@ -263,6 +267,7 @@
 	\end{figure}
 	
 	\begin{highlightblock}
+			[Not complete]
 		As illustrated in Figure~\ref{fig:csi_overview}, the downlink transmission relies on channel state information (CSI) obtained through reference signal measurements at the receiver. The user equipment (UE) estimates the downlink channel based on CSI reference signals (CSI-RS). Based on the estimated channel, the CSI is encoded into three main feedback components: the Channel Quality Indicator (CQI), Precoding Matrix Indicator (PMI), and Rank Indicator (RI).
 		
 		CQI is a 4-bit indicator with values ranging from 0 to 15, representing the reported downlink channel quality. It provides an indication of the highest modulation scheme and coding rate that can be supported under a predefined target block error rate (BLER). The precoding matrix indicator (PMI) specifies the precoding matrix applied at the transmitter, while the rank indicator (RI) indicates the recommended number of transmission layers \cite{Matlab_PDSCH_CSI}.
@@ -271,8 +276,18 @@
 	\end{highlightblock}
 	\begin{highlightblock}	
 		The reported CSI is fed back to the transmitter and used to configure key downlink transmission parameters, including the modulation scheme, target code rate, number of transmission layers, and the precoding matrix. Using these updated parameters, the transmitter processes the data through the DL-SCH and maps it to the PDSCH, followed by precoding and CP-OFDM modulation before transmission over the wireless channel. At the receiver, the received signal is synchronised, demodulated, and decoded using demodulation reference signals (DM-RS) for coherent detection.
+			\end{highlightblock}
 		
-		
+
+\subsection{CDL Channel Model and Doppler Shift}
+\hl{
+	CDL model definition\\
+	CDL ABCDE difference, why CDL-C default\\
+	Doppler shift definition and impact\\
+	
+	Also: Why demodulation performance, cdl more realistic, not just TDL to verify if everything works, ....}
+	\begin{highlightblock}	
+			[Not complete]
 		There are two widely used channel models in 5G NR link-level evaluations, namely the tapped delay line (TDL) model and the clustered delay line (CDL) model. Each model has several variants designed to represent different propagation environments such as urban, suburban, and rural scenarios. The TDL model provides a simplified representation of the multipath channel and is commonly used for baseline evaluations or scenarios where spatial characteristics and multi-antenna effects are not modelled.
 		
 		In the TDL model, the channel is represented as a superposition of multiple discrete propagation paths (taps), each characterised by a specific delay $\tau_l$ and a path gain $h_l(t)$:
@@ -283,14 +298,8 @@
 		
 		In addition to CSI, 5G NR also employs hybrid automatic repeat request (HARQ) to improve the robustness of the transmission through re-transmissions. After DL-SCH decoding at the receiver, an acknowledge/negative acknowledge (ACK/NACK) signal is fed back to the transmitter, which indicates whether a re-transmission is required. In the case of a decoding failure, the transport block is re-transmitted using a different redundancy version (RV) and combined at the receiver, thus increasing the probability of successful decoding \cite{EricssonBook} \cite{MathWorks2026}.
 	\end{highlightblock}
-
-\subsection{CDL Channel Model and Doppler Shift}
-	CDL model definition\\
-	CDL ABCDE difference, why CDL-C default\\
-	Doppler shift definition and impact
+	
 	\newpage
-	
-	
 	
 \subsection{MATLAB Simulation Framework}
 	\begin{highlightblock}
@@ -338,6 +347,7 @@
 			This study focuses on investigating the impact of CSI feedback parameters on downlink transmission performance. The baseline CSI configuration follows the settings specified in relevant 3GPP specifications, including TS~38.101-4~\cite{3gpp_ts_38101_4}. Both the baseline configuration and the investigated parameter ranges are summarised in Table~\ref{tab:csi_config}. The investigated ranges represent the set of valid discrete configurations specified by 3GPP. Unless otherwise stated, all simulations use the baseline CSI configuration listed in Table~\ref{tab:csi_config}. 
 		\end{highlightblock}
 
+		\hl{add reference for this table, TS38.101-4}
 		\begin{table}[H]
 			\centering
 			\caption{Baseline CSI feedback configuration used in the simulation framework}
@@ -364,22 +374,47 @@
 		Only a subset of the parameters under investigation is varied in each experiment, while the remaining parameters are kept fixed at their baseline values to ensure a controlled comparison. Table \ref{tab:sim_studies} shows a brief summary of the simulation study groups that are going to be simulated. <Note that sometimes may change multiple parameters at the same time..>
 	\end{highlightblock}
 	
+	
 	\begin{table}[H]
 		\centering
 		\caption{Summary of simulation study groups and objectives}
 		\label{tab:sim_studies}
-		\begin{tabular}{llc}
-			\hline
-			\textbf{Study Group} & \textbf{Purpose} &Varied parameter \\
+		\small
+		\setlength{\tabcolsep}{5pt}
+		\renewcommand{\arraystretch}{1.12}
+		\begin{tabularx}{0.95\textwidth}{
+				>{\raggedright\arraybackslash}p{0.25\textwidth}
+				>{\raggedright\arraybackslash}X
+				>{\raggedright\arraybackslash}p{0.30\textwidth}
+			}
 			\toprule
-			Baseline             & CDL-C $4\times4$ reference  performance       & -- \\
-			Fixed-rank controls  & Layer adaption         & RI =1, RI$\leq 2$, RI $\leq 4$\\ 
-			MIMO configuration sweep        & Antenna configuration sensitivity            &  \(2 \times 2\), \(4 \times 4\), \(8 \times 4\)  \\  
-			CDL profile sweep            & Channel-model robustness         & CDL-B, CDL-C, CDL-D  \\ 
-			Doppler sweep        & Mobility sensitivity          & 10 Hz, 100 Hz, 390 Hz  \\
-			CSI period sweep     & CSI feedback freshness              & 4, 10, 64, 160 slots \\  
-			\hline
-		\end{tabular}
+			\textbf{Study group} & \textbf{Purpose} & \textbf{Varied parameter} \\
+			\midrule
+			Baseline 
+			& CDL-C \(4 \times 4\) reference performance 
+			& -- \\
+			
+			Fixed-rank controls 
+			& Layer adaptation 
+			& RI \(=1\), RI \(\leq 2\), RI \(\leq 4\), \mbox{RI \(=4\)} \\
+			
+			MIMO configuration sweep 
+			& Antenna configuration sensitivity 
+			& \(2 \times 2\), \(4 \times 4\), \(8 \times 4\) \\
+			
+			CDL profile sweep 
+			& Channel-model robustness 
+			& CDL-B, CDL-C, CDL-D \\
+			
+			Doppler sweep 
+			& Mobility sensitivity 
+			& 10 Hz, 100 Hz, 390 Hz \\
+			
+			CSI period sweep 
+			& CSI feedback freshness 
+			& 4, 10, 64, 160 slots \\
+			\bottomrule
+		\end{tabularx}
 	\end{table}
 	
 	\begin{table}[H]
@@ -388,20 +423,36 @@
 		\label{tab:simulation_execution}
 		\begin{tabular}{ll}
 			\toprule
-			Parameter & Value \\
+			\textbf{Parameter} & \textbf{Value} \\
 			\midrule
-			SNR range & $-5$ to $35$~dB, with 1~dB spacing \\
+			SNR range & $-5$ to $25$~dB, with 1~dB spacing \\
 			Number of simulated frames & 1500 10-ms frames per SNR point \\
 			Channel estimation & Practical channel estimation \\
 			\bottomrule
 		\end{tabular}
 	\end{table}
-\section{Baseline CSI-Feedback Downlink Behaviour}
+
+\newpage
+\section{Model Validation and Baseline CSI-Feedback Downlink Behaviour}
 	\label{sec:3}
+	
+	
 	\begin{highlightblock}
-		The behaviour of the system under the baseline case is tested in this section. The performance of the system as well as the role of CSI is investigated and analyzed in detail to provide a good understanding of the feedback decisions. At the second half of the section, a fixed-rank control is implemented to isolate the rank adaptation mechanism and .. the multi-layer transmission.
+		... The behaviour of the system under the baseline case is tested in this section. The performance of the system as well as the role of CSI is investigated and analyzed in detail to provide a good understanding of the feedback decisions. At the second half of the section, a fixed-rank control is implemented to isolate the rank adaptation mechanism and .. the multi-layer transmission.
 	\end{highlightblock}
 	
+	
+	\subsection{External Link-Level Validation under Fixed-MCS Transmission}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.75\linewidth]{figures/31Validation.png}
+		\caption{Throughput comparison between the simulation and the firm-standard baseline
+		}
+		\label{fig:31Validation}
+	\end{figure}
+	
+	\hl{also why throughput mbps not BLER any more}
 	
 	\subsection{Baseline CDL-C $4\times4$ Throughput Behaviour}
 	\begin{highlightblock}
@@ -455,19 +506,20 @@
 		The RI $\leq 4$ and RI $\leq 2$ curves are almost identical across the full SNR range. This confirms that, under the configuration considered here, allowing more than two layers provides little additional throughput benefit. This observation is consistent with the link adaptation statistics in Figure~\ref{fig:32New_wMean}, where the selected RI increases from one to two at low-to-moderate SNR but does not increase beyond RI = 2. 
 		
 		The fixed RI $=1$ curve behaves differently. At low SNR, single-layer transmission can be slightly more robust than two-layer transmission, leading to lower BER and therefore higher throughput. However, as SNR increases, the lack of spatial multiplexing becomes the dominant limitation. The RI $=1$ throughput saturates at around xxx Mbps starting from around 17~dB, whereas the adaptive RI cases reach approximately xxx Mbps. This shows that adaptive multi-layer transmission is essential for achieving the high-SNR throughput gain. The higher-rank transmission beyond two layers is not effectively exploited in this baseline scenario, but the usage of adaptive layer transmission will be even bigger in a richer <?> channel that supports more independent paths <?>.
-		
+			\end{highlightblock}
 			\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.75\linewidth]{figures/33Layer124.pdf}
 			\caption{Downlink throughout performance under different maximum layer configurations}
 			\label{fig:33Layer124}
 		\end{figure}
-	\end{highlightblock}
+
 	
 	\newpage
 	\subsection{Summary of Baseline Findings}
+	\hl{
 	1. The above result is the baseline
-	2. Examines the impact of CSI and how it actually works
+	2. Examines the impact of CSI and how it actually works}
 	
 	\newpage
 	
@@ -491,6 +543,8 @@
 		 
 		 This difference should not be interpreted as evidence that $8\times4$ MIMO is inherently worse at high SNR. The saturated performance of the system is a result of the CSI feedback, which often lead to slightly different CQI, thus different TCR, layer or even transmission schemes. The result here indicates that the additional transmit antennas are not fully converted into a higher peak throughput under the current CSI feedback configuration. In this setup, the benefit of $8\times4$ is mainly observed as an SNR gain of approximately 5~dB in the low-to-medium SNR region rather than as a higher saturation throughput.
 		\end{highlightblock}
+		
+		\hl{mention what number of layers / RI using rn}
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.75\linewidth]{figures/51AntennaNew.pdf}
@@ -547,18 +601,27 @@
 	\label{sec:5}
 	
 	\begin{highlightblock}
-		This chapter investigates the impact of mobility and CSI reporting periodicity on the CSI-driven downlink transmission performance. In a time-varying channel, the CSI obtained from CSI-RS measurements may become outdated before it is applied for PDSCH transmission. This CSI ageing effect is expected to become more significant as the Doppler shift increases or as the CSI reporting period becomes longer. Therefore, this chapter first studies the impact of Doppler shift under the baseline CSI reporting period, before examining the effect of different reporting periodicities.
+		This chapter investigates the impact of mobility and CSI reporting periodicity on the CSI-driven downlink transmission performance. In a time-varying channel, the CSI obtained from CSI-RS measurements may become outdated before it is applied for the transmission. This effect is expected to become more significant as the Doppler shift increases or as the CSI reporting period becomes longer. Therefore, this chapter first studies the impact of Doppler shift under the baseline scenario, before examining the effect of different reporting periodicities.
 	\end{highlightblock}
 	
-	\subsection{Doppler Shift under Default CSI Reporting Period}
+
+		\subsection{Doppler Shift under Default CSI Reporting Period}
+		\label{sec:5.1}
+	\begin{highlightblock}
+		Figure~\ref{fig:41Throughput_Speed} shows the impact of Doppler shift on downlink throughput under the baseline CSI reporting period. The three Doppler shifts, 10~Hz, 100~Hz, and 390~Hz, represent increasing levels of system mobility. With a carrier frequency of 3.5~GHz, these correspond approximately to UE speeds of 3~km/h, 30~km/h, and 120~km/h, respectively.
+		
+		The general throughput behaviour remains similar across all Doppler cases: the throughput increases with SNR, and eventually approaches a high-SNR saturation level. However, higher Doppler shift causes a visible rightward shift of the throughput curve. This indicates that, under higher mobility, a larger SNR is required to achieve the same throughput level.
+	\end{highlightblock}
+
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.75\linewidth]{figures/41Throughput_Speed.pdf}
 		\caption{Impact of Doppler shift on downlink throughput}
 		\label{fig:41Throughput_Speed}
 	\end{figure}
-	
-		\begin{table}[H]
+
+
+	\begin{table}[H]
 		\centering
 		\caption{Interpolated SNR values at selected target throughput levels}
 		\label{tab:snr_interpolation}
@@ -567,10 +630,10 @@
 			\midrule
 			\textbf{\makecell{Target Throughput\\(Mbps)}} & \textbf{\makecell{SNR 10 Hz \\(dB)}} & \textbf{\makecell{SNR 100 Hz \\(dB)}} & \textbf{\makecell{SNR 390 Hz \\(dB)}} \\
 			\toprule
-			50  & 4.31  & 5.50  & 6.69  \\
-			80  & 7.66  & 8.91  & 10.50 \\
-			110 & 12.66 & 12.73 & 14.35 \\
-			140 & 15.70 & 16.23 & 17.89 \\
+			50  & 4.3  & 5.5  & 6.7  \\
+			80  & 7.7  & 8.9  & 10.5 \\
+			110 & 12.7 & 12.7 & 14.4 \\
+			140 & 15.7 & 16.2 & 17.9 \\
 			\bottomrule
 		\end{tabular}
 		
@@ -579,70 +642,65 @@
 		\footnotesize{$^\dagger$ SNR values obtained using linear interpolation.}
 		
 	\end{table}
-	
-	\begin{highlightblock}
-		Figure~\ref{fig:41Throughput_Speed} shows the impact of Doppler shift on downlink throughput under the baseline CSI reporting period. The three Doppler shifts, 10~Hz, 100~Hz, and 390~Hz, represent increasing levels of channel time variation. Using a reference carrier frequency of 3.5~GHz, these correspond approximately to UE speeds of 3~km/h, 31~km/h, and 120~km/h, respectively.
+\begin{highlightblock}
+		This observation is quantified in Table~\ref{tab:snr_interpolation}, which shows the required SNR level for each curve to reach different target throughput levels. The required SNR values are obtained by linear interpolation of the throughput curve. For example, to reach 80~Mbps, the required SNR increases from 7.7~dB at 10~Hz to 8.9~dB at 100~Hz and 10.5~dB at 390~Hz. This corresponds to an SNR penalty of approximately 1.2~dB and 2.8~dB relative to the 10~Hz baseline. Alternatively, with a target throughput of 140~Mbps, the 390~Hz case requires 17.9~dB compared with 15.7~dB for the 10~Hz case.
 		
-		The general throughput behaviour remains similar across all Doppler cases: the throughput increases with SNR, enters a transition region, and eventually approaches a high-SNR saturation level. However, higher Doppler shift causes a visible rightward shift of the throughput curve. This indicates that, under higher mobility, a larger SNR is required to achieve the same throughput level.
-		
-		This observation is quantified in Table~\ref{tab:snr_interpolation}, where the SNR values required to reach selected target throughput levels are obtained by linear interpolation. For example, to reach 80~Mbps, the required SNR increases from 7.66~dB at 10~Hz to 8.91~dB at 100~Hz and 10.50~dB at 390~Hz. This corresponds to an SNR penalty of approximately 1.25~dB and 2.84~dB relative to the 10~Hz baseline. A similar trend is observed at 140~Mbps, where the 390~Hz case requires 17.89~dB compared with 15.70~dB for the 10~Hz case.
-		
-		The degradation is consistent with CSI ageing. With a fixed CSI reporting period and processing delay, the CSI used for link adaptation becomes less representative of the actual channel at the time of transmission when the channel varies more rapidly. As a result, the selected RI, PMI, and CQI may become less accurate, leading to less effective precoding and MCS selection. The effect is most visible in the transition region, where link adaptation decisions are particularly sensitive to the estimated channel quality.
-		
-		At high SNR, the curves become closer and approach similar saturation levels, although the higher-Doppler cases remain slightly lower. This suggests that high SNR can partially compensate for mobility-induced CSI mismatch, but does not fully remove the loss caused by outdated CSI. These results motivate the following periodicity study, where shorter CSI reporting periods are examined as a potential way to improve CSI freshness under higher mobility.
+		At high SNR, the difference of throughput for different mobility cases become closer, although the higher-Doppler cases remain slightly lower. This suggests that high SNR can partially compensate for mobility-induced degradation. 
+	\end{highlightblock}
 
-	These results motivate the following CSI periodicity study. Since the degradation at higher Doppler is partly caused by CSI ageing, reducing the CSI reporting period may help improve the freshness of the feedback and recover part of the throughput loss under high-mobility conditions.
+		\begin{highlightblock}		
+		The reason....................The degradation is consistent with CSI ageing. With a fixed CSI reporting period and processing delay, the CSI used for link adaptation becomes less representative of the actual channel at the time of transmission when the channel varies more rapidly. As a result, the selected RI, PMI, and CQI may become less accurate, leading to less effective precoding and MCS selection. The effect is most visible in the transition region, where link adaptation decisions are particularly sensitive to the estimated channel quality.???
+		
+		The results of this subsection motivate the following CSI periodicity study. Since the degradation at higher Doppler is partly caused by CSI ageing, reducing the CSI reporting period may help improve the freshness of the feedback and recover part of the throughput loss under high-mobility conditions.
+
 \end{highlightblock}
 
 
-
-	
-
-
-	\newpage
 	\subsection{Reporting Periodicity at Low and High mobility}
-	
+	\label{sec:5.2}
 		\begin{highlightblock}
-			Figure~\ref{fig:42PO} compares the effect of CSI reporting periodicity under low- and high-mobility scenarios. The 10~Hz case represents a slowly varying channel, while the 390~Hz case represents a high-mobility channel with stronger time variation. In both cases, the CSI-RS and CSI reporting periods are varied while the remaining baseline configuration is kept unchanged.
-			
-			For the 10~Hz case, the throughput curves are relatively close across different reporting periods. Shorter reporting periods, such as 4 and 10 slots, provide slightly better performance in the transition region, while longer reporting periods lead to a small rightward shift of the curve. This indicates that, under low mobility, the channel changes slowly enough that CSI remains useful even when the reporting interval is increased. As a result, reducing the reporting period provides only limited throughput improvement.
-			
-			For the 390~Hz case, the impact of reporting periodicity is more visible. The 4-slot reporting period achieves the best performance in the transition region, while longer periods require a higher SNR to reach similar throughput levels. This is consistent with the CSI ageing effect: when the channel varies rapidly, CSI obtained from earlier CSI-RS measurements becomes outdated more quickly, reducing the accuracy of RI, PMI, and CQI selection. More frequent reporting helps improve CSI freshness and therefore improves link adaptation under high mobility.
-			
-			However, the difference between reporting periods remains relatively modest in the high-SNR region. All curves eventually approach a similar saturation throughput, suggesting that CSI reporting periodicity mainly affects the SNR required to enter the high-throughput region, rather than the final saturation throughput itself. Therefore, the benefit of shorter CSI reporting is most relevant in the transition region and under high-mobility conditions.
-			
-			Overall, the results show that reducing the CSI reporting period provides limited benefit under low mobility, but becomes more useful under high mobility where CSI ageing is more severe. The main effect is an SNR gain in the transition region rather than a significant increase in high-SNR saturation throughput.
-			
-			This also highlights a practical trade-off. More frequent CSI reporting can improve the freshness of CSI and slightly improve throughput under high mobility, but it also increases uplink feedback overhead. Therefore, an excessively short reporting period may not be necessary in low-mobility scenarios, where the throughput gain is small.
+			Following the observation from the previous subsection, figure~\ref{fig:42PO} compares the effect of CSI reporting periodicity under low- and high-mobility scenarios. In both cases, the CSI-RS and CSI reporting periods are varied simultaneously while the remaining configuration is kept unchanged, consistent with the baseline settings.
 		\end{highlightblock}
-			\begin{figure}[H]
+				\begin{figure}[H]
 				\centering
-				\includegraphics[width=\linewidth]{figures/42PO.pdf}
+				\includegraphics[width=\linewidth]{figures/42PO - Copy.pdf}
 				\caption{Downlink throughput performance under different CSI reporting periods for low- and high-mobility scenarios}
 				\label{fig:42PO}
-			\end{figure}
+				\end{figure}
+		\begin{highlightblock}
+			For the 10~Hz case, the throughput curves are relatively close across different reporting periods. For SNR below 20dB, the performance of low reporting periods 64 slots and 160 slots is clearly worse than the baseline performance, which is equivalent to a rightward shift of the throughput curve. As the SNR enters high region, the performance difference between different reporting periods converges, showing that the improvement in SNR can yield to ... The reporting per 4 slots however, does not in general show any noticeable improvement comparing to report every 10 slots.
+			
+			The observation shows that, even under low mobility where the channel changes slowly, having denser CSI remains useful, despite the throughput improvement is limited.
+			
+			For the high mobility 390~Hz case, similar trends has been observed. The 4-slot reporting period achieves the best performance for low-to-medium ranges, where longer periods require a higher SNR to reach similar throughput levels. At high SNR, the performance different shrinks and disappears. However, the amount of improvement clearly decrease compared to the low mobility scenario, which is unexpected and will be discussed in more following part.
+			
+			\hl {need to add 100Hz}
+			
+			Overall, the results show that reducing the CSI reporting period provides limited benefit under to the system. The main effect is an SNR gain in the transition region rather than a significant increase in high-SNR saturation throughput. 
+			
+			The CSI report also comes with the trade-off, despite having higher more frequent CSI improves the performance, it also increases uplink feedback overhead, impacting the uplink throughput and leading to higher UE processing and power consumption. Therefore, more detailed analysis will be conducted to quantify the benefit of having denser CSI report under different scenarios.
+		\end{highlightblock}
 			
 		\begin{highlightblock}
-				A CSI reporting period of 10 slots is used as the baseline, denoted as \(P_0=10\). For each Doppler shift \(f_D\), the reference peak throughput is defined as
+				In the following analysis, a CSI reporting period of 10 slots is used as the baseline, denoted as \(P_0=10\). For each Doppler shift \(f_D\), the reference peak throughput is defined as
 			\begin{equation}
-				R^{\max}_{f_D,P_0}
+				R^{\max}_{f_D}
 				=
 				\max_{\gamma} R_{f_D,P_0}(\gamma),
 			\end{equation}
-			where \(R_{f_D,P}(\gamma)\) is the measured downlink throughput at SNR \(\gamma\) under CSI reporting period \(P\). The target throughput level used for comparison is 50\% of the reference peak throughput is $
-				0.5 R^{\max}_{f_D,P_0}
-				$. \\
+			where \(R_{f_D,P}(\gamma)\) is the measured downlink throughput at SNR \(\gamma\) under CSI reporting period \(P\). The target throughput level used for each mobility test case is 50\% of the reference peak throughput with 10 slots baseline reporting period. \\
 
-			Therefore, the SNR required for each reporting period to reach the target throughput is obtained by linear interpolation as 
-			$\gamma_{f_D,P}(0.5R^{\max}_{f_D,10})$. The relative SNR penalty or gain with respect to the baseline CSI report is then
+			The SNR required for each reporting period $P$ with fixed mobility $f_D$ to reach the target throughput can be obtained by linear interpolation, denoted as $\gamma_{f_D,P}(0.5R^{\max}_{f_D})$. 
+			
+			The change in performance due to the use of different reporting period is evaluated base on the relative SNR penalty or gain with respect to the baseline
 			\begin{equation}
 				\Delta \gamma_{f_D,P}
 				=
-				\gamma_{f_D,P}(0.5R^{\max}_{f_D,10})
+				\gamma_{f_D,P}(0.5R^{\max}_{f_D})
 				-
-				\gamma_{f_D,10}(0.5R^{\max}_{f_D,10}).
+				\gamma_{f_D,10}(0.5R^{\max}_{f_D}).
 			\end{equation}
-			Positive values indicate an SNR penalty, while negative values indicate an SNR gain.
+			Positive values of $\Delta \gamma_{f_D,P}$ indicate an SNR penalty, while negative values indicate an SNR gain. In addition to the slow and fast mobility scenarios tested from Fig. \ref{fig:42PO}, the medium mobility with 100~Hz Doppler shift is also tested. The same plot for the medium mobility case is shown in Fig. \ref{fig:PO_Appendix} in the Appendix \hl{change here}. The quantitative results are shown in Table \ref{tab:csi_period_snr_required} below.
 		\end{highlightblock}
 		
 		\begin{table}[H]
@@ -651,7 +709,7 @@
 			\label{tab:csi_period_snr_required}
 			\begin{tabular}{llcc}
 				\midrule
-				\textbf{Doppler} & \textbf{CSI period} & \(\gamma_{50\%}\) & \(\Delta\gamma\) \\
+				\textbf{Doppler} & \textbf{CSI period} & \(\boldsymbol{\gamma}_{50\%}\) & \(\boldsymbol{\Delta\gamma}\) \\
 				\toprule
 				10 Hz  & 4 slots   & 8.2 dB & 0.1 dB \\
 				10 Hz  & 10 slots  & 8.1 dB & -- \\
@@ -676,44 +734,50 @@
 		
 		\begin{highlightblock}
 			
-			Table~\ref{tab:csi_period_snr_required} quantifies the SNR required to reach 50\% of the baseline reference peak throughput under each Doppler condition. Since the reference peak throughput is defined separately for each Doppler shift, the values should be interpreted as the relative impact of CSI reporting periodicity within the same mobility condition, rather than as a direct comparison of absolute throughput across different Doppler shifts.
+			Table~\ref{tab:csi_period_snr_required} quantifies the relative impact of CSI reporting periodicity within each mobility condition.
 			
-			At 10~Hz, changing the reporting period has only a limited effect when the period is short. The 4-slot and 10-slot cases require almost the same SNR to reach the target throughput, with only a 0.1~dB difference. However, increasing the reporting period to 64 and 160 slots introduces clear SNR penalties of 0.9~dB and 2.4~dB, respectively. This indicates that although the channel is slowly varying at 10~Hz, very infrequent CSI reporting can still degrade link adaptation because the feedback becomes less representative of the current channel state.
-			
-			At 100~Hz, the impact of reporting periodicity becomes more visible. The 4-slot case achieves a 0.5~dB SNR gain relative to the 10-slot baseline, showing that more frequent reporting can improve CSI freshness when the channel varies more rapidly. In contrast, the 64-slot and 160-slot cases require approximately 2.0~dB and 1.8~dB additional SNR, respectively. The non-monotonic difference between 64 and 160 slots should not be over-interpreted, as it may result from finite simulation length, interpolation error, and the discrete nature of CSI-driven CQI, PMI, and RI decisions. The main observation is that long reporting periods lead to a clear SNR penalty compared with the 10-slot baseline.
-			
-			For the 390~Hz case, the SNR penalties are smaller at this 50\% reference-throughput point. The 4-slot and 10-slot cases are almost identical, while the 64-slot and 160-slot cases introduce penalties of 0.4~dB and 0.8~dB. This suggests that, under very high mobility, shortening the reporting period alone does not fully recover the loss caused by rapid channel variation. The CSI is affected not only by the reporting period, but also by processing delay, channel estimation accuracy, and the time variation between CSI acquisition and PDSCH transmission.
-			
-			Overall, the results show that CSI reporting periodicity mainly affects the SNR required in the transition region rather than the final saturation throughput. Shorter reporting periods can provide an SNR gain by reducing CSI ageing, especially under moderate mobility. However, the gain is not large in all cases and must be balanced against the additional uplink feedback overhead. Therefore, a very short reporting period may not be necessary under low mobility, while very long reporting periods can noticeably degrade link adaptation performance.
-			
-			The main impact of CSI reporting periodicity is therefore an SNR penalty or gain in the transition region, rather than a significant change in the high-SNR saturation throughput.
+			At 10~Hz, using very dense CSI reports have only a limited effect. The 4-slot and 10-slot cases require almost the same SNR to reach the target throughput, with only a 0.1~dB difference. However, increasing the reporting period to 64 and 160 slots introduces clear SNR penalties of 0.9~dB and 2.4~dB, respectively. This indicates that although the channel is slowly varying at 10~Hz, very infrequent CSI reporting can still degrade the performance at mid SNR region because the feedback becomes less representative of the current channel state.
+		
+	\end{highlightblock}
+	\begin{highlightblock}
+			For the 390~Hz case, consistent with the observation from Fig. \ref{fig:42PO}, having lower reporting period leads to penalties of  0.4~dB and 0.8~dB relative to the baseline, which is smaller than the penalty for 10~Hz scenario, which are 0.9~dB and 2.4~dB respectively. Increasing the report frequency to every four slots also only leads to ignorable amount of improvements. 
+				
+	\end{highlightblock}
+	\begin{highlightblock}
+			The impact of CSI period change has more visible impact for the 100~Hz scenario. The 4-slot case achieves a 0.5~dB SNR gain relative to the 10-slot baseline, showing that more frequent reporting does lead to better performance. In addition, slowing down the report to every 64-slot and 160-slot causes 2.0~dB and 1.8~dB additional SNR, respectively, much more dominant than the other two mobility scenarios.
 		\end{highlightblock}
-		\newpage
+		
+	\begin{highlightblock}
+			The non-monotonic difference between 64 and 160 slots for the 390~Hz case and between 4 and 10 slots for the 10~Hz case should not be over-interpreted, as it is likely due to simulation inaccuracy, limited number of frames simulated, and the discrete nature of CSI-driven CQI, PMI, and RI decisions. 
+			
+			Overall, the results from this subsection show that CSI reporting periodicity mainly affects the SNR required in the transition region rather than the final saturation throughput. Shorter reporting periods can provide an SNR gain by reducing CSI ageing, especially under moderate mobility. Under low mobility (3km/h) case, having denser CSI period has only limited benefit to the transmission as the channel is not undergo rapid change. Under high mobility (120km/h) case, similar observation is observed, but the underlying reason is completely the opposite, since the channel is changing too-rapidly. Having short reporting period alone in this scenario does not fully recover the loss caused by rapid channel variation. The CSI is affected not only by the reporting period, but also by factors such as processing delay, channel estimation accuracy, and the time variation between CSI report and transmission, where these issues become especially dominant under high mobility.
+			 
+		\end{highlightblock}
 
 	\subsection{Discussion of CSI Freshness and Practical Trade-Off}
-	
-	\begin{figure}[H]
-	\centering
-	\includegraphics[width=\linewidth]{figures/43Lollipop.pdf}
-	\caption{Relative SNR penalty/gain $\Delta \gamma$ for different CSI reporting periods and Doppler shifts (The 10-slot reporting period is used as the baseline for each Doppler shift)}
-	\label{fig:43lollipop}
-	\end{figure}
-	
-		Summarize 4.2 and 4.3 
-	CSI feedback should not be evaluated only by its granularity or reporting frequency. Its value depends on whether the reported channel state remains relevant over the time scale of channel variation.
-	1. What exactly is the cost of CSI  feedback
-	2. Under what scenarios are frequent CSI report actually useful
+		
 	
 	\begin{highlightblock}
-		The results in Sections~\ref{sec:doppler_default_period} and~\ref{sec:reporting_periodicity} show that the value of CSI feedback should not be evaluated only by its reporting granularity or reporting frequency. Instead, its effectiveness depends on whether the reported channel state remains sufficiently fresh over the time scale of channel variation. When the channel varies slowly, as in the 10~Hz Doppler case, the CSI remains relevant for a longer period. Therefore, reducing the reporting period from 10 slots to 4 slots provides only a small throughput improvement. In contrast, very long reporting periods can still introduce a visible SNR penalty because the feedback becomes less representative of the current channel state.
+		The results in Sections~\ref{sec:5.1} and~\ref{sec:5.2} show that the value of CSI feedback should not be evaluated only by its reporting granularity or reporting frequency. Instead, its effectiveness depends on the environment, especially the mobility of the system that impacts the channel directly. A visualization of the relative SNR offset under different situation is shown in Fig. \ref{fig:43lollipop} below based on data from Table \ref{tab:csi_period_snr_required}.
 		
-		Under higher mobility, CSI ageing becomes more important. The Doppler sweep shows that higher Doppler shifts lead to a rightward shift of the throughput curve, meaning that a larger SNR is required to achieve the same throughput. This degradation is consistent with the reduced accuracy of CSI-driven RI, PMI, and CQI selection when the channel changes between CSI acquisition and data transmission. Shorter reporting periods can partly mitigate this effect by improving CSI freshness, especially in the transition region where link adaptation decisions are most sensitive to channel quality.
+	\end{highlightblock}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\linewidth]{figures/43Lollipop.pdf}
+		\caption{Relative SNR offset \(\Delta\gamma\) with respect to the 10-slot CSI reporting baseline}
+		\label{fig:43lollipop}
+	\end{figure}
+
+	
+	\begin{highlightblock}
+
+		Based on the results, it is clear that a CSI reporting period is suitable to be used as the default setting during the transmission. It in general provides a satisfactory level of performance for the system while avoided the use of overly-frequent CSI reports. The 10 slots period is especially suitable as, for the 10~Hz and 100~Hz scenario, significant performance degradation will occur when the CSI period decreases from per 10 slots to 64 slots (0.9~dB and 2~dB respectively).
 		
-		However, the periodicity results also show that shorter CSI reporting is not universally beneficial. At high SNR, the throughput curves for different reporting periods converge to similar saturation levels. This suggests that reporting periodicity mainly affects the SNR required to enter the high-throughput region, rather than the final saturation throughput. Moreover, under very high Doppler shift, reducing the reporting period alone cannot fully compensate for rapid channel variation, since processing delay, channel estimation accuracy, and the time variation between CSI-RS measurement and PDSCH transmission also contribute to CSI mismatch.
+		However, the results also shows that the system has the potential to adjust the CSI periodicity based on the channel condition, thus achieving a trade-off balance between the performance and the uplink throught as well as the UE power consumption. For example, when the UE is at medium-speed around 30~km/h, it has been proven that the system can enjoy a noticeable improvement in the throughput when increasing the reporting period from default baseline to per 4 slots. In the meantime, for high-speed scenarios such as on a train or motorway, using the default value may even be considered as a waste of energy for the UE. A CSI report every 64 slots, or options in between such as per 32 or 40 slots might be ideal. In addition, Fig. \ref{fig:42PO} has also showed that at high SNR, the throughput curves for different reporting periods converge to similar saturation levels. This suggests that having frequent CSI report is only beneficial at low-to-medium SNR regions. At high SNR regions, using per 64 slots or 160 slots reporting is already enough for the system.
 		
-		This leads to a practical trade-off. More frequent CSI reporting improves the freshness of CSI and can reduce the SNR required to achieve a given throughput, but it also increases uplink feedback overhead. This overhead includes the resources required to transmit RI, PMI, and CQI reports, and becomes more significant when reporting is frequent or when subband feedback is used. Therefore, an excessively short reporting period may be inefficient in low-mobility scenarios, where the throughput gain is small. Conversely, very long reporting periods can degrade link adaptation when mobility is moderate or high.
+		More frequent CSI reporting improves the freshness of CSI and can reduce the SNR required to achieve a given throughput, but it also increases uplink feedback overhead and consumes more power of the UE. This overhead includes the resources required to transmit RI, PMI, and CQI reports, and becomes more significant when reporting is frequent. The observation here provides an insight to the CSI reporting period adjustment algorithm in terms of finding the most suitable reporting period based on the environment and channel status. 
 		
-		Overall, the results suggest that CSI reporting should be configured according to the mobility condition and the expected channel coherence time. A moderate reporting period may be sufficient for low-mobility users, while shorter periods become more valuable when CSI ageing is significant. The main benefit of more frequent reporting is therefore an SNR gain in the transition region, rather than a substantial increase in the high-SNR peak throughput.
+		Moreover, the simulation results suggest that the optimal CSI reporting period is mobility- and scenario-dependent. In addition to the fixed rules discussed in the previous paragraphs, a closed-loop feedback algorithm could be introduced during transmission to adaptively select the CSI reporting period. Starting from a default reporting period, or from an empirically selected value based on the current scenario, the system could adjust the reporting period among neighbouring options and measure the resulting gain or penalty. If the improvement is considered significant enough to justify the additional feedback overhead, the new CSI reporting period could be adopted for a predefined duration before being re-evaluated.
 	\end{highlightblock}
 	\newpage
 	
@@ -772,13 +836,13 @@
 	\caption{Baseline simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
 	\begin{tabular}{|ll|c|}
 		\hline
-		\multicolumn{2}{|c|}{Parameter}                                                                                                                                   & Value               \\ \hline
+		\multicolumn{2}{|c|}{\textbf{Parameter}}                                                                                                                                   & \textbf{Value}               \\ \hline
 		\multicolumn{2}{|l|}{Duplex mode}                                                                                                                                 & TDD                 \\ \hline
 		\multicolumn{2}{|l|}{FR / Carrier frequency}                                                                                                                      & FR1, 3.5GHz         \\ \hline
 		\multicolumn{2}{|l|}{Maximum Doppler shift}                                                                                                                                    &  10~Hz                  \\ \hline
 		\multicolumn{2}{|l|}{Channel Bandwidth / SCS}                                                                                                                     & 40Mhz / 30kHz       \\ \hline
 		\multicolumn{2}{|l|}{Maximum allowed rank}                                                                                                                                        & 4                   \\ \hline
-		\multicolumn{2}{|l|}{Antenna configuration}                                                                                                                       & 4Tx4Rx              \\ \hline
+		\multicolumn{2}{|l|}{Antenna configuration}                        a                                                                                               & 4Tx4Rx              \\ \hline
 		\multicolumn{2}{|l|}{Channel model}                                                                                                                               & CDL-C               \\ \hline
 		\multicolumn{2}{|l|}{Delay spread}                                                                                                                               & 300~ns               \\ \hline
 		\multicolumn{2}{|l|}{\begin{tabular}[c]{@{}l@{}}Codebook configuration \\ for PDSCH and DMRS\end{tabular}}                                                        & Single Panel Type I \\ \hline
@@ -801,7 +865,7 @@
 	\caption{Baseline CSI simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
 	\begin{tabular}{|ll|c|c|}
 		\hline
-		\multicolumn{2}{|c|}{Parameter}                                                                                                               & Unit & Value    \\ \hline
+		\multicolumn{2}{|c|}{\textbf{Parameter}}                                                                                                               & \textbf{Unit} & \textbf{Value}    \\ \hline
 		\multicolumn{1}{|l|}{\multirow{5}{*}{\begin{tabular}[c]{@{}l@{}}NZP CSI-RS for \\ CSI acquisition\end{tabular}}} & CSI-RS resource type       &      & Periodic \\ \cline{2-4} 
 		\multicolumn{1}{|l|}{}                                                                                           & Density                    &      & 1        \\ \cline{2-4} 
 		
@@ -815,11 +879,9 @@
 	\end{tabular}
 \end{table}
 
+
 \subsection{Project Repository and Supporting Materials}
-The simulation code and supporting materials developed for this project are made available in a GitHub repository: \url{https://github.com/Bariumoxid/MIMOTechniques}. The repository contains the main MATLAB simulation scripts, configuration files, workflows, and main test cases used to generate and validate the results presented in this report. Other files, such as the weekly progress reports, log book as well as the raw files for the reports and graphics were also available on the site.
-\begin{center}
-	
-\end{center}
+The simulation code and supporting materials developed for this project are made available in a GitHub repository: \url{https://github.com/Bariumoxid/MIMOTechniques}. The repository includes the main MATLAB simulation scripts, configuration files, workflows, and representative test cases used to generate and validate the results presented in this report. It also contains additional supporting materials, including weekly progress reports, the log book, and source files for the report and graphics.
 
 
 \end{document}

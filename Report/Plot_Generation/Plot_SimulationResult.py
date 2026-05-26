@@ -5,14 +5,15 @@ import matplotlib as mpl
 
 
 #FIG_WIDTH = 6  # inch, ~ \columnwidth
-FIG_WIDTH =6
-FIG_HEIGHT = 2  # inch
+CM = 1 / 2.54
+FIG_WIDTH =14*CM
+FIG_HEIGHT = 7*CM  # inch
 COLORS = {
-    "proposed": "#1f3a5f",   # 深蓝（主结果）
-    "proposed_alt":   "#355f8a",  # 浅蓝（备选）
-    "Samsung":  "#6b7280",   # 冷灰
-    "Ericsson": "#9ca3af",   # 浅灰
-    "MediaTek": "#4b5563",   # 深灰
+    "proposed": "#42B8B1",   # 主色：Simulation
+    "proposed_alt": "#E78489",  # 主色的深色版本：Simulation（HARQ Enabled）
+    "Samsung":  "#6B7280",   # 深灰
+    "Ericsson": "#AEB6BC",   # 浅灰
+    "MediaTek": "#8A8F93",   # 中灰Throughput comparison between the simulation and the firm-standard baseline
 }
 
 LINESTYLES = {
@@ -23,7 +24,7 @@ LINESTYLES = {
 
 
 # === 配置 ===
-file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Data\throughput_data_Comparison_1Y.xlsx'
+file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Report\Data\throughput_data_Comparison_1Y.xlsx'
 #schemes = ['CDL-C_4Tx_4Rx_4Layer_10Hz_HARQ_PMIRandom','CDL-C_4Tx_4Rx_4Layer_10Hz_noHARQ_PMIBest','CDL-C_4Tx_4Rx_4Layer_10Hz_HARQ_PMIBest','CDL-C_4Tx_4Rx_4Layer_10Hz_noHARQ_PMIRandom']
 #schemes = ['CDL-C_4Tx_4Rx_4Layer_10Hz_HARQ_PMIRandom','CDL-C_4Tx_4Rx_4Layer_10Hz_HARQ_PMIBest']
 #schemes = ['CDL-C_8Tx_8Rx_8Layer_10Hz_noHARQ_PMIRandom','CDL-C_8Tx_8Rx_8Layer_10Hz_noHARQ_PMIRandom_CW1','CDL-C_8Tx_8Rx_8Layer_10Hz_noHARQ_PMIRandom_CW2']
@@ -62,7 +63,7 @@ for scheme in schemes:
     # === 绘图 ===
     ax.plot(
         snr_local,
-        throughput_pct,
+        100-throughput_pct,
         linestyle='-',
         linewidth=2.0,
         marker='o',
@@ -73,7 +74,7 @@ for scheme in schemes:
         )
 
 
-file_path_2 = r'C:\Wichtig\cam\IIB\ForthYearProj\Data\throughput_data_3GPP_1Y.xlsx'  # ← 修改为第二个文件路径
+file_path_2 = r'C:\Wichtig\cam\IIB\ForthYearProj\Report\Data\throughput_data_3GPP_1Y.xlsx'  # ← 修改为第二个文件路径
 df2 = pd.read_excel(file_path_2)
 schemes = ['CDL-C_4Tx_4Rx_4Layer_10Hz_HARQ_PMIRandom']
 companies=['Samsung', 'Ericsson', 'MediaTek']
@@ -94,7 +95,7 @@ for scheme in schemes:
         # === 绘图 ===
         ax.plot(
             snr_local,
-            throughput*100,
+            100-throughput*100,
             linestyle=LINESTYLES[company],
             linewidth=1,
             alpha=0.8,
@@ -105,17 +106,27 @@ for scheme in schemes:
 
 # === 样式 ===
 ax.set_xlabel(r'SNR (dB)', labelpad=2)
-ax.set_ylabel(r'Throughput (%)', labelpad=0)
-ax.grid(True, linestyle=':', linewidth=0.8, alpha=0.7)
+ax.set_ylabel(r'BLER (%)', labelpad=0)
+#ax.grid(True, linestyle=':', linewidth=0.8, alpha=0.7)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_linewidth(0.8)
+ax.spines['bottom'].set_linewidth(0.8)
+ax.tick_params(axis='both', which='major', direction='in', length=5, width=0.8)
+ax.tick_params(axis='both', which='minor', direction='in', length=2.5, width=0.8)
+ax.xaxis.set_ticks_position('bottom')
+ax.yaxis.set_ticks_position('left')
 ax.set_ylim(0, 101)
 ax.set_xlim(-5,27)
 ax.legend(frameon=False, fontsize=9)
 plt.tight_layout()
+fig.savefig(r'C:\Wichtig\cam\IIB\ForthYearProj\Report\Final_Report\figures\31Validation.png', dpi=600, bbox_inches="tight")
 plt.show()
 
 
+
 #Two graphs
-file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Data\throughput_data_Comparison_1Y.xlsx'
+file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Report\Data\throughput_data_Comparison_1Y.xlsx'
 df = pd.read_excel(file_path)
 
 schemes = [
@@ -232,7 +243,7 @@ snr_min, snr_max, step = -5, 55, 1
 snr = np.arange(snr_min, snr_max + step, step)  # ✅ +step 让 35 包含在内no
 fig, ax = plt.subplots(figsize=(FIG_WIDTH,FIG_HEIGHT))
 
-file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Data\throughput_data_Comparison_1Y.xlsx' # ← 修改为第二个文件路径
+file_path = r'C:\Wichtig\cam\IIB\ForthYearProj\Report\Data\throughput_data_Comparison_1Y.xlsx' # ← 修改为第二个文件路径
 df2 = pd.read_excel(file_path)
 schemes = ['CDL-C_tab1', 'CDL-C_tab2']
 #companies=[]
