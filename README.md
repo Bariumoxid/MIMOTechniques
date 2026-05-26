@@ -56,13 +56,13 @@ The final submitted materials are stored in the following folders:
 - Final thesis:
 
 ```text
-Final_Report/kb784_FinalReport.pdf
+Report/Final_Report/kb784_FinalReport.pdf
 ```
 
 - Final presentation slides:
 
 ```text
-Final_PPT/kb784_FinalPPT.pdf
+PPT/Final_PPT/kb784_FinalPPT.pdf
 ```
 
 ## Repository Structure
@@ -77,11 +77,13 @@ CSI-Feedback-Driven-Link-Adaptation/
 ├── progress/
 │   └── Weekly progress documents
 │
-├── Final_Report/
-│   └── kb784_FinalReport.pdf
-│
-└── Final_PPT/
-    └── kb784_FinalPPT.pdf
+├── Report/
+│   └── Final_Report/
+│       └── kb784_FinalReport.pdf (or .tex)
+│       └── Graph_Template.opju
+└── PPT/
+    └── Final_PPT/
+      └── kb784_FinalPPT.pdf
 ```
 
 ## Notes
