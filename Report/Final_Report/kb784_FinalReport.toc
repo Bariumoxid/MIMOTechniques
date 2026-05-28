@@ -24,10 +24,11 @@
 \contentsline {subsection}{\numberline {6.1}Interpretation of Results}{28}{subsection.6.1}%
 \contentsline {subsection}{\numberline {6.2}Limitations}{29}{subsection.6.2}%
 \contentsline {subsection}{\numberline {6.3}Future Work}{29}{subsection.6.3}%
-\contentsline {section}{\numberline {7}References}{30}{section.7}%
-\contentsline {section}{\numberline {8}Appendix}{31}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Risk Assessment}{31}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Ethical Statement}{31}{subsection.8.2}%
-\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{31}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{32}{subsection.8.4}%
-\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{32}{subsection.8.5}%
+\contentsline {subsection}{\numberline {6.4}Implications for 5G NR and Future Wireless Systems}{30}{subsection.6.4}%
+\contentsline {section}{\numberline {7}References}{31}{section.7}%
+\contentsline {section}{\numberline {8}Appendix}{32}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Risk Assessment}{32}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Ethical Statement}{32}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{32}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{33}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{33}{subsection.8.5}%

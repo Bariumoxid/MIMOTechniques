@@ -164,15 +164,19 @@
 	\textbf{Abbreviation} & \textbf{Definition} \\
 	\hline
 	
+	3GPP    & Third Generation Partnership Project \\
+	
 	5G      & Fifth Generation \\
 	
+	BER     & Bit Error Rate \\
 	BLER    & Block Error Rate \\
 	
 	CDL     & Clustered Delay Line \\
 	CP      & Cyclic Prefix \\
 	CQI     & Channel Quality Indicator \\
 	CSI     & Channel State Information \\
-	CSI-RS  & CSI Reference Signal \\
+	CSI-RS  & Channel State Information Reference Signal \\
+	CW      & Codeword \\
 	
 	DL      & Downlink \\
 	DM-RS   & Demodulation Reference Signal \\
@@ -191,6 +195,7 @@
 	
 	NLOS    & Non-Line-of-Sight \\
 	NR      & New Radio \\
+	NZP     & Non-Zero Power \\
 	
 	OFDM    & Orthogonal Frequency Division Multiplexing \\
 	
@@ -202,6 +207,7 @@
 	QAM     & Quadrature Amplitude Modulation \\
 	QPSK    & Quadrature Phase Shift Keying \\
 	
+	RAN     & Radio Access Network \\
 	RB      & Resource Block \\
 	RE      & Resource Element \\
 	RI      & Rank Indicator \\
@@ -211,7 +217,9 @@
 	SISO    & Single-Input Single-Output \\
 	SNR     & Signal-to-Noise Ratio \\
 	
-
+	TB      & Transport Block \\
+	TBS     & Transport Block Size \\
+	TCR     & Target Code Rate \\
 	TDL     & Tapped Delay Line \\
 	
 	UE      & User Equipment \\
@@ -299,7 +307,27 @@
 		In addition to CSI, 5G NR also employs hybrid automatic repeat request (HARQ) to improve the robustness of the transmission through re-transmissions. After DL-SCH decoding at the receiver, an acknowledge/negative acknowledge (ACK/NACK) signal is fed back to the transmitter, which indicates whether a re-transmission is required. In the case of a decoding failure, the transport block is re-transmitted using a different redundancy version (RV) and combined at the receiver, thus increasing the probability of successful decoding \cite{EricssonBook} \cite{MathWorks2026}.
 	\end{highlightblock}
 	
-	\newpage
+	
+	\begin{table}[H]
+		\centering
+		\caption{CDL Channel Models}
+		\label{tab:23}
+		
+		\begin{tabular}{cccc}
+			\midrule
+			\textbf{CDL Channel Models} & \textbf{Environment} & \textbf{Use cases} & \textbf{LOS} \\
+			\toprule
+			CDL-A & &   & \\
+			CDL-B  &   &  &\\
+			CDL-C  &   &  &\\
+			CDL-D  &   &  &\\
+			CDL-E  &   &  &\\
+			\bottomrule
+		\end{tabular}
+	
+		
+	\end{table}
+	
 	
 \subsection{MATLAB Simulation Framework}
 	\begin{highlightblock}
@@ -454,6 +482,26 @@
 	
 	\hl{also why throughput mbps not BLER any more}
 	
+		\begin{table}[H]
+		\centering
+		\caption{Interpolated SNR required to achieve selected BLER levels for the simulation and firm-standard baselines}
+		\label{tab:31}
+		
+		\begin{tabular}{cccccc}
+			\midrule
+			\textbf{\makecell{Target BLER\\(\%)}} & \textbf{Simulation} & \textbf{Samsung} & \textbf{Ericsson} & \textbf{MediaTek} & \textbf{Industry Average} \\
+			\toprule
+			70  & &   &   & & \\
+			30  &   &  & & &\\
+			\bottomrule
+		\end{tabular}
+		
+		\vspace{0.3em}
+		\raggedright
+		\footnotesize{$^\dagger$ SNR values obtained using linear interpolation.}
+		
+	\end{table}
+	
 	\subsection{Baseline CDL-C $4\times4$ Throughput Behaviour}
 	\begin{highlightblock}
 		Fig. \ref{fig:31StandardRun} presents the baseline downlink throughput for the CDL-C $4\times4$ MIMO configuration with adaptive CSI feedback. At the simulated range of -5~dB to 25dB, the throughput curve is increasing. The curve shows a gradual increase at low SNR, followed by a steeper transition region between approximately 5 dB and 17 dB. At 10dB, the throughput is approximately xxx Mbps. The throughput saturates at high SNR of approximately xxx Mbps. The bahaviour of the system is explained in the next subsection according to the CSI-related behaviours. This baseline provides the reference case against other scenarios compared in the subsequent simulations.
@@ -499,6 +547,7 @@
 	\newpage
 	\subsection{Fixed-Rank Controls}
 	\label{sec:Fixed-rank}
+	\label{sec:3.4}
 	
 	\begin{highlightblock}
 		Figure~\ref{fig:33Layer124} compares the downlink throughput under different rank-restriction configurations. The RI $\leq 4$ case corresponds to the original baseline, where up to four transmission layers are permitted. The RI $\leq 2$ case restricts the adaptive RI selection to at most two layers, while the RI $=1$ case forces single-layer transmission.
@@ -578,7 +627,7 @@
 			Overall, the CDL profile sweep shows that regardless the channel used, the overall shape of the throughput curve is to a large extent consistent. But the achievable throughput and required SNR are channel-dependent. For example, among the two additional models tested here, CDL-D mainly improves the transition-region SNR requirement while CDL-B represents a more limiting channel condition under the current setup <?>.
 		\end{highlightblock}
 		\subsection{One-layer Control Experiments}
-		
+		\label{sec:4.3}
 		\begin{highlightblock}
 			Similar to section \ref{sec:Fixed-rank}, a controlled experience  is conducted to test the performance of the simulations in this section performs when the maximum number of layers supported is fixed to 1, as shown in Figure~\ref{fig:53Fixed1Layer}. In contrast to the adaptive baseline, where the rank indicator is selected through CSI feedback, the transmission rank is constrained to one layer throughout the SNR sweep. 
 			
@@ -657,6 +706,7 @@
 
 
 	\subsection{Reporting Periodicity at Low and High mobility}
+	
 	\label{sec:5.2}
 		\begin{highlightblock}
 			Following the observation from the previous subsection, figure~\ref{fig:42PO} compares the effect of CSI reporting periodicity under low- and high-mobility scenarios. In both cases, the CSI-RS and CSI reporting periods are varied simultaneously while the remaining configuration is kept unchanged, consistent with the baseline settings.
@@ -779,6 +829,7 @@
 		
 		Moreover, the simulation results suggest that the optimal CSI reporting period is mobility- and scenario-dependent. In addition to the fixed rules discussed in the previous paragraphs, a closed-loop feedback algorithm could be introduced during transmission to adaptively select the CSI reporting period. Starting from a default reporting period, or from an empirically selected value based on the current scenario, the system could adjust the reporting period among neighbouring options and measure the resulting gain or penalty. If the improvement is considered significant enough to justify the additional feedback overhead, the new CSI reporting period could be adopted for a predefined duration before being re-evaluated.
 	\end{highlightblock}
+	
 	\newpage
 	
 
@@ -787,13 +838,66 @@
 
 \section{Discussion and Conclusion}
 	\subsection{Interpretation of Results}
+	\begin{highlightblock}
+		
+		The results from the previous sections confirm that CSI feedback functions as a meaningful link adaptation mechanism in the simulated 5G NR downlink system. 
+		
+		By allowing the transmitter to optimize rank, modulation scheme,  target code rate, and PMI according to the estimated channel condition, the system can avoid some inefficient fixed-transmission choices and therefore achieving better performance under given condition. The improvement due to CSI feedback is particularly clear from the fixed-rank control experiments in Section \ref{sec:3.4}, where constraining the rank leads to performance loss where the channel could otherwise support more adaptive transmission layer selections.
+	\end{highlightblock}
 	
+	\begin{highlightblock}
+		The robustness experiments from Section \ref{sec:4} further show that the overall behaviour of the system is universal and ......
+		.... The result shows that different channel models antenna MIMO configurations lead towards similar behaviour of the throughput curves, despite the absolute values may vary largely depending on how the specific channel is constructed or the array and multiplexing gain brought by the MIMO system. 
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		In Section \ref{sec:5}, an in-depth investigation on the optimal selection of CSI reporting period based on the channel condition has been conducted. The results confirm that CSI freshness is a trade-off rather than an absolute objective. More frequent CSI reports can improve the accuracy of link adaptation noticeably when the channel varies sufficiently fast and when the system operates in a low-to-medium SNR region where the throughput curve is sensitive to CSI quality. However, once the system approaches the high-SNR saturation region, or when either the UE is nearly stationary or moving very fast, the extra feedback overhead may only bring limited downlink benefit, while leading to unnecessary power waste and reducing the maximum uplink throughput that can be achieved. A close-loop feedback algorithm for adaptive reporting period has also been proposed to balance between the trade-offs.
+		
+		Overall, the project shows that CSI feedback can greatly contributes to the performance of the downlink transmission. The reporting configuration should be set depending on the operating scenario, rather than being fixed purely by a conservative default value or simply targeting maximum possible downlink throughput.
+	\end{highlightblock}
 	
 	\newpage
 	\subsection{Limitations}
+	\begin{highlightblock}
+		The study is based on link-level simulation. Therefore, it focuses on the behaviour of a single downlink connection and does not explicitly model multi-user scheduling, MU-MIMO scenario, uplink transmission, traffic dynamics, or network-level resource allocation ?????. As a result, the conclusions are most directly applicable to physical-layer link adaptation rather than complete system-level network optimisation. Since only downlink is modeled, there is a lack of results on the quantitative cost of CSI reporting in terms of how the feedback overhead will lead to additional uplink resource consumption, therefore impacting the uplink throughput and UE power consumption. The trade-off between downlink throughput improvement and uplink reporting cost is therefore evaluated mainly from the observed downlink performance trends.
+		
+		In the meantime, the HARQ mechanism is disabled during the simulation for simplicity. Despite this would not lead to loss of generality, the absolute throughput in practice may deviate from the simulated ?????
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The simulation uses a selected set of carrier, antenna, channel, Doppler and CSI-reporting configurations based on the default configuration commonly set during 3GPP requirement tests. These choices are sufficient to reveal the main trends, but they do not cover the full NR parameter space. Many other parameters, such as codebook types and CQI wideband versus subband settings or may lead to different quantitative results. 
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		Finally, despite practical factors such as the UE delay in CSI report processing has been considered during the simulation, the receiver and channel-estimation assumptions remain simplified compared with a real-life implementation. Practical hardware impairments, calibration errors, imperfect synchronisation and more are not fully represented. Therefore, the absolute throughput values should be interpreted as simulation-based indicators rather than direct predictions of field performance, and can generally be seen as the upper limit of the performance.
+	\end{highlightblock}
+	
 	
 	\subsection{Future Work}
 	
+	\begin{highlightblock}
+		Future work could first introduce an explicit feedback-overhead model to quantify the cost of the CSI reporting period to the uplink. The proposed adaptive CSI reporting algorithm can be implemented and tested. This would turn the empirical observations in this project into a practical feedback-control strategy that can be implemented to the real-life system.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		Further work could also extend the simulation to a wider range of deployment scenarios, including for different channel conditions and different antenna configurations. A system-level study that supports MU-MIMO would be useful for evaluating whether the link-level conclusions remain valid when resources are shared among multiple users, The adaptation algorithm is also expected to be more complicated when the base station is connected to multiple UEs.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		Finally, due to the limited time, only a limited number of CSI settings have been investigated. Deeper CSI adaptive strategies can be investigated combining the effect of different settings under more diverse transmission conditions.
+	\end{highlightblock}
+	
+	
+	\subsection{Implications for 5G NR and Future Wireless Systems}
+	\begin{highlightblock}
+		The findings of this project have broader implications beyond the specific simulation cases considered in this report. Although the study is based on link-level simulation and cannot be seen as a direct prediction to the performance of the system in real-life testing conditions, it provides useful insights for standardisation-oriented discussions, especially for 3GPP,on the design and update of CSI standards. 
+		
+		In practical system design, the objective is not only to maximise downlink throughput, but also to balance downlink performance against uplink performance, UE power consumption, implementation complexity, compatibility and robustness under a range of vastly different conditions. Due to this, the simulated results suggest that overly frequent CSI reporting may not always be justified, especially when the resulting downlink throughput gain is limited or when the system already operates near the high-SNR saturation region. Therefore, an adaptive CSI reporting strategy as proposed may provide a more efficient solution than using a fixed configuration across all scenarios.
+		
+		The whole simulation is completed based on 5G NR. However, the 6G that is currently still under discussion and development have a lot in common with the 5G NR, including the CSI report. The trade-off is expected to become even more important in future 6G systems. Traditional mobile traffic has often been dominated by downlink services such as video streaming and content delivery. However, future applications may create stronger uplink demand, including high-resolution live streaming, extended-reality interaction, high volume data-exchange and so on In such scenarios, the uplink transmission will be as important as the downlink transmission, therefore aiming to have similar level of throughput. In this case the uplink resources will become increasingly valuable, and excessive CSI feedback may compete more frequently with user-data transmission. This further strengthens the need to evaluate CSI reporting and other related parameters.
+		
+		Overall, this project supports a broader design direction in which CSI feedback configuration should be selected according to scenario-dependent system utility. Rather than configure the CSI, such that peak DL throughput can be reached, future 5G and 6G systems could benefit from adaptive mechanisms that jointly consider channel variation, mobility, SNR region, and other factors such as the UL throughput and power consumption. This would allow CSI reporting to contribute to more efficient, robust and balanced wireless communication systems.
+	\end{highlightblock}
 \newpage
 \section{References} \let\refname\relax
 \thispagestyle{empty}
@@ -806,26 +910,20 @@
 \section{Appendix}
 \thispagestyle{empty}
 \subsection{Risk Assessment}
-	\begin{highlightblock}
 	A complete risk assessment was provided in the submitted Technical Milestone Report (TMR). Since this project is entirely simulation-based and does not involve any physical laboratory experiments, no safety-related or hardware-related risks were identified. The only practical risk identified was the limited time available for the project relative to the computational cost of the simulations.
 	
-	The risk assessment made in the TMR remains valid, and the identified computational risk has been carefully managed throughout the project. For example, during the development of the simulation program, specific care was taken to ensure that the code could be executed in parallel on multiple CPU workers using the MATLAB Parallel Computing Toolbox, rather than being limited to a single CPU thread at a time. In addition, external computing resources were used where necessary, including the CUED central computing system, \texttt{ts-access}.
-	\end{highlightblock}
+	The risk assessment presented in the TMR remains valid, and the identified computational risk has been carefully managed throughout the project. For example, during the development of the simulation program, particular care was taken to ensure that the code could be executed in parallel on multiple CPU workers using the MATLAB Parallel Computing Toolbox, rather than being limited to a single CPU thread at a time. In addition, external computing resources were used where necessary, including the CUED central computing system \texttt{ts-access}.
+	
 \subsection{Ethical Statement}
-	\begin{highlightblock}
 	This project is entirely simulation-based and does not involve personal data or physical laboratory experiments. Therefore, no direct safety, privacy, or human-related ethical risks are identified. 
 	
-	From an environmental perspective, the project requires computational resources for MATLAB simulations. Although the total computational demand is very limited relative to most other simulation-based research projects, unnecessary computation was avoided where possible by using a consistent baseline setup, a clearly pre-designed experimental structure and selecting an appropriate number of simulated frames to balance result accuracy and computational cost.
+	From an environmental perspective, the project requires computational resources for MATLAB simulations. Although the total computational demand is very limited relative to most other simulation-based research projects, unnecessary computation was avoided where possible by using a consistent baseline setup, a clearly pre-defined experimental structure and an appropriate number of simulated frames to balance result accuracy and computational cost.
 	
-	Additionally, the conclusion of the project may have positive social and environmental implications, as it provides a detailed analysis ofn CSI feedback and MIMO techniques, which could potentially contribute to more efficient wireless communication system. For example, it may help avoid using overly frequent uplink reports when unnecessary. Improved link adaptation can in the meantime support better spectral efficiency and more reliable connectivity.
-	 
-	\end{highlightblock}
+	Additionally, the findings of the project may have positive social and environmental implications, as they provide a detailed analysis of CSI feedback and MIMO techniques, which could potentially contribute to more efficient wireless communication system. For example, the results may help avoid using overly frequent uplink reporting when it is unnecessary. Improved link adaptation can also support better spectral efficiency and more reliable connectivity.
 \subsection{Declaration of the use of generative AI}
-	\begin{highlightblock}
-		Generative AI tools, specifically ChatGPT and Google Gemini, were used in a limited number of situations during the completion of the project. The AI assistance is used mainly during the early stage of the project, including to facilitate the understanding of related concepts, as well as the debugging of the MATLAB simulation implementation.  
+	Generative AI tools, specifically ChatGPT and Google Gemini, were used in a limited capacity during the completion of the project. AI assistance was used mainly during the early stage of the project, including to facilitate the understanding of related concepts and to support the debugging of the MATLAB simulation implementation.  
 		
-		It can be confirmed that the experimental design, data analysis, interpretation of results, final conclusions, and report content were completed and verified by the author only. No AI tool was used, in any form, to generate, modify, or manipulate the simulated data.
-	\end{highlightblock}
+	It can be confirmed that the experimental design, data analysis, interpretation of results, final conclusions, and report content were completed and verified by the author. No AI tool was used, in any form, to generate, modify, or manipulate the simulated data.
 \newpage
 \thispagestyle{empty}
 \subsection{Detailed Baseline Simulation Configuration}
@@ -842,7 +940,7 @@
 		\multicolumn{2}{|l|}{Maximum Doppler shift}                                                                                                                                    &  10~Hz                  \\ \hline
 		\multicolumn{2}{|l|}{Channel Bandwidth / SCS}                                                                                                                     & 40Mhz / 30kHz       \\ \hline
 		\multicolumn{2}{|l|}{Maximum allowed rank}                                                                                                                                        & 4                   \\ \hline
-		\multicolumn{2}{|l|}{Antenna configuration}                        a                                                                                               & 4Tx4Rx              \\ \hline
+		\multicolumn{2}{|l|}{Antenna configuration}                                                                                              & 4Tx4Rx              \\ \hline
 		\multicolumn{2}{|l|}{Channel model}                                                                                                                               & CDL-C               \\ \hline
 		\multicolumn{2}{|l|}{Delay spread}                                                                                                                               & 300~ns               \\ \hline
 		\multicolumn{2}{|l|}{\begin{tabular}[c]{@{}l@{}}Codebook configuration \\ for PDSCH and DMRS\end{tabular}}                                                        & Single Panel Type I \\ \hline
@@ -881,7 +979,7 @@
 
 
 \subsection{Project Repository and Supporting Materials}
-The simulation code and supporting materials developed for this project are made available in a GitHub repository: \url{https://github.com/Bariumoxid/MIMOTechniques}. The repository includes the main MATLAB simulation scripts, configuration files, workflows, and representative test cases used to generate and validate the results presented in this report. It also contains additional supporting materials, including weekly progress reports, the log book, and source files for the report and graphics.
+The simulation code and supporting materials developed for this project have been made available in a GitHub repository: \url{https://github.com/Bariumoxid/MIMOTechniques}. The repository includes the main MATLAB simulation scripts, configuration files, workflows, and representative test cases used to generate and validate the results presented in this report. It also contains additional supporting materials, including weekly progress reports, the logbook, and source files for the report and figures.
 
 
 \end{document}
