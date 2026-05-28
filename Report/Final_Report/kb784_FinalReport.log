@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.2)  28 MAY 2026 01:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.2)  29 MAY 2026 00:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -991,7 +991,7 @@ Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
 ))
 Package hyperref Info: Option `breaklinks' set `true' on input line 58.
 Package translations Info: No language package found. I am going to use `englis
-h' as default language. on input line 110.
+h' as default language. on input line 109.
 
 (c:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
@@ -1001,24 +1001,24 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 (./kb784_FinalReport.aux)
 \openout1 = `kb784_FinalReport.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1093,8 +1093,8 @@ File: translations-basic-dictionary-english.trsl (english translation file `tra
 nslations-basic-dictionary')
 )
 Package translations Info: loading dictionary `translations-basic-dictionary' f
-or `english'. on input line 110.
-Package hyperref Info: Link coloring OFF on input line 110.
+or `english'. on input line 109.
+Package hyperref Info: Link coloring OFF on input line 109.
  (./kb784_FinalReport.out) (./kb784_FinalReport.out)
 \@outlinefile=\write4
 \openout4 = `kb784_FinalReport.out'.
@@ -1102,36 +1102,36 @@ Package hyperref Info: Link coloring OFF on input line 110.
 <FrontPage.pdf, id=179, 597.79335pt x 845.19763pt>
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf>
-Package pdftex.def Info: FrontPage.pdf  used on input line 116.
+Package pdftex.def Info: FrontPage.pdf  used on input line 115.
 (pdftex.def)             Requested size: 597.79189pt x 845.19557pt.
 <FrontPage.pdf, id=181, page=1, 597.79335pt x 845.19763pt>
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf, page 1>
-Package pdftex.def Info: FrontPage.pdf , page1 used on input line 116.
+Package pdftex.def Info: FrontPage.pdf , page1 used on input line 115.
 (pdftex.def)             Requested size: 597.79189pt x 845.19557pt.
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf, page 1>
-Package pdftex.def Info: FrontPage.pdf , page1 used on input line 116.
+Package pdftex.def Info: FrontPage.pdf , page1 used on input line 115.
 (pdftex.def)             Requested size: 597.9287pt x 845.389pt.
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf, page 1>
-Package pdftex.def Info: FrontPage.pdf , page1 used on input line 116.
+Package pdftex.def Info: FrontPage.pdf , page1 used on input line 115.
 (pdftex.def)             Requested size: 597.9287pt x 845.389pt.
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf, page 1>
-Package pdftex.def Info: FrontPage.pdf , page1 used on input line 116.
+Package pdftex.def Info: FrontPage.pdf , page1 used on input line 115.
 (pdftex.def)             Requested size: 597.9287pt x 845.389pt.
 
 
 File: FrontPage.pdf Graphic file (type pdf)
 <use FrontPage.pdf, page 1>
-Package pdftex.def Info: FrontPage.pdf , page1 used on input line 116.
+Package pdftex.def Info: FrontPage.pdf , page1 used on input line 115.
 (pdftex.def)             Requested size: 597.9287pt x 845.389pt.
 [1
 
 
  <./FrontPage.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 122--125
+Underfull \hbox (badness 10000) in paragraph at lines 121--124
 
  []
 
@@ -1142,16 +1142,16 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.130 \newpage
+l.129 \newpage
                [1
 
 {c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 135
+LaTeX Font Info:    Trying to load font information for U+msa on input line 134
 .
  (c:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 135
+LaTeX Font Info:    Trying to load font information for U+msb on input line 134
 .
 
 (c:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -1169,7 +1169,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 [4]
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 233--240
+Underfull \hbox (badness 10000) in paragraph at lines 236--243
 
  []
 
@@ -1195,7 +1195,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <figures/TIKZ_graph_1.pdf, id=295, 1105.63368pt x 317.27635pt>
 File: figures/TIKZ_graph_1.pdf Graphic file (type pdf)
 <use figures/TIKZ_graph_1.pdf>
-Package pdftex.def Info: figures/TIKZ_graph_1.pdf  used on input line 272.
+Package pdftex.def Info: figures/TIKZ_graph_1.pdf  used on input line 275.
 (pdftex.def)             Requested size: 455.24411pt x 130.63605pt.
 
 
@@ -1216,10 +1216,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [9]
-<figures/24ResouceGrid.png, id=332, 1071.5232pt x 509.2626pt>
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[10]
+<figures/24ResouceGrid.png, id=345, 1071.5232pt x 509.2626pt>
 File: figures/24ResouceGrid.png Graphic file (type png)
 <use figures/24ResouceGrid.png>
-Package pdftex.def Info: figures/24ResouceGrid.png  used on input line 369.
+Package pdftex.def Info: figures/24ResouceGrid.png  used on input line 439.
 (pdftex.def)             Requested size: 455.24411pt x 216.36769pt.
 
 
@@ -1230,7 +1239,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[10]
+[11]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1239,7 +1248,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[11 <./figures/24ResouceGrid.png (PNG copy)>]
+[12 <./figures/24ResouceGrid.png (PNG copy)>]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1248,37 +1257,56 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[12]
-Overfull \hbox (9.36365pt too wide) in paragraph at lines 464--464
+[13]
+Overfull \hbox (9.36365pt too wide) in paragraph at lines 533--533
 []\OT1/cmr/bx/n/17.28 Model Val-i-da-tion and Base-line CSI-Feedback Down-
  []
 
-<figures/31Validation.png, id=362, 390.7398pt x 191.0337pt>
+<figures/31Validation.png, id=378, 390.7398pt x 191.0337pt>
 File: figures/31Validation.png Graphic file (type png)
 <use figures/31Validation.png>
-Package pdftex.def Info: figures/31Validation.png  used on input line 477.
+Package pdftex.def Info: figures/31Validation.png  used on input line 555.
 (pdftex.def)             Requested size: 341.43307pt x 166.93544pt.
 
-Overfull \hbox (22.84079pt too wide) in paragraph at lines 490--498
+Overfull \hbox (22.84079pt too wide) in paragraph at lines 566--574
  [][] 
  []
 
 
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[14 <./figures/31Validation.png>]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[15]
+
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 505.
+(hyperref)                removing `math shift' on input line 604.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\times' on input line 505.
+(hyperref)                removing `\times' on input line 604.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 505.
+(hyperref)                removing `math shift' on input line 604.
 
-<figures/31StandardRun.pdf, id=365, 398.82227pt x 242.2377pt>
+<figures/31StandardRun.pdf, id=395, 398.82227pt x 242.2377pt>
 File: figures/31StandardRun.pdf Graphic file (type pdf)
 <use figures/31StandardRun.pdf>
-Package pdftex.def Info: figures/31StandardRun.pdf  used on input line 511.
+Package pdftex.def Info: figures/31StandardRun.pdf  used on input line 610.
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
 
 
@@ -1289,7 +1317,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[13 <./figures/31Validation.png>]
+[16]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1298,11 +1326,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[14 <./figures/31StandardRun.pdf>]
-<figures/32New_wMean.pdf, id=398, 541.02916pt x 327.56187pt>
+[17 <./figures/31StandardRun.pdf>]
+<figures/32New_wMean.pdf, id=424, 541.02916pt x 327.56187pt>
 File: figures/32New_wMean.pdf Graphic file (type pdf)
 <use figures/32New_wMean.pdf>
-Package pdftex.def Info: figures/32New_wMean.pdf  used on input line 539.
+Package pdftex.def Info: figures/32New_wMean.pdf  used on input line 638.
 (pdftex.def)             Requested size: 455.24411pt x 275.63492pt.
 
 
@@ -1313,11 +1341,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[15 <./figures/32New_wMean.pdf>]
-<figures/33Layer124.pdf, id=422, 398.82227pt x 242.2377pt>
+[18 <./figures/32New_wMean.pdf>]
+<figures/33Layer124.pdf, id=449, 398.82227pt x 242.2377pt>
 File: figures/33Layer124.pdf Graphic file (type pdf)
 <use figures/33Layer124.pdf>
-Package pdftex.def Info: figures/33Layer124.pdf  used on input line 561.
+Package pdftex.def Info: figures/33Layer124.pdf  used on input line 660.
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
 
 
@@ -1328,52 +1356,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[16 <./figures/33Layer124.pdf>]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[17]
-<figures/51AntennaNew.pdf, id=450, 398.82227pt x 242.2377pt>
-File: figures/51AntennaNew.pdf Graphic file (type pdf)
-<use figures/51AntennaNew.pdf>
-Package pdftex.def Info: figures/51AntennaNew.pdf  used on input line 599.
-(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[18]
-<figures/52CDLBCD.pdf, id=458, 398.82227pt x 242.2377pt>
-File: figures/52CDLBCD.pdf Graphic file (type pdf)
-<use figures/52CDLBCD.pdf>
-Package pdftex.def Info: figures/52CDLBCD.pdf  used on input line 615.
-(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[19 <./figures/51AntennaNew.pdf> <./figures/52CDLBCD.pdf>]
-<figures/53Fixed1Layer.pdf, id=510, 398.82227pt x 242.2377pt>
-File: figures/53Fixed1Layer.pdf Graphic file (type pdf)
-<use figures/53Fixed1Layer.pdf>
-Package pdftex.def Info: figures/53Fixed1Layer.pdf  used on input line 642.
-(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
-
+[19 <./figures/33Layer124.pdf>]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1383,10 +1366,55 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [20]
-<figures/41Throughput_Speed.pdf, id=517, 398.82227pt x 242.2377pt>
+<figures/51AntennaNew.pdf, id=478, 398.82227pt x 242.2377pt>
+File: figures/51AntennaNew.pdf Graphic file (type pdf)
+<use figures/51AntennaNew.pdf>
+Package pdftex.def Info: figures/51AntennaNew.pdf  used on input line 698.
+(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[21]
+<figures/52CDLBCD.pdf, id=485, 398.82227pt x 242.2377pt>
+File: figures/52CDLBCD.pdf Graphic file (type pdf)
+<use figures/52CDLBCD.pdf>
+Package pdftex.def Info: figures/52CDLBCD.pdf  used on input line 714.
+(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[22 <./figures/51AntennaNew.pdf> <./figures/52CDLBCD.pdf>]
+<figures/53Fixed1Layer.pdf, id=536, 398.82227pt x 242.2377pt>
+File: figures/53Fixed1Layer.pdf Graphic file (type pdf)
+<use figures/53Fixed1Layer.pdf>
+Package pdftex.def Info: figures/53Fixed1Layer.pdf  used on input line 741.
+(pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[23]
+<figures/41Throughput_Speed.pdf, id=543, 398.82227pt x 242.2377pt>
 File: figures/41Throughput_Speed.pdf Graphic file (type pdf)
 <use figures/41Throughput_Speed.pdf>
-Package pdftex.def Info: figures/41Throughput_Speed.pdf  used on input line 667
+Package pdftex.def Info: figures/41Throughput_Speed.pdf  used on input line 766
 .
 (pdftex.def)             Requested size: 341.43307pt x 207.3815pt.
 
@@ -1398,7 +1426,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[21 <./figures/53Fixed1Layer.pdf>]
+[24 <./figures/53Fixed1Layer.pdf>]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1407,11 +1435,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[22 <./figures/41Throughput_Speed.pdf>]
-<figures/42PO - Copy.pdf, id=564, 412.87793pt x 242.23956pt>
+[25 <./figures/41Throughput_Speed.pdf>]
+<figures/42PO - Copy.pdf, id=591, 412.87793pt x 242.23956pt>
 File: figures/42PO - Copy.pdf Graphic file (type pdf)
 <use figures/42PO - Copy.pdf>
-Package pdftex.def Info: figures/42PO - Copy.pdf  used on input line 716.
+Package pdftex.def Info: figures/42PO - Copy.pdf  used on input line 815.
 (pdftex.def)             Requested size: 455.24411pt x 267.0964pt.
 
 
@@ -1422,49 +1450,16 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[23 <./figures/42PO - Copy.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 740--742
+[26 <./figures/42PO - Copy.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 839--841
 
  []
 
 
-LaTeX Warning: Reference `fig:PO_Appendix' on page 24 undefined on input line 7
-53.
+LaTeX Warning: Reference `fig:PO_Appendix' on page 27 undefined on input line 8
+52.
 
 
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[24]
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[25]
-<figures/43Lollipop.pdf, id=611, 398.82227pt x 242.2377pt>
-File: figures/43Lollipop.pdf Graphic file (type pdf)
-<use figures/43Lollipop.pdf>
-Package pdftex.def Info: figures/43Lollipop.pdf  used on input line 816.
-(pdftex.def)             Requested size: 455.24411pt x 276.51236pt.
-
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[26 <./figures/43Lollipop.pdf>]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1483,15 +1478,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [28]
+<figures/43Lollipop.pdf, id=637, 398.82227pt x 242.2377pt>
+File: figures/43Lollipop.pdf Graphic file (type pdf)
+<use figures/43Lollipop.pdf>
+Package pdftex.def Info: figures/43Lollipop.pdf  used on input line 915.
+(pdftex.def)             Requested size: 455.24411pt x 276.51236pt.
 
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 14.49998pt, for example:
-(fancyhdr)                \setlength{\headheight}{14.49998pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
-
-[29]
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1500,12 +1492,48 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[30] (./kb784_FinalReport.bbl)
+[29 <./figures/43Lollipop.pdf>]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[30]
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
 [31]
 
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
 [32]
-Overfull \hbox (18.66536pt too wide) in paragraph at lines 935--957
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[33] (./kb784_FinalReport.bbl)
+
+[34]
+
+[35]
+Overfull \hbox (18.66536pt too wide) in paragraph at lines 1039--1061
  [][] 
  []
 
@@ -1515,7 +1543,7 @@ See the caption package documentation for explanation.
 
 
 
-[33] (./kb784_FinalReport.aux)
+[36] (./kb784_FinalReport.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1528,13 +1556,13 @@ Package rerunfilecheck Info: File `kb784_FinalReport.out' has not changed.
 (rerunfilecheck)             Checksum: 25C9CD227C7990AF7E8E639F16B721FF;7655.
  ) 
 Here is how much of TeX's memory you used:
- 35581 strings out of 473190
- 753211 string characters out of 5719980
- 1136601 words of memory out of 5000000
- 58167 multiletter control sequences out of 15000+600000
+ 35599 strings out of 473190
+ 753503 string characters out of 5719980
+ 1136112 words of memory out of 5000000
+ 58179 multiletter control sequences out of 15000+600000
  573699 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,17n,106p,1115b,1163s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 102i,17n,106p,1115b,1192s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2025
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2025/texmf-di
@@ -1550,10 +1578,10 @@ type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2025/texmf-dist/fonts/type1/publ
 ic/amsfonts/cm/cmsy8.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfont
 s/cm/cmti12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt
 12.pfb>
-Output written on kb784_FinalReport.pdf (34 pages, 2740698 bytes).
+Output written on kb784_FinalReport.pdf (37 pages, 2750398 bytes).
 PDF statistics:
- 786 PDF objects out of 1000 (max. 8388607)
- 617 compressed objects within 7 object streams
- 110 named destinations out of 1000 (max. 500000)
+ 814 PDF objects out of 1000 (max. 8388607)
+ 640 compressed objects within 7 object streams
+ 116 named destinations out of 1000 (max. 500000)
  504 words of extra memory for PDF output out of 10000 (max. 10000000)
 

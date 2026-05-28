@@ -106,7 +106,6 @@
 }
 
 
-
 \begin{document}
 	
 	\includepdf[
@@ -224,6 +223,10 @@
 	
 	UE      & User Equipment \\
 	UL      & Uplink \\
+	UMa &  Urban Macrocell \\
+	UMi & Urban Microcell \\
+	
+	XPR & cross polarization power ratios \\
 	
 \end{longtable}
 \newpage
@@ -298,40 +301,72 @@
 			[Not complete]
 		There are two widely used channel models in 5G NR link-level evaluations, namely the tapped delay line (TDL) model and the clustered delay line (CDL) model. Each model has several variants designed to represent different propagation environments such as urban, suburban, and rural scenarios. The TDL model provides a simplified representation of the multipath channel and is commonly used for baseline evaluations or scenarios where spatial characteristics and multi-antenna effects are not modelled.
 		
+		
+		
 		In the TDL model, the channel is represented as a superposition of multiple discrete propagation paths (taps), each characterised by a specific delay $\tau_l$ and a path gain $h_l(t)$:
 		\begin{equation}
 			h(t, \tau)=\sum_{l=0}^{L-1}h_l(t)\delta(\tau-\tau_l).
 		\end{equation}
 		The TDL model does not represent angular or spatial features of the propagation channel. In contrast, the clustered delay line (CDL) model incorporates spatial information and therefore provides a more realistic channel description. Similar to the TDL model, the CDL model defines a set of multipath clusters characterised by relative delays and average powers. In addition, each cluster is associated with angular parameters, including the azimuth and zenith angles of departure and arrival (AoD, AoA, ZoD, and ZoA). Each cluster is further decomposed into multiple sub-rays with random initial phases and Doppler components. By modelling these spatial characteristics, the CDL channel model enables a more accurate representation of the spatial characteristics of MIMO channels, at the cost of increased complexity and higher computational cost \cite{ETSI_TDL_CDL}.
 		
+				The CDL profiles are defined by their cluster-level delay, power, angular parameters, angular spreads and XPR. 
+				
 		In addition to CSI, 5G NR also employs hybrid automatic repeat request (HARQ) to improve the robustness of the transmission through re-transmissions. After DL-SCH decoding at the receiver, an acknowledge/negative acknowledge (ACK/NACK) signal is fed back to the transmitter, which indicates whether a re-transmission is required. In the case of a decoding failure, the transport block is re-transmitted using a different redundancy version (RV) and combined at the receiver, thus increasing the probability of successful decoding \cite{EricssonBook} \cite{MathWorks2026}.
 	\end{highlightblock}
-	
-	
-	\begin{table}[H]
-		\centering
-		\caption{CDL Channel Models}
-		\label{tab:23}
 		
-		\begin{tabular}{cccc}
-			\midrule
-			\textbf{CDL Channel Models} & \textbf{Environment} & \textbf{Use cases} & \textbf{LOS} \\
-			\toprule
-			CDL-A & &   & \\
-			CDL-B  &   &  &\\
-			CDL-C  &   &  &\\
-			CDL-D  &   &  &\\
-			CDL-E  &   &  &\\
-			\bottomrule
-		\end{tabular}
 	
+\begin{table}[H]
+	\centering
+	\caption{Summary of CDL channel model profiles based on 3GPP TR 38.901 \cite{3GPP2026}}
+	\label{tab:cdl_models}
+	
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{@{} l c >{\raggedright\arraybackslash}X c @{}}
+		\toprule
+		\textbf{\makecell{Channel \\ Model}} 
+		& \textbf{LOS/NLOS} 
+		& \textbf{Characteristics} 
+		& \textbf{\makecell{Indicative \\ Use Case$^\dagger$}} \\
+		\midrule
+		CDL-A 
+		& NLOS 
+		& Profile with relatively limited angular dispersion compared with CDL-B, and a higher XPR than CDL-B/C. 
+		& UMi \\
 		
-	\end{table}
+		CDL-B 
+		& NLOS 
+		& Profile with the largest azimuth angular spread among the NLOS CDL profiles. 
+		& UMi \\
+		
+		CDL-C 
+		& NLOS 
+		& Profile with a richer delayed multipath structure, more clusters, and the smallest departure angular spread among the NLOS CDL profiles. 
+		& UMa \\
+		
+		CDL-D 
+		& LOS 
+		& Profile including a specular LOS component. 
+		& UMa \\
+		
+		CDL-E 
+		& LOS 
+		& Profile including a specular LOS component, with a longer normalised delay tail than CDL-D. 
+		& UMa \\
+		\bottomrule
+	\end{tabularx}
 	
+	\vspace{0.5em}
+	\begin{minipage}{\textwidth}
+		\footnotesize
+		$^\dagger$ The indicated use cases are interpretative examples rather than fixed definitions in 3GPP TR 38.901. 
+
+		Their association with UMi or UMa scenarios depends on the selected RMS delay spread and the overall simulation setup.
+	\end{minipage}
+\end{table}
 	
 \subsection{MATLAB Simulation Framework}
 	\begin{highlightblock}
-		Table~\ref{tab:system_config} below summarises the baseline system and channel configuration adopted in this study, which is aligned with the assumptions commonly used in 3GPP evaluation studies, including TR~38.753~\cite{3GPPSimulationSpec}. There different mobility scenarios are considered. The low-mobility case assumes a maximum Doppler shift of 10~Hz, corresponding to a UE speed of 3 km/h, a default setting for 3GPP testing. For medium- and high-mobility cases, the 100~Hz and 390~Hz Doppler shift corresponds to the speed of approximately 30~km/h and 120~km/h respectively for a 3.5 GHz carrier frequency.
+		Table~\ref{tab:system_config} below summarises the baseline system and channel configuration adopted in this study, which is aligned with the assumptions commonly used in 3GPP evaluation studies, including TR~38.753~\cite{3GPPSimulationSpec}. The full set of parameters used are shown in the Appendix section Table \ref{tab:appendix1}. There different mobility scenarios are considered. The low-mobility case assumes a maximum Doppler shift of 10~Hz, corresponding to a UE speed of 3 km/h, a default setting for 3GPP testing. For medium- and high-mobility cases, the 100~Hz and 390~Hz Doppler shift corresponds to the speed of approximately 30~km/h and 120~km/h respectively for a 3.5 GHz carrier frequency.
 	\end{highlightblock}
 
 		
@@ -362,8 +397,43 @@
 		\end{highlightblock}
 		
 		\begin{highlightblock}
-			The full set of parameters used are shown in the Appendix section. Fig. \ref{fig:24ResouceGrid} shows the downlink resource grid of the system under such configuration. The empty....
+		The PDSCH, DM-RS and CSI-RS parameters used for the downlink resource-grid illustration are summarised in Table~\ref{tab:dl_grid}. Based on these configurations, the downlink resource grid is shown in Fig.~\ref{fig:24ResouceGrid} for a CSI-RS-active slot. The first two OFDM symbols are left unallocated because the PDSCH time-domain allocation starts from symbol 2. In practice, these initial symbols can be reserved for downlink control signalling, such as PDCCH transmission within a CORESET, although PDCCH is not explicitly modelled in this link-level simulation.
+			
 		\end{highlightblock}
+		
+			\begin{table}[H]
+				\centering
+					
+				\caption{Key PDSCH, DM-RS and CSI-RS parameters used for simulation}
+				\label{tab:dl_grid}
+				\begin{tabular}{|ll|c|}
+				\hline
+				\multicolumn{2}{|c|}{\textbf{Parameter}}                                                                                                                                   & \textbf{Value}               \\ \hline
+				
+
+				\multicolumn{1}{|l|}{\multirow{4}{*}{PDSCH configuration}}      & Mapping type                                                                                    & Type A              \\ \cline{2-3} 
+
+				\multicolumn{1}{|l|}{}                                          & Starting symbol                                                                                 & 2                   \\ \cline{2-3} 
+				\multicolumn{1}{|l|}{}                                          & Length                                                                                          & 12                  \\ \hline
+				\multicolumn{1}{|c|}{\multirow{5}{*}{PDSCH DMRS configuration}} & DMRS Type                                                                                       & Type 1              \\ \cline{2-3} 
+				\multicolumn{1}{|c|}{}                                          & Number of additional DMRS                                                                       & 1                   \\ \cline{2-3} 
+				\multicolumn{1}{|c|}{}                                          & \begin{tabular}[c]{@{}l@{}}Max. number of OFDM \\ symbols for DL front loaded DMRS\end{tabular} & 2                   \\\cline{2-3} 
+				
+				\multicolumn{1}{|c|}{} & Number of CDM groups without data & 1  \\ \cline{2-3} 
+				
+				
+				 \hline 
+				
+				\multicolumn{1}{|l|}{\multirow{4}{*}{\begin{tabular}[c]{@{}l@{}}NZP CSI-RS for \\ CSI acquisition\end{tabular}}} & CSI-RS resource type       &       Periodic \\ \cline{2-3} 
+				\multicolumn{1}{|l|}{}                                                                                           & Density                          & 1        \\ \cline{2-3} 
+				
+				\multicolumn{1}{|l|}{}                                                                                           & Symbol location                         & 4        \\  \cline{2-3} 
+				\multicolumn{1}{|l|}{}                                                                                           & Subcarrier location                         & 0        \\ \cline{2-3} 
+			 \hline 
+				
+			\end{tabular}
+			\end{table}
+
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=\linewidth]{figures/24ResouceGrid.png}
@@ -372,10 +442,9 @@
 		\end{figure}
 	\subsection{System Configuration and Experimental Design}
 		\begin{highlightblock}
-			This study focuses on investigating the impact of CSI feedback parameters on downlink transmission performance. The baseline CSI configuration follows the settings specified in relevant 3GPP specifications, including TS~38.101-4~\cite{3gpp_ts_38101_4}. Both the baseline configuration and the investigated parameter ranges are summarised in Table~\ref{tab:csi_config}. The investigated ranges represent the set of valid discrete configurations specified by 3GPP. Unless otherwise stated, all simulations use the baseline CSI configuration listed in Table~\ref{tab:csi_config}. 
+			This study focuses on investigating the impact of CSI feedback parameters on downlink transmission performance. The baseline CSI configuration follows the settings specified in relevant 3GPP specifications, including TS~38.101-4~\cite{3gpp_ts_38101_4}. Both the baseline configuration and the investigated parameter ranges are summarised in Table~\ref{tab:csi_config}. The investigated ranges represent the set of valid discrete configurations specified by 3GPP. Unless otherwise stated, all simulations use the baseline CSI configuration listed in Table~\ref{tab:csi_config}. The full set of CSI configurations used are shown in the Appendix section Table \ref{tab:appendix2}.
 		\end{highlightblock}
 
-		\hl{add reference for this table, TS38.101-4}
 		\begin{table}[H]
 			\centering
 			\caption{Baseline CSI feedback configuration used in the simulation framework}
@@ -466,33 +535,40 @@
 	
 	
 	\begin{highlightblock}
-		... The behaviour of the system under the baseline case is tested in this section. The performance of the system as well as the role of CSI is investigated and analyzed in detail to provide a good understanding of the feedback decisions. At the second half of the section, a fixed-rank control is implemented to isolate the rank adaptation mechanism and .. the multi-layer transmission.
+		At the beginning of the section, a simplified scenario where the adaption mechanism is temporarily disable, so that the modulation scheme, target code rate and number of transmission of layers are fixed is tested and compared with the results reported by other companies in the 3GPP technical reports. This is used to validate the correctness of the overall simulation framework.
+		
+		Afterwards, the CSI is enabled, andehe behaviour of the system under the baseline case as introduced in the last section is tested. The performance of the system as well as the role of CSI is investigated and analyzed in detail to provide a good understanding of the feedback decisions. At the second half of the section, a fixed-rank control is implemented to isolate the rank adaptation mechanism and .. the multi-layer transmission.
 	\end{highlightblock}
 	
 	
 	\subsection{External Link-Level Validation under Fixed-MCS Transmission}
+	\begin{highlightblock}
+	In the simulation model validation, a MCS 13 (Table 1), 4Tx 4Rx, 4-layer, random PMI transmission with a maximum Doppler of 10Hz setting is used. The HARQ is enabled in this simulation. The rest of the configurations remains unchanged from the default values defined in Table \ref{tab:system_config}. The modulation order, target code rate and number of PDSCH layers are fixed, so the result mainly reflects the decoding reliability of a given transmission. The performance is characterized by BLER. The plot is then compared with the simulated results reported by different firms, as shown in Fig. \ref{fig:31Validation}.  
+	\end{highlightblock}
 	
+	\begin{highlightblock}
+		The SNR corresponding to the 70\% and 30\% BLER is commonly used during comparison. The results are presented in the table below. 
+	\end{highlightblock}
+
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.75\linewidth]{figures/31Validation.png}
-		\caption{Throughput comparison between the simulation and the firm-standard baseline
-		}
+		\caption{BLER comparison between the simulation and firm-provided baselines, with firm data adapted from \cite{3gpp_ran4_results}}
+		
 		\label{fig:31Validation}
 	\end{figure}
 	
-	\hl{also why throughput mbps not BLER any more}
 	
 		\begin{table}[H]
 		\centering
 		\caption{Interpolated SNR required to achieve selected BLER levels for the simulation and firm-standard baselines}
 		\label{tab:31}
-		
-		\begin{tabular}{cccccc}
+				\begin{tabular}{cccccc}
 			\midrule
 			\textbf{\makecell{Target BLER\\(\%)}} & \textbf{Simulation} & \textbf{Samsung} & \textbf{Ericsson} & \textbf{MediaTek} & \textbf{Industry Average} \\
 			\toprule
-			70  & &   &   & & \\
-			30  &   &  & & &\\
+			70  & 10.8~dB&  6.8~dB & 6.8~dB  & 6.9~dB & 6.8~dB \\
+			30  &  15.0~dB & 15.6~dB &17.2~dB  & 16.8~dB & 16.5~dB\\
 			\bottomrule
 		\end{tabular}
 		
@@ -500,7 +576,30 @@
 		\raggedright
 		\footnotesize{$^\dagger$ SNR values obtained using linear interpolation.}
 		
-	\end{table}
+		\end{table}
+	\begin{highlightblock}
+		The simulated BLER curve follows the same general trend as the firm-provided baselines: the BLER remains close to 100\% at low SNR below 1~dB, decreases as the SNR increases, and approaches zero at high SNR above 23~dB. 
+		
+		From the simulated result, a plateau-like region is observed at intermediate SNR values, approximately between 7 and 10~dB. This behaviour may be partly attributed to the HARQ mechanism under the fixed-MCS configuration. Around 7~dB, the initial improvement in SNR allows some transport blocks that fail in the first transmission to be recovered through HARQ retransmission and combining, leading to a noticeable reduction in BLER. However, for the remaining more challenging channel realisations, the same fixed modulation, coding rate and layer configuration may still be too aggressive, so further BLER reduction is limited until the SNR becomes sufficiently high, above approximately 10~dB. Therefore, the plateau-like region can be interpreted as a transition region where HARQ improves the reliability of some blocks, but is not yet sufficient to recover the more difficult decoding cases.
+
+	\end{highlightblock}
+	\begin{highlightblock}
+		The difference between the simulation and the firm-provided baselines is expected, as the comparison is not based on an identical receiver implementation. At 70\% BLER near the plateau, the discrepancy is around 4~dB, and at 30\% BLER, the discrepancy gets smaller to around 1.5~dB.
+		
+		Even with the same agreed transmission configuration, BLER is sensitive to implementation details such as channel estimation, LDPC decoding algorithm, iteration count, HARQ combining settings and so on. The specific details and the simulation files are not commonly disclosed by the firms, not to even say that the results obtained by the firms are likely to be conducted on the program constructed by the firms themselves, in stead of on public available software like MATLAB, or publicly available packages in Python. As a result, from the figure above, it is clear that large discrepancies around 2~dB even exist between the results of different firms.
+		
+ 		As a result, it can be concluded that the simulated result in general aligns in a satisfactory manner with the industrial results. This validation should be interpreted as a qualitative and semi-quantitative alignment of the BLER trend, rather than an exact one-to-one reproduction of a specific BLER curve.
+ 		
+	\end{highlightblock}
+	\begin{highlightblock}
+		For the subsequent simulation studies, throughput in Mbps is used instead of BLER as the main performance metric. This is because the later experiments involve CSI-driven link adaptation, where the MCS, number of layers and feedback configuration may change across transmission conditions. In such cases, the maximum achievable throughput will change every slot based on the settings, and therefore BLER alone is not sufficient to represent system performance. A configuration may achieve a low BLER simply by selecting a conservative MCS or fewer layers, but this does not necessarily imply high spectral efficiency or high user throughput. 
+		
+		Additionally, in real-life scenarios, the network operators generally focus more on the throughput than the BLER, as the throughput directly captures the useful successfully delivered data rate, which is what directly impacts the user experience. Therefore, throughput in Mbps is a more appropriate metric for comparing CSI-feedback and MIMO configurations in the rest of the project.
+		
+		Furthermore, HARQ was disabled in all subsequent simulation studies in order to isolate the impact of CSI feedback and MIMO-related configurations on the first-transmission performance. This also avoids introducing additional HARQ-related effects, such as the plateau-like behaviour observed in the fixed-MCS validation case discussed above. Since the objective of this project is to compare the relative impact of different CSI configurations rather than to optimise HARQ operation, disabling HARQ provides a cleaner and more controlled basis for comparison.
+		
+	\end{highlightblock}
+
 	
 	\subsection{Baseline CDL-C $4\times4$ Throughput Behaviour}
 	\begin{highlightblock}
@@ -830,6 +929,9 @@
 		Moreover, the simulation results suggest that the optimal CSI reporting period is mobility- and scenario-dependent. In addition to the fixed rules discussed in the previous paragraphs, a closed-loop feedback algorithm could be introduced during transmission to adaptively select the CSI reporting period. Starting from a default reporting period, or from an empirically selected value based on the current scenario, the system could adjust the reporting period among neighbouring options and measure the resulting gain or penalty. If the improvement is considered significant enough to justify the additional feedback overhead, the new CSI reporting period could be adopted for a predefined duration before being re-evaluated.
 	\end{highlightblock}
 	
+	AI
+	
+	
 	\newpage
 	
 
@@ -887,6 +989,7 @@
 		Finally, due to the limited time, only a limited number of CSI settings have been investigated. Deeper CSI adaptive strategies can be investigated combining the effect of different settings under more diverse transmission conditions.
 	\end{highlightblock}
 	
+	AI
 	
 	\subsection{Implications for 5G NR and Future Wireless Systems}
 	\begin{highlightblock}
@@ -932,6 +1035,7 @@
 \begin{table}[H]
 	\centering
 	\caption{Baseline simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
+	\label{tab:appendix1}
 	\begin{tabular}{|ll|c|}
 		\hline
 		\multicolumn{2}{|c|}{\textbf{Parameter}}                                                                                                                                   & \textbf{Value}               \\ \hline
@@ -961,6 +1065,7 @@
 \begin{table}[H]
 	\centering
 	\caption{Baseline CSI simulation parameters, adapted from TR 38.753 where applicable \cite{3GPPSimulationSpec}}
+	\label{tab:appendix2}
 	\begin{tabular}{|ll|c|c|}
 		\hline
 		\multicolumn{2}{|c|}{\textbf{Parameter}}                                                                                                               & \textbf{Unit} & \textbf{Value}    \\ \hline
