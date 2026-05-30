@@ -83,7 +83,7 @@ CSI-Feedback-Driven-Link-Adaptation/
 │       └── Graph_Template.opju
 └── PPT/
     └── Final_PPT/
-      └── kb784_FinalPPT.pdf
+      └── kb784_FinalPPT.pdf (TODO)
 ```
 
 ## Notes
