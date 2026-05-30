@@ -240,7 +240,7 @@
 \end{highlightblock}
 
 \begin{highlightblock}
-	Building upon the capabilities of 4G LTE, the fifth-generation mobile communication system, known as 5G New Radio (5G NR), has been designed to support a wide range of service requirements. Three main usage scenarios are commonly associated with 5G: enhanced mobile broadband (eMBB), massive machine-type communications (mMTC), and ultra-reliable and low-latency communications (URLLC) \cite{EricssonBook}. These scenarios impose different and sometimes competing requirements on the radio access network, including high peak data rates, high spectral efficiency, massive device connectivity, low latency, and high reliability. 
+	Building upon the capabilities of 4G LTE, the fifth-generation mobile communication system, known as 5G New Radio (5G NR), has been designed to support a wide range of service requirements. Three main usage scenarios are commonly associated with 5G: enhanced mobile broadband (eMBB), massive machine-type communications (mMTC), and ultra-reliable and low-latency communications (URLLC) \cite[Ch.~1]{EricssonBook}. These scenarios impose different and sometimes competing requirements on the radio access network, including high peak data rates, high spectral efficiency, massive device connectivity, low latency, and high reliability. 
 \end{highlightblock}
 
 \begin{highlightblock}
@@ -269,42 +269,227 @@
 \subsection{Report Structure}
 
 \begin{highlightblock}
-	The remainder of this report is organised as follows. Section~2 presents the background and methodology of the project. It first introduces the 5G NR downlink physical layer, followed by the overall transmission framework and CSI feedback mechanism. The channel models, Doppler shift are then introduced, followed by the overview of the simulation framework, and the adopted system configuration.
-	
-	Section~3 focuses on model validation and the introduction of baseline CSI-feedback-driven downlink behaviour. The model is validated by comparing the BLER curve with the results reported by other companies under fixed-MCS transmission. Then the results for the baseline CDL-C \(4 \times 4\) throughput behaviour with CSI-feedback is presented. The CSI-driven link adaptation statistics are also investigated in depth to understand the baseline behaviour. 
-	
-	Section~4 investigates the robustness of the observed behaviour across different MIMO and channel configurations. This includes an antenna configuration sweep, a CDL channel profile sweep, and one-layer control experiments, allowing the sensitivity of the system performance to spatial and channel conditions to be assessed.
-	
-	Section~5 forms the central CSI-focused part of the report, studying how mobility and CSI reporting periodicity affect the effectiveness of CSI-feedback-driven link adaptation. It compares different CSI reporting periodicities under different mobility conditions, in order to examine whether more frequent CSI updates can improve the transmitter's adaptation decisions and increase downlink throughput. The section concludes by discussing the practical trade-off between CSI freshness, reporting overhead, and throughput gain. This provides the main basis for evaluating when denser CSI feedback is beneficial, and when the additional feedback cost is not justified.
-	
-	Section~6 provides the final discussion and conclusion. It interprets the main simulation results, discusses the limitations of the study, outlines possible future work, and summarises the implications for 5G NR and future wireless systems. 
-	
-	The references are listed in Section~7 and the supporting information are presented in Section~8 appendix.
+	\begin{highlightblock}
+		The remainder of this report is organised as follows:
+		
+		\begin{itemize}
+			\item \textbf{Section~2: Background and Methodology} introduces the 5G NR downlink physical layer, the overall transmission framework, and the CSI feedback mechanism. It then presents the channel models, Doppler shift, simulation framework, and adopted system configuration.
+			
+			\item \textbf{Section~3: Model Validation and Baseline CSI-Feedback Downlink Behaviour} validates the simulation model by comparing the fixed-MCS BLER curve with reported reference results from different firms. It then presents the baseline CDL-C \(4 \times 4\) CSI-feedback-driven throughput behaviour and analyses the CSI-driven link adaptation statistics.
+			
+			\item \textbf{Section~4: Robustness Across MIMO and Channel Configurations} investigates whether the observed behaviour remains consistent under different spatial and channel conditions. This includes antenna configuration sweeps, CDL channel profile sweeps, and one-layer control experiments.
+			
+			\item \textbf{Section~5: Impact of Mobility and CSI Reporting Periodicity} forms the central CSI-focused part of the report. It studies how mobility and CSI reporting periodicity affect CSI-feedback-driven link adaptation, and evaluates whether more frequent CSI updates improve transmitter adaptation and downlink throughput. The section also discusses the trade-off between CSI freshness, reporting overhead, and throughput gain.
+			
+			\item \textbf{Section~6: Discussion and Conclusion} interprets the main simulation results, discusses the limitations of the study, outlines possible future work, and summarises the implications for 5G NR and future wireless systems.
+			
+			\item \textbf{Section~7: References} lists the references used in this report.
+			
+			\item \textbf{Section~8: Appendix} provides supporting information.
+		\end{itemize}
+	\end{highlightblock}
 \end{highlightblock}
 
 \section{Background and Methodology}
 \label{sec:2}
+\begin{highlightblock}
+	This section introduces the technical background and simulation methodology used in this project. The aim is to cover basic physical-layer related concepts and modelling choices required to study CSI-feedback-driven link adaptation in 5G NR downlink MIMO. 
+	
+	In the first three subsections of this section, an overview of the relevant 5G NR concepts, including OFDM resource allocation, PDSCH transmission, DM-RS, CSI-RS, and the performance metrics used in this study, are introduced. It then describes the MIMO and CSI feedback framework, such as how the UE estimates the downlink channel and reports CQI, PMI, and RI to support modulation, coding, precoding, and rank adaptation at the transmitter. These mechanisms form the basis of the closed-loop link adaptation behaviour investigated in the later chapters.
+	
+	The second part of the chapter describes the common 3GPP-aligned configuration assumptions used during the simulation. The MATLAB 5G Toolbox simulation framework used and the simulations to-be-conducted are also discussed.
+\end{highlightblock}
 \subsection{5G NR Downlink Physical Layer Overview}
-\hl{
-	1. OFDM\\
-	2. PDSCH (DL)\\
-	3. DM-RS\\
-	4. CSI-RS\\
-	5. Slot, RB\\
-	6. Definition of BER/BLER/Throughput\\
-	7. Why throughput not BER}
-	\newpage
+\label{sec:2.1}
+\begin{highlightblock}
+	The 5G NR downlink physical layer is based on orthogonal frequency division
+	multiplexing (OFDM), where the available time-frequency resources are divided into
+	a two-dimensional resource grid. In the frequency domain, the smallest unit is a
+	subcarrier, while in the time domain the smallest scheduling-related unit is an OFDM symbol. A resource element (RE) corresponds to one subcarrier in one OFDM symbol. Groups of 12 consecutive subcarriers form a resource block (RB), which is commonly used as the basic frequency-domain allocation unit. In the time domain, transmission is organised into slots. Under the normal cyclic prefix configuration, each slot consists of 14 OFDM symbols, while the slot duration depends on the selected subcarrier spacing.. This time-frequency structure provides the basis for allocating data, reference signals, and control-related resources in the downlink \cite[Ch.~7]{EricssonBook}. 
+\end{highlightblock}
+
+\begin{highlightblock}
+	In this project, the main downlink data channel is the Physical Downlink Shared Channel (PDSCH). The PDSCH carries user data from the base station (gNB),
+	to the UE. Before being mapped to the PDSCH, the transport block
+	is processed by the Downlink Shared Channel (DL-SCH), which includes channel coding, rate matching, modulation, and layer mapping. Parameters including the modulation order, target code rate, number of transmission layers, and precoding configuration determine the amount of information that can be transmitted over the allocated resources, as well as the robustness of the transmission. These parameters are central to the link adaptation process studied in this project \cite[Ch.~7]{EricssonBook}.
+\end{highlightblock}
+
+\begin{highlightblock}
+	Reference signals are known signals transmitted over selected resource elements, allowing the receiver to estimate or measure the channel for purposes such as data demodulation, channel state information (CSI) feedback, and phase tracking. While there are many types of reference signals, two of which are particularly important and relevant in this study: demodulation reference signals (DM-RS) and	channel-state-information reference signals (CSI-RS). 
+	
+	DM-RS are associated with the PDSCH and are used by the UE to estimate the effective channel for coherent demodulation of the received data. In contrast, CSI-RS are transmitted to allow the UE to measure the downlink channel and generate CSI reports. Although both are reference signals, their roles are different: DM-RS support the decoding of the current PDSCH transmission, while CSI-RS support the transmitter's future link adaptation and MIMO transmission decisions \cite[Ch.~9]{EricssonBook}. 
+	
+\end{highlightblock}
+
+\begin{highlightblock}
+	The performance of a downlink transmission can be commonly evaluated using several metrics. The bit error rate (BER) measures the fraction of incorrectly decoded bits, but it is not the most direct metric for the coded transport-block-based transmission used in 5G NR. In this project, block error rate (BLER) and throughput are more relevant \cite{3gpp_ts_38101_4}.
+	
+	BLER measures the probability that a transmitted transport block is not decoded
+	successfully. It is especially useful for validating the link-level simulation framework under fixed modulation and coding conditions, where the transmission format is held constant and the decoding reliability can be compared with reference results, as shown in Section \ref{sec:3.1} below.
+\end{highlightblock}
+
+\begin{highlightblock}
+	Throughput is the main performance metric used in this study. It measures the amount of successfully delivered information per unit time, commonly expressed in terms of megabits per second (Mbps), and therefore reflects both reliability and spectral efficiency. A high modulation order or high code rate may increase the potential data rate, but it only improves throughput if the transport blocks can still be decoded successfully. Similarly, transmitting more MIMO layers can increase the peak throughput, but may also increase the risk of decoding failure if the channel cannot support the selected rank. In real-life applications, throughput is also a major performance criteria evaluated by the network operator, as the value directly impacts the performance of the network and is directly associated with the user experience.
+\end{highlightblock}
+
+----------------------------------------
+
+\begin{highlightblock}
+	In practical 5G NR downlink transmission, hybrid automatic repeat request (HARQ) is
+	also used to improve reliability. After DL-SCH decoding, the UE sends an
+	acknowledgement or negative acknowledgement (ACK/NACK) to indicate whether the
+	transport block has been decoded successfully. If decoding fails, the gNB may
+	retransmit the transport block using a different redundancy version, allowing the UE to
+	combine multiple transmissions and improve the probability of successful decoding.
+	HARQ therefore affects the relationship between BLER and the final delivered
+	throughput. In this project, HARQ is included in the fixed-MCS validation experiment
+	where comparison with reference BLER results is required, while HARQ is disabled in the main CSI-feedback-driven throughput studies in
+	order to isolate the effect of CSI-based link adaptation.
+\end{highlightblock}
+
+
+\begin{highlightblock}
+	In the simulated downlink chain, the transmitter selects the PDSCH transmission
+	parameters based on the available CSI feedback. The encoded and modulated data are
+	mapped onto the resource grid together with the required reference signals, precoded across the transmit antennas, and transmitted through a time-varying MIMO channel.
+	
+	At the receiver, synchronisation, OFDM demodulation, channel estimation, equalisation, PDSCH decoding, and DL-SCH decoding are performed. The resulting BLER and throughput are then used to evaluate the behaviour of the downlink link adaptation mechanism under different channel, antenna, mobility, and CSI reporting
+	configurations. <><><> Should I put this part next Chpt. ???
+\end{highlightblock}
+	
+	
+In summary, the downlink physical-layer components introduced in this section provide
+the basis for the link-level simulations in this project. PDSCH carries the user data,
+DM-RS supports coherent demodulation, CSI-RS supports channel measurement for
+feedback generation, and BLER and throughput are used to evaluate decoding
+reliability and delivered data rate. The way in which CSI feedback controls the PDSCH
+transmission parameters is discussed in the next section.
+
+2.2: The CSI-based downlink transmission and feedback framework used in this project is
+summarised in Fig.~\ref{fig:csi-feedback-framework}. At the transmitter, the DL-SCH
+transport block is processed and mapped to the PDSCH. The PDSCH symbols are then
+precoded across the transmit antennas and passed through CP-OFDM modulation before
+being transmitted through the MIMO channel. At the receiver, timing synchronisation,
+CP-OFDM demodulation, DM-RS-based channel estimation, PDSCH decoding, and
+DL-SCH decoding are performed.
+
+In parallel with data demodulation, the UE measures CSI-RS resources to estimate the
+downlink channel for feedback purposes. The resulting CSI report is encoded and fed
+back to the gNB, where it is decoded and used to select the number of layers, the MCS,
+and the precoding matrix for subsequent PDSCH transmissions. This closed-loop
+operation is the basis of the CSI-feedback-driven link adaptation studied in this
+project. Fig.~\ref{fig:csi-feedback-framework} also shows the HARQ feedback path. After
+DL-SCH decoding, the receiver generates an ACK/NACK decision. A failed transport
+block can be retransmitted and combined with previous transmissions, improving
+decoding reliability. HARQ is therefore a reliability mechanism that operates alongside
+CSI feedback. However, it serves a different purpose: CSI feedback adapts future
+transmission parameters, while HARQ responds to decoding success or failure of
+previous transmissions.
+	
 	
 \subsection{MIMO Transmission and CSI Feedback}
-	Specifics of CSI: PMI,RI, CQI \\
-	Feedback loops\\
-	How the modulation scheme/TCR/rank changes based on the feedback
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=1\linewidth]{figures/TIKZ_graph_1.pdf}
-		\caption{Overview of the CSI-based downlink transmission and feedback framework, adapted from~\cite{Matlab_PDSCH_CSI}}
-		\label{fig:csi_overview}
-	\end{figure}
+	\begin{highlightblock}
+		MIMO transmission is a key technique used in 5G NR
+		to improve downlink performance. By using multiple transmit and receive antennas,
+		the system can exploit the spatial dimension of the wireless channel. Depending on the
+		channel condition and antenna configuration, MIMO can provide array gain,
+		beamforming gain, diversity gain, or spatial multiplexing gain. This project focuses
+		mainly on spatial multiplexing and CSI-driven link adaptation, where multiple data
+		layers may be transmitted over the same time-frequency resources in order to increase
+		throughput.
+		
+		In spatial multiplexing, the transmitted data stream is divided into one or more
+		spatial layers. The number of layers is often referred to as the transmission rank. If
+		the channel provides sufficiently independent spatial paths, increasing the rank allows
+		more information to be transmitted in parallel, which can significantly increase the
+		achievable throughput. However, using a higher rank is not always beneficial. If the
+		channel is highly correlated, the received signal-to-noise ratio is low, or the receiver
+		cannot reliably separate the layers, then high-rank transmission may lead to a higher
+		block error rate and lower throughput. Rank selection is therefore an important part
+		of MIMO link adaptation.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		Precoding is used to map the transmission layers onto the physical transmit antennas.
+		The purpose of precoding is to shape the transmitted signal according to the spatial
+		characteristics of the channel. In a feedback-based system, the transmitter does not
+		usually have perfect and instantaneous knowledge of the downlink channel. Instead, the
+		UE estimates the channel from reference signals and reports quantised CSI back to the
+		gNB. The gNB then uses this feedback to select suitable transmission parameters,
+		including the modulation and coding scheme, the number of layers, and the precoding
+		matrix.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The CSI feedback considered in this project consists mainly of three components: the
+		channel quality indicator (CQI), the rank indicator (RI), and the precoding matrix
+		indicator (PMI). CQI represents the UE's estimate of the downlink channel quality. It
+		is related to the highest modulation and coding scheme that can be supported while
+		satisfying a target block error rate requirement. A higher CQI generally corresponds
+		to a more aggressive transmission format, such as a higher modulation order or higher
+		target code rate, while a lower CQI leads to a more robust but lower-rate transmission.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The rank indicator (RI) reports the number of spatial layers recommended by the UE.
+		This quantity is directly connected to spatial multiplexing. A low RI indicates that the
+		channel is better suited to fewer layers, while a higher RI indicates that the channel
+		can potentially support multiple parallel layers. Since rank affects both the peak data
+		rate and the reliability of the transmission, RI adaptation is one of the central
+		mechanisms studied in this project. The fixed-rank control experiments in later
+		sections are designed to isolate the effect of this rank adaptation mechanism.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The precoding matrix indicator (PMI) specifies the preferred precoder from a
+		predefined codebook. The selected precoder determines how the transmission layers are
+		mapped onto the transmit antenna ports. A suitable PMI allows the transmitter to
+		better match the spatial structure of the channel, improving the received signal quality
+		and reducing inter-layer interference. In practical systems, the PMI is quantised and
+		therefore cannot describe the channel perfectly, but it still provides useful spatial
+		information for downlink MIMO transmission.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The overall CSI feedback loop can be summarised as follows. The gNB transmits
+		CSI-RS resources, which are measured by the UE. Based on these measurements, the UE
+		estimates the downlink channel and generates CSI reports containing CQI, RI, and PMI.
+		These reports are fed back to the gNB. The gNB then uses the reported information to
+		select the PDSCH transmission parameters, including the modulation scheme, target
+		code rate, number of layers, and precoder. The selected configuration is then used for
+		subsequent downlink data transmission. This creates a closed-loop link adaptation
+		process in which the transmitter continuously adjusts its transmission strategy based
+		on the receiver's channel measurements.
+	\end{highlightblock}
+	
+	\begin{highlightblock}
+		The accuracy and freshness of CSI feedback are therefore critical to downlink
+		performance. If the reported CSI accurately represents the channel at the time of data
+		transmission, the gNB can choose a suitable MCS, rank, and precoder. If the CSI is
+		outdated or too coarsely quantised, the selected transmission parameters may no
+		longer match the actual channel. For example, the transmitter may choose a modulation
+		and coding scheme that is too aggressive, increasing the BLER, or it may choose a
+		conservative configuration that fails to exploit the available channel capacity.
+		
+		CSI reporting periodicity is one of the main parameters controlling this trade-off. A
+		shorter reporting period provides more frequent CSI updates and can improve link
+		adaptation in time-varying channels. However, frequent CSI reporting also increases
+		feedback overhead and may consume additional uplink resources and UE power. A
+		longer reporting period reduces this overhead, but increases the risk that the
+		transmitter uses outdated CSI, especially when the channel varies rapidly due to UE
+		mobility. The choice of CSI reporting period is therefore not simply a matter of making
+		feedback as frequent as possible, but rather a trade-off between CSI freshness,
+		feedback overhead, and the resulting downlink throughput.
+		
+		In this project, CSI feedback is studied through its impact on downlink link
+		adaptation and throughput. The simulation framework allows the CQI, RI, and PMI
+		feedback to influence the selected MCS, number of layers, and precoding matrix. The
+		resulting behaviour is then evaluated under different antenna configurations, channel
+		models, Doppler shifts, and CSI reporting periods. This makes it possible to examine
+		how the effectiveness of CSI-driven link adaptation depends on both the spatial
+		properties of the MIMO channel and the time variation of the wireless link.
+	\end{highlightblock}
+
 	
 	\begin{highlightblock}
 			[Not complete]
@@ -317,6 +502,13 @@
 	\begin{highlightblock}	
 		The reported CSI is fed back to the transmitter and used to configure key downlink transmission parameters, including the modulation scheme, target code rate, number of transmission layers, and the precoding matrix. Using these updated parameters, the transmitter processes the data through the DL-SCH and maps it to the PDSCH, followed by precoding and CP-OFDM modulation before transmission over the wireless channel. At the receiver, the received signal is synchronised, demodulated, and decoded using demodulation reference signals (DM-RS) for coherent detection.
 			\end{highlightblock}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=1\linewidth]{figures/TIKZ_graph_1.pdf}
+			\caption{Overview of the CSI-based downlink transmission and feedback framework, adapted from~\cite{Matlab_PDSCH_CSI}}
+			\label{fig:csi_overview}
+		\end{figure}
 		
 
 \subsection{CDL Channel Model and Doppler Shift}
@@ -579,6 +771,7 @@
 	
 	
 	\subsection{External Link-Level Validation under Fixed-MCS Transmission}
+	\label{sec:3.1}
 	\begin{highlightblock}
 	In the simulation model validation, a MCS 13 (Table 1), 4Tx 4Rx, 4-layer, random PMI transmission with a maximum Doppler of 10Hz setting is used. The HARQ is enabled in this simulation. The rest of the configurations remains unchanged from the default values defined in Table \ref{tab:system_config}. The modulation order, target code rate and number of PDSCH layers are fixed, so the result mainly reflects the decoding reliability of a given transmission. The performance is characterized by BLER. The plot is then compared with the simulated results reported by different firms, as shown in Fig. \ref{fig:31Validation}.  
 	\end{highlightblock}
