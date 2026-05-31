@@ -24,8 +24,9 @@
 \bibitem{Manikas}
 \BIBentryALTinterwordspacing
 A.~Manikas, ``Principles of {3G} ({CDMA}), {4G} ({OFDMA}) and {5G},'' Imperial
-  College London EE303 Communication Systems. [Online]. Available:
-  \url{https://uk.mathworks.com/help/5g/ug/5g-nr-downlink-csi-reporting.html}
+  College London EE303 Communication Systems, accessed: 30 May 2026. [Online].
+  Available:
+  \url{https://skynet.ee.ic.ac.uk/notes/CS_CDMA2016_beamer_PartA.pdf}
 \BIBentrySTDinterwordspacing
 
 \bibitem{EricssonBook}
@@ -35,13 +36,14 @@ E.~Dahlman, S.~Parkvall, and J.~Sköld, \emph{{5G} {NR}: The Next Generation
 
 \bibitem{Ericsson_MIMO}
 \BIBentryALTinterwordspacing
-{Ericsson {AB}}, ``Massive {MIMO}.'' [Online]. Available:
-  \url{https://www.ericsson.com/en/ran/massive-mimo}
+{Ericsson {AB}}, ``Massive {MIMO},'' accessed: 30 May 2026. [Online].
+  Available: \url{https://www.ericsson.com/en/ran/massive-mimo}
 \BIBentrySTDinterwordspacing
 
 \bibitem{3GPP}
 \BIBentryALTinterwordspacing
-{3GPP}, ``{3rd Generation Partnership Project} ({3GPP}).'' [Online]. Available:
+{3GPP}, ``{3rd Generation Partnership Project} ({3GPP}),'' accessed: 30 May
+  2026. [Online]. Available:
   \url{https://www.3gpp.org/about-us/introducing-3gpp}
 \BIBentrySTDinterwordspacing
 
@@ -52,7 +54,7 @@ E.~Dahlman, S.~Parkvall, and J.~Sköld, \emph{{5G} {NR}: The Next Generation
 \bibitem{MathWorks2026}
 \BIBentryALTinterwordspacing
 {{MathWorks}}, ``Model {5G NR} transport channels with {HARQ},'' 5G Toolbox
-  Documentation. [Online]. Available:
+  Documentation, accessed: 30 May 2026. [Online]. Available:
   \url{https://www.mathworks.com/help/5g/gs/model-5g-nr-transport-channels-with-harq.html}
 \BIBentrySTDinterwordspacing
 
@@ -61,12 +63,17 @@ E.~Dahlman, S.~Parkvall, and J.~Sköld, \emph{{5G} {NR}: The Next Generation
   {Release 19}.
 
 \bibitem{MathWorks_CSI}
-{MathWorks}, ``{5G} {NR} downlink {CSI} reporting,'' 5G Toolbox Documentation.
+\BIBentryALTinterwordspacing
+{MathWorks}, ``{5G} {NR} downlink {CSI} reporting,'' 5G Toolbox Documentation,
+  accessed: 30 May 2026. [Online]. Available:
+  \url{https://www.mathworks.com/help/5g/ug/5g-nr-downlink-csi-reporting.html}
+\BIBentrySTDinterwordspacing
 
 \bibitem{Matlab_PDSCH_CSI}
 \BIBentryALTinterwordspacing
 MathWorks, ``{{{NR} {PDSCH} Throughput Using Channel State Information
-  Feedback}},'' 5G Toolbox Documentation. [Online]. Available:
+  Feedback}},'' 5G Toolbox Documentation, accessed: 30 May 2026. [Online].
+  Available:
   \url{https://www.mathworks.com/help/5g/ug/nr-pdsch-throughput-using-csi-feedback.html}
 \BIBentrySTDinterwordspacing
 
@@ -81,5 +88,9 @@ MathWorks, ``{{{NR} {PDSCH} Throughput Using Channel State Information
 \bibitem{3gpp_ran4_results}
 {3GPP}, ``Results collection table for {NR} {SCM},'' {3GPP R4-2509413},
   {Bengaluru, India}, Aug. 2025, {RAN4} Meeting \#116.
+
+\bibitem{Hong2022AdaptiveCSI}
+S.~Hong, S.~Jo, and J.~So, ``Machine learning-based adaptive {CSI} feedback
+  interval,'' \emph{ICT Express}, vol.~8, no.~4, pp. 544--548, 2022.
 
 \end{thebibliography}
