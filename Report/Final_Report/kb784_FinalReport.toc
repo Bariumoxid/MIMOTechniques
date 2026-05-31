@@ -21,16 +21,16 @@
 \contentsline {section}{\numberline {5}Impact of Mobility and CSI Reporting Periodicity}{30}{section.5}%
 \contentsline {subsection}{\numberline {5.1}Doppler Shift under Default CSI Reporting Period}{31}{subsection.5.1}%
 \contentsline {subsection}{\numberline {5.2}Reporting Periodicity at Different Mobility}{32}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Discussion of CSI Freshness and Practical Trade-Off}{35}{subsection.5.3}%
-\contentsline {section}{\numberline {6}Discussion and Conclusion}{38}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Interpretation of Results}{38}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Limitations}{39}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}Future Work}{39}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Implications for 5G NR and Future Wireless Systems}{40}{subsection.6.4}%
-\contentsline {section}{\numberline {7}References}{41}{section.7}%
-\contentsline {section}{\numberline {8}Appendix}{42}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Risk Assessment}{42}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Ethical Statement}{42}{subsection.8.2}%
-\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{42}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{43}{subsection.8.4}%
-\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{43}{subsection.8.5}%
+\contentsline {subsection}{\numberline {5.3}Discussion of CSI Freshness and Practical Trade-Off}{36}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Discussion and Conclusion}{39}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Interpretation of Results}{39}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Limitations}{40}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Future Work}{40}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Implications for 5G NR and Future Wireless Systems}{41}{subsection.6.4}%
+\contentsline {section}{\numberline {7}References}{42}{section.7}%
+\contentsline {section}{\numberline {8}Appendix}{43}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Risk Assessment}{43}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Ethical Statement}{43}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{43}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{44}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{44}{subsection.8.5}%

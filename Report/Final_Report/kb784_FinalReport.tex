@@ -61,7 +61,7 @@
 \setlength{\textfloatsep}{10pt}   % space between floats and text
 \setlength{\floatsep}{8pt}        % space between floats
 \setlength{\intextsep}{8pt}       % space for in-text floats
-\setlength{\parindent}{0pt}
+%\setlength{\parindent}{0pt}
 
 \usepackage{xcolor}
 
@@ -140,31 +140,23 @@
 	
 \thispagestyle{empty}
 \section*{Background and Motivation}
-	\begin{highlightblock}
 		Channel-state-information (CSI) feedback is essential for downlink multiple-input multiple-output (MIMO) transmission in 5G New Radio (NR). Based on channel measurements at the user equipment (UE), the reported rank indicator (RI), precoding matrix indicator (PMI), and channel quality indicator (CQI) allow the base station to adapt the number of spatial layers, precoding matrix, modulation scheme, and target code rate. However, CSI reports are only useful while they remain representative of the channel at the time of transmission. Increasing the reporting frequency can improve CSI freshness, but also introduces additional uplink feedback overhead and UE processing cost. This project investigates the link-level impact of MIMO configuration, propagation conditions, mobility, and CSI reporting periodicity on downlink throughput.
-	\end{highlightblock}
 
 \section*{Methodology}
-	\begin{highlightblock}
-		A 5G NR downlink link-level simulation was developed using MATLAB 5G Toolbox. The baseline configuration uses a 3.5 GHz carrier, 40 MHz bandwidth, 30 kHz subcarrier spacing, a 4 × 4 MIMO antenna configuration, and a CDL-C channel with 300 ns delay spread. CSI feedback is generated using periodic CSI-RS measurements with practical channel estimation. Wideband CQI and PMI reporting, adaptive RI selection, and a Type-I single-panel codebook are used. The main experiments measure successfully delivered PDSCH throughput without HARQ retransmission, allowing the first-transmission impact of CSI-driven link adaptation to be isolated.
+		A 5G NR downlink link-level simulation was developed using MATLAB 5G Toolbox. The baseline configuration uses a 3.5 GHz carrier, 40 MHz bandwidth, 30 kHz subcarrier spacing, a $4 \times 4$ MIMO antenna configuration, and a CDL-C channel with 300~ns delay spread. CSI feedback is generated using periodic CSI-RS measurements with practical channel estimation. Wideband CQI and PMI reporting, adaptive RI selection, and a Type-I single-panel codebook are used. The main experiments measure successfully delivered PDSCH throughput without HARQ retransmission, allowing the first-transmission impact of CSI-driven link adaptation to be isolated.
 		
-		The simulation framework is first checked against externally reported fixed-MCS BLER curves. Subsequent experiments examine the baseline link-adaptation behaviour, fixed-rank controls, antenna-configuration and CDL-profile sweeps, and mobility scenarios corresponding to maximum Doppler shifts of 10 Hz, 100 Hz, and 390 Hz. Finally, CSI reporting periods of 4, 10, 64, and 160 slots are compared under each mobility condition.
-	\end{highlightblock}
+		The simulation framework is first checked against externally reported fixed-MCS BLER curves. Subsequent experiments examine the baseline link-adaptation behaviour, fixed-rank controls, antenna-configuration and CDL-profile sweeps, and mobility scenarios corresponding to maximum Doppler shifts of 10~Hz, 100~Hz, and 390~Hz. Finally, CSI reporting periods of 4, 10, 64, and 160 slots are compared under each mobility condition.
 	\newpage
 \thispagestyle{empty}
 \section*{Key Results and Interpretation}
-	\begin{highlightblock}
-		Under the baseline CDL-C 4 × 4 configuration, throughput increases with SNR and saturates at approximately 164 Mbps. CSI statistics show that the link-adaptation mechanism changes the selected CQI, modulation scheme, code rate, and transmission rank as the channel quality improves. The selected RI increases from one to two layers, but does not exceed two under the baseline channel conditions. Fixed-rank controls confirm that restricting transmission to a single layer limits the high-SNR throughput, while allowing more than two layers provides little additional benefit in this scenario.
+		Under the baseline CDL-C $4 \times 4$ configuration, throughput increases with SNR and saturates at approximately 164 Mbps. CSI statistics show that the link-adaptation mechanism changes the selected CQI, modulation scheme, code rate, and transmission rank as the channel quality improves. The selected RI increases from one to two layers, but does not exceed two under the baseline channel conditions. Fixed-rank controls confirm that restricting transmission to a single layer limits the high-SNR throughput, while allowing more than two layers provides little additional benefit in this scenario.
 		
-		Increasing mobility shifts the throughput curve towards higher SNR. For example, the SNR required to reach 80 Mbps increases from 7.7 dB at 10 Hz to 10.5 dB at 390 Hz. This degradation is consistent with a combination of faster channel variation, CSI ageing, and reduced effectiveness of link adaptation.
+		Increasing mobility right shifts the throughput curve towards higher SNR. For example, the SNR required to reach 80 Mbps increases from 7.7 dB at 10 Hz to 10.5 dB at 390 Hz. As mobility increases, the channel changes more rapidly, making the reported CSI outdated by the time it is used for transmission. This reduces the accuracy of link-adaptation decisions and leads to lower throughput.
 		
-		CSI reporting periodicity mainly affects the transition region of the throughput curve rather than the high-SNR saturation level. Relative to the 10-slot baseline, long reporting periods introduce measurable SNR penalties. At 10 Hz, increasing the period to 160 slots produces a 2.4 dB penalty at the selected reference throughput. Reducing the period to 4 slots provides only a modest improvement, with the largest observed gain being approximately 0.5 dB at 100 Hz. Under the simulated assumptions, the value of more frequent CSI updates therefore depends on both mobility and the operating SNR region.
-	\end{highlightblock}
+		CSI reporting periodicity mainly affects the transition region of the throughput curve rather than the high-SNR saturation level. Relative to the 10-slot baseline, long reporting periods introduce measurable SNR penalties. At 10 Hz, increasing the period to 160 slots produces a 2.4 dB penalty at the selected reference throughput. Reducing the period to 4 slots provides only a modest improvement, with the largest observed gain being approximately 0.5 dB at 100 Hz. Therefore, more frequent CSI reporting is only beneficial under certain mobility and SNR conditions.
 \section*{Conclusion}
 
-\begin{highlightblock}
 	The results demonstrate that downlink throughput is jointly determined by channel quality, spatial structure, mobility, and the freshness of CSI feedback. More frequent reporting can reduce the SNR required to achieve a given throughput, but the benefit is scenario-dependent and becomes limited when other effects, such as processing delay or rapid channel variation, dominate. The study provides a link-level basis for future work on adaptive CSI-reporting strategies that explicitly balance downlink gain against uplink overhead and UE power consumption.
-\end{highlightblock}
 	
 \newpage
 \tableofcontents
@@ -650,7 +642,7 @@
 	\begin{highlightblock}
 		In section \ref{sec:3}, the behaviour of the system under baseline condition will be simulated and investigated. In section \ref{sec:4}, the performance of the system under different MIMO, CDL channel configurations will be investigated, which examines whether the baseline behaviour observed in the baseline scenario remains interpretable under these changes. In section \ref{sec:5}, the CSI reporting period will be varied to analyze suitable reporting period for different scenarios and the underlying reasons behind the observations. 
 		
-		Only a subset of the parameters under investigation is varied in each experiment, while the remaining parameters are kept fixed at their baseline values to ensure a controlled comparison. Table \ref{tab:sim_studies} shows a brief summary of the simulation study groups that are going to be simulated. <Note that sometimes may change multiple parameters at the same time..>
+		Only a subset of the parameters under investigation is varied in each experiment, while the remaining parameters are kept fixed at their baseline values to ensure a controlled comparison. Table \ref{tab:sim_studies} shows a brief summary of the simulation study groups that are going to be simulated.
 	\end{highlightblock}
 	
 	
@@ -799,7 +791,7 @@
 	
 	\begin{highlightblock}
 	
-		In addition to the performance of the system, the behaviour of the CSI during the transmission is shown in Fig. \ref{fig:32New_wMean} below. The four respective figures demonstrates the changes of CQI, target code rate (TCR), RI as the SNR changes as well as the use of modulation schemes at different SNR levels. CQI, TCR and RI are not fixed for each SNR testing point, but instead varies base on the real-time feedbacks and channel condition, even within subband (?). vertical bars which functions as the distribution spread indicator has been introduced to the three subfigures to characterize the consistency and variability. The bars indicate the 5th to 95th percentile range of each value range rather than the full minimum--maximum range. This choice is used to represent the typical spread of the selected CQI values while reducing the influence of rare extreme channel deep-fades or favorable fading realizations, making the results more representative.
+		In addition to the performance of the system, the behaviour of the CSI during the transmission is shown in Fig. \ref{fig:32New_wMean} below. The four figures respectively show how the CQI, target code rate (TCR), rank indicator (RI), and modulation scheme vary with SNR. For a given SNR point, these quantities are not fixed constants. Instead, they are updated according to the periodic CSI feedback, which depends on the instantaneous channel realisation. Therefore variations can be observed across slots. Vertical bars which functions as the distribution spread indicator has been introduced to the three subfigures to characterize the consistency and variability. The bars indicate the 5th to 95th percentile range of each value range rather than the full minimum--maximum range. This choice is used to represent the typical spread of the selected CQI values while reducing the influence of rare extreme channel deep-fades or favorable fading realizations, making the results more representative.
 		
 		For CQI plot, as the SNR increases, the selected CQI rises gradually from 5 at low SNR to around 11 at high SNR, indicating that the link adaptation gets gradually more aggressive during the transmission due to the improved channel conditions. The peak CQI the system has every selected is 14. 
 		
@@ -811,7 +803,7 @@
 
 		The selected RI also changes with SNR, reflecting that the system changes the number of layers used for transmission under different channel conditions. At SNR lower than 2 dB, the system mainly selected RI = 1, representing a robust single-layer transmission. The RI increases to 2 at higher SNR, enabling steeper increase in throughput. Since the MIMO configuration is $4 \times 4$, a maximum of 4-layer transmission can be supported. However, the RI does not increase beyond 2 under this scenario, likely due to ...., partly causing the throughput to saturate to a throughput level below theoretical limit at very high SNR.
 		
-		For table 1 and 3 (...), three modulation schemes are supported, which are QPSK, 16QAM and 64QAM. 256 QAM is only supported when (...) and is uncommonly used due to its high requirement on channel condition. At very low SNR, the main modulation scheme is QPSK. As the SNR increases, QPSK quickly disappears and 16 QAM becomes dominant. For SNR higher than 10dB, 64QAM modulation dominates. The change in modulation scheme is gradual instead of abrupt, where the higher order modulation scheme will gradually be used more frequently as the SNR increases. The system uses 64 QAM for around 90\% of the cases, while the rest of the time using 16 QAM, likely during unusual channel degradation such as deep fade.
+		For MCS table 1 and 3, three modulation schemes are supported, which are QPSK, 16QAM and 64QAM. 256 QAM is only supported when MCS table 2 is used, which is uncommonly used due to its high requirement on channel condition \cite{3GPP2026a}. At very low SNR, the main modulation scheme is QPSK. As the SNR increases, QPSK quickly disappears and 16 QAM becomes dominant. For SNR higher than 10dB, 64QAM modulation dominates. The change in modulation scheme is gradual instead of abrupt, where the higher order modulation scheme will gradually be used more frequently as the SNR increases. The system uses 64 QAM for around 90\% of the cases, while the rest of the time using 16 QAM, likely during unusual channel degradation such as deep fade.
 			\end{highlightblock}
 
 
@@ -837,7 +829,7 @@
 				\end{highlightblock}
 				
 			\begin{highlightblock}
-			At SNR above 20~dB, the throughput gradually saturates. This is because the main link adaptation degrees of freedom have already reached their practical limits under this configuration. In particular, the system is already using 64QAM, which is the highest-order modulation available under the selected MCS table. 256QAM is only supported when the MCS table X? is used. Although there is still theoretical room for a higher target code rate and for RI to increase up to four, the CSI feedback does not tend to select these more aggressive parameters as the SNR further increases. This suggests that the high-SNR performance is no longer primarily limited by the received signal power, but by the practical limits under the selected channel condition. One likely reason is that the baseline CDL-C channel does not provide four sufficiently strong and independent spatial layers. Increasing RI beyond two may therefore reduce the effective per-layer reliability and increase the BLER, unless other parameters such as the TCR or modulation order are reduced. As a result, a higher RI does not necessarily lead to higher overall throughput, and the curve naturally saturates around the throughput level supported by two effective spatial layers.
+			At SNR above 20~dB, the throughput gradually saturates. This is because the main link adaptation degrees of freedom have already reached their practical limits under this configuration. In particular, the system is already using 64QAM, which is the highest-order modulation available under MCS table 1. Although there is still theoretical room for a higher target code rate and for RI to increase up to four, the CSI feedback does not tend to select these more aggressive parameters as the SNR further increases. This suggests that the high-SNR performance is no longer primarily limited by the received signal power, but by the practical limits under the selected channel condition. One likely reason is that the baseline CDL-C channel does not provide four sufficiently strong and independent spatial layers. Increasing RI beyond two may therefore reduce the effective per-layer reliability and increase the BLER, unless other parameters such as the TCR or modulation order are reduced. As a result, a higher RI does not necessarily lead to higher overall throughput, and the curve naturally saturates around the throughput level supported by two effective spatial layers.
 		\end{highlightblock}
 
 
@@ -854,7 +846,8 @@
 						\end{highlightblock}
 		
 		\begin{highlightblock}
-		The fixed RI $=1$ curve behaves differently. At low SNR, single-layer transmission can be slightly more robust than two-layer transmission, leading to lower BER and therefore higher throughput. However, as SNR increases, the lack of spatial multiplexing becomes the dominant limitation. The RI $=1$ throughput saturates at around xxx Mbps starting from around 17~dB, whereas the adaptive RI cases reach approximately xxx Mbps. This shows that adaptive multi-layer transmission is essential for achieving the high-SNR throughput gain. The higher-rank transmission beyond two layers is not effectively exploited in this baseline scenario, but the usage of adaptive layer transmission will be even bigger in a richer <?> channel that supports more independent paths <?>.
+		The fixed RI $=1$ curve behaves differently. At low SNR, single-layer transmission can be slightly more robust than two-layer transmission, leading to lower BER and therefore higher throughput. However, as SNR increases, the lack of spatial multiplexing becomes the dominant limitation. The RI $=1$ throughput saturates at around xxx Mbps starting from around 17~dB, whereas the adaptive RI cases reach approximately xxx Mbps. This shows that adaptive multi-layer transmission is essential for achieving the high-SNR throughput gain. Higher-rank transmission beyond two layers is not effectively exploited in this baseline scenario. In channels with a higher effective spatial rank and lower inter-layer correlation, adaptive rank selection could provide greater benefits by allowing the system to use even higher ranks during transmission.
+		
 			\end{highlightblock}
 			\begin{figure}[H]
 			\centering
@@ -927,11 +920,12 @@
 		\begin{highlightblock}
 			For all three CDL profiles, the throughput increases with SNR and eventually approaches saturated levels, showing that the general link-adaptation behaviour remains consistent. 
 			
-			However, the performance of the system under different channel models vary greatly. The CDL-B profile increases gradually, almost always worse than the baseline scenario and saturates at a much lower throughput, around 80 Mbps, as compared to baseline CDL-C. This is as expected as the CDL-B channel model has lower potential in spatial multiplexing as compared to CDL-C. <?>
+			However, the system performance varies considerably across different channel models. The CDL-B profile increases more gradually, remains below the baseline CDL-C case for most SNR values, and saturates at a much lower throughput of around 80~Mbps. The main difference is found in the modulation and coding selection. Under CDL-B, the CSI feedback tends to report a lower effective channel quality, so the link adaptation procedure selects more conservative MCS values and makes less frequent use of 64QAM. As a result, even when a similar number of spatial layers is used, the lower modulation order and target code rate limit the achievable throughput. This suggests that, although CDL-B has a large azimuth angular spread, the effective post-precoding and post-equalisation SINR in this simulation is less favourable for high-order modulation than in the CDL-C baseline case. The richer delayed multipath structure of CDL-C may provide more exploitable channel diversity under the considered antenna configuration, allowing the CSI feedback to support more aggressive modulation and coding choices.
+			
 			
 			The CDL-D profile on the other hand achieves the best overall performance. It generally leads to higher throughput at low-to-medium SNR regions and, while leading to almost the same saturated throughput as CDL-C at the high SNR, enters the saturated zone in advance. The overall performance has approximately 5~dB in SNR gain as compared to the baseline. This behaviour is also as expected, as the CDL-D channel has a major LOS component, which supports reliable and rapid transmission even at a low SNR situation, leading to clear advantage as compared to other scenarios, when one-layer transmission is used.
 			
-			Overall, the CDL profile sweep shows that regardless the channel used, the overall shape of the throughput curve is to a large extent consistent. But the achievable throughput and required SNR are channel-dependent. For example, among the two additional models tested here, CDL-D mainly improves the transition-region SNR requirement while CDL-B represents a more limiting channel condition under the current setup <?>.
+			Overall, the CDL profile sweep shows that the general shape of the throughput curve remains largely consistent across different channel models. However, the achievable throughput and the required SNR are strongly channel-dependent. Among the two additional models tested here, CDL-D mainly reduces the SNR required in the transition region, while CDL-B leads to more conservative modulation and coding selections under the considered setup, resulting in a lower high-SNR throughput ceiling.
 		\end{highlightblock}
 		\subsection{One-layer Control Experiments}
 		\label{sec:4.3}
@@ -1025,13 +1019,13 @@
 				\label{fig:42PO}
 				\end{figure}
 		\begin{highlightblock}
-			For the 10~Hz case, the throughput curves are relatively close across different reporting periods. For SNR below 20dB, the performance of low reporting periods 64 slots and 160 slots is clearly worse than the baseline performance, which is equivalent to a rightward shift of the throughput curve. As the SNR enters high region, the performance difference between different reporting periods converges, showing that the improvement in SNR can yield to ... The reporting per 4 slots however, does not in general show any noticeable improvement comparing to report every 10 slots.
+			For the 10~Hz case, the throughput curves are relatively close across different reporting periods. For SNR below 20dB, the performance of low reporting periods 64 slots and 160 slots is clearly worse than the baseline performance, which is equivalent to a rightward shift of the throughput curve. As the SNR enters the high-SNR region, the performance difference between different reporting periods gradually diminishes. This indicates that the throughput gain from more frequent CSI updates becomes negligible at high SNR. The reporting per 4 slots however, does not in general show any noticeable improvement comparing to report every 10 slots.
 			
 			The observation shows that, even under low mobility where the channel changes slowly, having denser CSI remains useful, despite the throughput improvement is limited.
 			
 			For the high mobility 390~Hz case, similar trends has been observed. The 4-slot reporting period achieves the best performance for low-to-medium ranges, where longer periods require a higher SNR to reach similar throughput levels. At high SNR, the performance different shrinks and disappears. However, the amount of improvement clearly decrease compared to the low mobility scenario, which is unexpected and will be discussed in more following part.
-			
-			\hl {need to add 100Hz}
+
+			The intermediate Doppler case of 100~Hz shows the most pronounced separation between the different CSI reporting periods, particularly between the 4-slot and 160-slot cases. The four reporting periods can be clearly divided into two groups: a higher-performing group with 4-slot and 10-slot CSI reporting, and a lower-performing group with 64-slot and 160-slot CSI reporting. This suggests that, under this specific mobility condition, the CSI reporting period needs to be sufficiently short in order to track the channel variation effectively. Once the reporting interval becomes too long, the CSI used for link adaptation becomes outdated, and the performance benefit of CSI feedback is significantly reduced.
 			
 			Overall, the results show that reducing the CSI reporting period provides limited benefit under to the system. The main effect is an SNR gain in the transition region rather than a significant increase in high-SNR saturation throughput. 
 			
@@ -1172,9 +1166,10 @@
 	\newpage
 	\subsection{Limitations}
 	\begin{highlightblock}
-		The study is based on link-level simulation. Therefore, it focuses on the behaviour of a single downlink connection and does not explicitly model multi-user scheduling, MU-MIMO scenario, uplink transmission, traffic dynamics, or network-level resource allocation ?????. As a result, the conclusions are most directly applicable to physical-layer link adaptation rather than complete system-level network optimisation. Since only downlink is modeled, there is a lack of results on the quantitative cost of CSI reporting in terms of how the feedback overhead will lead to additional uplink resource consumption, therefore impacting the uplink throughput and UE power consumption. The trade-off between downlink throughput improvement and uplink reporting cost is therefore evaluated mainly from the observed downlink performance trends.
+
+		The study is based on link-level simulation. It therefore focuses on the behaviour of a single downlink connection under controlled channel and link-adaptation settings. Higher-layer and system-level effects, such as multi-user scheduling, MU-MIMO operation, handover, and cell-level resource allocation, are not explicitly modelled. In addition, although CSI reporting is considered in terms of its feedback periodicity, the uplink physical channel is not separately simulated. As a result, the conclusions are most directly applicable to physical-layer link adaptation rather than complete system-level network optimisation. Since only downlink is modeled, there is a lack of results on the quantitative cost of CSI reporting in terms of how the feedback overhead will lead to additional uplink resource consumption, therefore impacting the uplink throughput and UE power consumption. The trade-off between downlink throughput improvement and uplink reporting cost is therefore evaluated mainly from the observed downlink performance trends.
 		
-		In the meantime, the HARQ mechanism is disabled during the simulation for simplicity. Despite this would not lead to loss of generality, the absolute throughput in practice may deviate from the simulated ?????
+		Meanwhile, HARQ is disabled in the simulation for simplicity and to isolate the first-transmission performance of different CSI and MIMO configurations. This simplification provides a cleaner basis for comparing the relative trends between different setups. However, the absolute throughput in a practical system may differ from the simulated results, since HARQ retransmissions and soft combining can improve decoding reliability, especially in the low- and medium-SNR regions.
 	\end{highlightblock}
 	
 	\begin{highlightblock}
