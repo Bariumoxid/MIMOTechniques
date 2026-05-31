@@ -44,7 +44,7 @@ These files record the development process, intermediate findings, and project u
 The full list of simulation test cases is provided in:
 
 ```text
-5GNR_Full_List.xlsx
+Simulation_Full_List.pdf
 ```
 
 This spreadsheet includes the simulation groups, parameter settings, and corresponding test case identifiers.
@@ -72,15 +72,15 @@ CSI-Feedback-Driven-Link-Adaptation/
 │
 ├── Batch_Run.m
 ├── FUNCTION_Run_5G_Simulation.m
-├── 5GNR_Full_List.xlsx
+├── Simulation_Full_List.pdf
 │
 ├── progress/
-│   └── Weekly progress documents
+│   └── Weekly progress documents (.docx)
 │
 ├── Report/
 │   └── Final_Report/
 │       └── kb784_FinalReport.pdf (or .tex)
-│       └── Graph_Template.opju
+│       └── Graphs.opju
 └── PPT/
     └── Final_PPT/
       └── kb784_FinalPPT.pdf (TODO)
