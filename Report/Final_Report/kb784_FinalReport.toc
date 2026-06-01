@@ -12,25 +12,25 @@
 \contentsline {subsection}{\numberline {3.1}External Link-Level Validation under Fixed-MCS Transmission}{18}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Baseline CDL-C $4\times 4$ Throughput Behaviour}{20}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}CSI-driven Link Adaptation Statistics}{20}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Fixed-Rank Controls}{23}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Summary of Baseline Findings}{24}{subsection.3.5}%
-\contentsline {section}{\numberline {4}Robustness across MIMO and Channel Configurations}{25}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Antenna Configuration Sweep}{25}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}CDL Channel Profile Sweep}{26}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}One-layer Control Experiments}{28}{subsection.4.3}%
+\contentsline {subsection}{\numberline {3.4}Fixed-Rank Controls}{22}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Summary of Baseline Findings}{23}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Robustness across MIMO and Channel Configurations}{24}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Antenna Configuration Sweep}{24}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}CDL Channel Profile Sweep}{25}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}One-layer Control Experiments}{27}{subsection.4.3}%
 \contentsline {section}{\numberline {5}Impact of Mobility and CSI Reporting Periodicity}{28}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Doppler Shift under Default CSI Reporting Period}{29}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Reporting Periodicity at Different Mobility}{30}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Discussion of CSI Freshness and Practical Trade-Off}{33}{subsection.5.3}%
-\contentsline {section}{\numberline {6}Discussion and Conclusion}{35}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Interpretation of Results}{35}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}Limitations}{36}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}Future Work}{37}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Implications for 5G NR and Future Wireless Systems}{37}{subsection.6.4}%
-\contentsline {section}{\numberline {7}References}{39}{section.7}%
-\contentsline {section}{\numberline {8}Appendix}{40}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Risk Assessment}{40}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Ethical Statement}{40}{subsection.8.2}%
-\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{40}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{41}{subsection.8.4}%
-\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{41}{subsection.8.5}%
+\contentsline {subsection}{\numberline {5.1}Doppler Shift under Default CSI Reporting Period}{28}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Reporting Periodicity at Different Mobility}{29}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Discussion of CSI Freshness and Practical Trade-Off}{32}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Discussion and Conclusion}{34}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Interpretation of Results}{34}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Limitations}{35}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Future Work}{35}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Implications for 5G NR and Future Wireless Systems}{36}{subsection.6.4}%
+\contentsline {section}{\numberline {7}References}{37}{section.7}%
+\contentsline {section}{\numberline {8}Appendix}{38}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Risk Assessment}{38}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Ethical Statement}{38}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Declaration of the use of generative AI}{38}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Detailed Baseline Simulation Configuration}{39}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Project Repository and Supporting Materials}{40}{subsection.8.5}%
